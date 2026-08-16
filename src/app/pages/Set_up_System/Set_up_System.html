@@ -1,0 +1,88 @@
+<div class="setup-container">
+  
+  <header class="header-section">
+    <div class="header-content">
+      <div class="logo-container clickable-logo" routerLink="/">
+        <img src="assets/images/logo.png" alt="Farm Logo">
+      </div>
+      <div class="title-group">
+        <!-- เพิ่มส่วนแสดงเลขคอกตรงนี้ครับ -->
+        <h1>จัดวางระบบเซนเซอร์ <span *ngIf="selectedCoop" style="color: #4CAF50;">(คอกที่ {{ selectedCoop }})</span></h1>
+      </div>
+    </div>
+  </header>
+
+  <main class="canvas-wrapper">
+    <div class="farm-canvas">
+      
+      <div class="zone-feeder">
+        <span>รางอาหาร</span>
+      </div>
+
+      <div class="tracks-container">
+        <div class="track-row">
+          <div class="line"></div>
+          <span class="label">รางบน </span>
+        </div>
+        <div class="track-row">
+          <div class="line"></div>
+          <span class="label">รางกลาง </span>
+        </div>
+        <div class="track-row">
+          <div class="line"></div>
+          <span class="label">รางล่าง </span>
+        </div>
+      </div>
+
+      <div class="slot-grid">
+        <div class="slot-wrapper" *ngFor="let slot of slots; let i = index">
+          
+          <div class="empty-slot" *ngIf="!slot.device" (click)="toggleDropdown(i)">
+            <span class="slot-text">อุปกรณ์</span>
+            <span class="arrow-down">▼</span>
+          </div>
+
+          <div class="filled-slot" *ngIf="slot.device" [ngClass]="slot.status" (click)="removeDevice(i)">
+            <img [src]="slot.device.icon" style="width: 25px; height: 25px; object-fit: contain;">
+            <span class="slot-text">{{ slot.device.name }}</span>
+          </div>
+
+          <div class="dropdown-menu" *ngIf="openDropdownIndex === i">
+            <div class="dropdown-item" *ngFor="let sensor of availableSensors" (click)="selectDevice(i, sensor)">
+              <img [src]="sensor.icon" style="width: 35px; height: 35px; object-fit: contain; margin-bottom: 5px;">
+              <span>{{ sensor.name }}</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="zone-door">
+        <span>ประตู</span>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="toolbar-section">
+    <button class="save-btn" (click)="saveLayout()">บันทึกการจัดวาง</button>
+  </footer>
+
+  <div class="custom-modal-overlay" *ngIf="isModalOpen">
+    <div class="custom-modal">
+      <h3>ยืนยันการลบอุปกรณ์</h3>
+      <p>คุณต้องการนำอุปกรณ์นี้ออกจากการจัดวางใช่หรือไม่?</p>
+      
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="cancelRemove()">ยกเลิก</button>
+        <button class="btn-confirm" (click)="confirmRemove()">ตกลง</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-notification" *ngIf="showToast">
+    <i class="fas fa-check-circle"></i> 
+    <span>{{ toastMessage }}</span>
+  </div>
+
+</div>

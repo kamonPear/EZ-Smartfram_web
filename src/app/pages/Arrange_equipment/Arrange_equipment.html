@@ -1,0 +1,38 @@
+<div class="arrange-container">
+  <header class="header-section">
+    <div class="header-content">
+      
+      <div class="logo-container clickable-logo" routerLink="/">
+        <img src="assets/images/logo.png" alt="Farm Logo">
+      </div>
+
+      <div class="title-group">
+        <h1>จัดวางระบบเซนเซอร์</h1>
+        <p>เลือกคอกไก่ที่ต้องการจัดวางระบบ</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-area">
+    <div class="coop-grid">
+      <div class="coop-card" *ngFor="let coop of coops">
+        
+        <div class="coop-header">
+  <span>คอกที่: </span>
+  <input 
+    type="text" 
+    class="coop-number-input" 
+    [value]="coop.coop_id" 
+    readonly
+    placeholder="ระบุเลข">
+</div>
+        
+        <div class="coop-visual" (click)="selectCoop(coop)">
+          <div class="green-zone"></div>
+          <div class="red-zone"></div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>

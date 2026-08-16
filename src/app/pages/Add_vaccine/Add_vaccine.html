@@ -1,0 +1,107 @@
+<div class="add-vaccine-container">
+  <header class="header-section">
+    <div class="header-content">
+      <div class="logo-container clickable-logo" routerLink="/">
+        <img src="assets/images/logo.png" alt="Farm Logo">
+      </div>
+      <div class="title-group">
+        <h1>เพิ่มข้อมูลยาวัคซีน</h1>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-area">
+    <div class="form-grid">
+
+      <div class="card calendar-card">
+        <div class="calendar-header">
+          <button class="nav-btn" (click)="prevMonth()">&lsaquo;</button>
+          <span class="month-label">{{ monthLabel }}</span>
+          <button class="nav-btn" (click)="nextMonth()">&rsaquo;</button>
+        </div>
+
+        <div class="weekday-row">
+          <span class="weekday" *ngFor="let d of weekDayLabels">{{ d }}</span>
+        </div>
+
+        <div class="week-row" *ngFor="let week of calendarWeeks">
+          <button
+            class="day-cell"
+            *ngFor="let day of week"
+            [class.empty]="!day"
+            [class.selected]="isSelected(day)"
+            [class.today]="isToday(day)"
+            [disabled]="!day"
+            (click)="selectDay(day)">
+            {{ day ? day.getDate() : '' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="card info-card">
+        <div class="card-title-row">
+          <h2>วัคซีน</h2>
+          <button class="calendar-icon-btn" title="ใช้วันที่ {{ formatDate(vaccineDate) }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="17" rx="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="field-row">
+          <label>คอก</label>
+          <div class="field-input">
+            <select [(ngModel)]="coopId">
+              <option [ngValue]="null" disabled selected hidden>เลือกคอก</option>
+              <option *ngFor="let coop of coops" [ngValue]="coop.coop_id">{{ coop.name_coop }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <label>ชื่อยา</label>
+          <div class="field-input">
+            <input type="text" [(ngModel)]="medicineName" placeholder="ระบุชื่อยา">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <label>วิธีการให้</label>
+          <div class="field-input">
+            <select [(ngModel)]="method">
+              <option value="" disabled selected hidden>เลือกวิธีการให้</option>
+              <option value="พ่น">พ่น</option>
+              <option value="ฉีด">ฉีด</option>
+              <option value="หยอดปาก">หยอดปาก</option>
+              <option value="ผสมน้ำ">ผสมน้ำ</option>
+              <option value="ผสมอาหาร">ผสมอาหาร</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <label>เงื่อนไขอายุ</label>
+          <div class="field-input">
+            <input type="text" [(ngModel)]="ageCondition" placeholder="เช่น 5-7 วัน หลังจากเกิด">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <label>หมายเหตุ</label>
+          <div class="field-input">
+            <input type="text" [(ngModel)]="note" placeholder="-">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="action-row">
+      <button class="btn-cancel" routerLink="/">ยกเลิก</button>
+      <button class="btn-confirm" (click)="saveVaccine()">บันทึกข้อมูล</button>
+    </div>
+  </main>
+</div>

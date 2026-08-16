@@ -1,0 +1,380 @@
+.setup-container {
+  font-family: 'Kanit', sans-serif;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- ส่วนหัว Header --- */
+.header-section {
+  background-color: #278E31;
+  width: 96%;
+  margin: 0 auto;
+  padding: 40px 0;
+  border-bottom-left-radius: 40px;
+  border-bottom-right-radius: 40px;
+  box-sizing: border-box;
+  
+  .header-content {
+    position: relative; 
+    width: 100%;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+  }
+
+  .clickable-logo {
+    position: absolute;
+    left: 40px; 
+    top: 50%; 
+    transform: translateY(-50%); 
+    cursor: pointer;  
+    transition: transform 0.2s; 
+    z-index: 10;
+    
+    &:hover {
+      transform: translateY(-50%) scale(1.05); 
+    }
+
+    img {
+      width: 100px; 
+      height: auto;
+      border-radius: 15px; 
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
+    }
+  }
+
+  .title-group {
+    width: 100%; 
+    text-align: center; 
+    h1 {
+      font-size: 3.5rem;
+      margin: 0;
+      font-weight: bold;
+      color: #fcfcfc; 
+      letter-spacing: 2px;
+    }
+  }
+}
+
+/* --- พื้นที่ Canvas โซนกลาง --- */
+.canvas-wrapper {
+  flex: 1;
+  padding: 30px 50px;
+  display: flex;
+  justify-content: center;
+}
+
+.farm-canvas {
+  width: 100%;
+  max-width: 1300px;
+  background-color: #E8E8E8;
+  border-radius: 20px;
+  padding: 20px;
+  display: flex; 
+  gap: 20px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+  position: relative; 
+
+  /* โซนซ้าย-ขวา (รางอาหาร-ประตู) */
+  .zone-feeder, .zone-door {
+    width: 60px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+
+    span {
+      writing-mode: vertical-rl;
+      font-weight: bold;
+      font-size: 1.5rem;
+      letter-spacing: 5px;
+    }
+  }
+
+  .zone-feeder { 
+    background-color: #DDE247; 
+    transform: rotate(180deg); 
+  }
+  
+  .zone-door { 
+    background-color: #FF8A65; 
+    margin-top: 20%;
+    width: 40px; 
+    span { font-size: 1.2rem; letter-spacing: 2px; }
+  }
+
+  /* --- เส้นรางจำลอง (อยู่ด้านหลังตาราง) --- */
+  .tracks-container {
+    position: absolute;
+    top: 20px; 
+    bottom: 20px;
+    left: 100px; 
+    right: 80px; 
+    display: grid;
+    grid-template-rows: repeat(3, 1fr); 
+    gap: 15px; 
+    z-index: 0; /* ดันไปอยู่เลเยอร์หลังสุด */
+    pointer-events: none; /* ห้ามคลิกโดน */
+
+    .track-row {
+      position: relative;
+      display: flex;
+      align-items: center;
+
+      .line {
+        width: 100%;
+        height: 12px; 
+        background-color: #D3D3D3; 
+        border-radius: 6px;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); 
+      }
+
+      .label {
+        position: absolute;
+        top: -8px; 
+        left: 20px;
+        font-size: 0.9rem;
+        font-weight: bold;
+        color: #888;
+        background-color: #E8E8E8; 
+        padding: 0 10px;
+        border-radius: 10px;
+      }
+    }
+  }
+
+  /* --- ระบบตาราง 21 ช่อง (อยู่หน้าเส้นราง) --- */
+  .slot-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr); 
+    grid-template-rows: repeat(3, 1fr); 
+    gap: 15px;
+    z-index: 1; /* ลอยอยู่เหนือเส้นราง */
+    position: relative; 
+  }
+
+  .slot-wrapper {
+    position: relative; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* กล่องว่างเปล่า */
+  .empty-slot {
+    background-color: white;
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    font-weight: bold;
+    color: #555;
+    transition: transform 0.1s;
+
+    &:hover { transform: scale(1.05); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .arrow-down { font-size: 0.7rem; }
+  }
+
+  /* กล่องที่มีอุปกรณ์ */
+  .filled-slot {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.1s;
+
+    &:hover { transform: scale(0.95); } /* เอฟเฟกต์ตอนจะลบ */
+
+    .icon-placeholder { 
+      width: 25px; 
+      height: 25px; 
+      background: rgba(255,255,255,0.5); 
+      border-radius: 50%; 
+    }
+
+    &.working { background-color: #388E3C; color: white; } /* สีเขียวปกติ */
+    &.error { background-color: #D32F2F; color: white; } /* สีแดงมีปัญหา */
+  }
+
+  /* เมนู Dropdown เลือกเซนเซอร์ */
+  .dropdown-menu {
+    position: absolute;
+    top: 60%; 
+    left: 0;
+    width: 140px; 
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    z-index: 100; 
+    padding: 10px 0;
+    margin-top: 10px;
+
+    /* 🔴 โค้ดที่เพิ่มเข้ามาเพื่อทำให้เลื่อนได้ */
+    max-height: 280px; /* กำหนดความสูงสูงสุด (ถ้าอยากให้เมนูสั้นลง ให้ลดเลขนี้ลงครับ) */
+    overflow-y: auto;  /* สั่งให้มีแถบเลื่อนแนวตั้งโผล่มาเมื่อข้อมูลล้น */
+
+    /* 🔴 (เสริม) ตกแต่งแถบ Scrollbar ให้ดูสวยงามและบางลง ไม่เกะกะสายตา */
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1; 
+      border-radius: 10px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #BDBDBD; 
+      border-radius: 10px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: #888; 
+    }
+    /* --------------------------------------------------- */
+
+    .dropdown-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #333;
+      border-bottom: 1px solid #EEE;
+
+      &:last-child { border-bottom: none; }
+      &:hover { background-color: #F5F5F5; color: #278E31; }
+
+      .icon-placeholder-small {
+        width: 35px; 
+        height: 35px;
+        background: #ddd; 
+        border-radius: 50%;
+        margin-bottom: 5px;
+      }
+    }
+  }
+}
+
+/* --- แถบเครื่องมือด้านล่าง --- */
+.toolbar-section {
+  display: flex;
+  justify-content: flex-end; 
+  padding: 20px 50px 40px;
+  
+  .save-btn { 
+    background-color: #A5D6A7; 
+    color: #000;
+    padding: 15px 40px;
+    border: none; 
+    border-radius: 30px; 
+    font-size: 1.2rem;
+    font-weight: bold; 
+    font-family: 'Kanit', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: background-color 0.2s;
+
+    &:hover { background-color: #81C784; }
+  }
+}
+
+.custom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6); /* พื้นหลังสีดำโปร่งแสง */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* บังคับให้อยู่บนสุดของหน้าจอ */
+  backdrop-filter: blur(2px); /* ทำให้พื้นหลังเบลอนิดๆ */
+}
+
+.custom-modal {
+  background-color: #ffffff;
+  padding: 30px 40px;
+  border-radius: 20px;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+  text-align: center;
+  width: 350px;
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* แอนิเมชันเด้งดึ๋ง */
+
+  h3 {
+    margin-top: 0;
+    color: #333;
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
+  p {
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+
+    button {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-family: 'Kanit', sans-serif;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.1s, background-color 0.2s;
+
+      /* ปุ่มยกเลิกสีเทา */
+      &.btn-cancel {
+        background-color: #E0E0E0;
+        color: #333;
+        &:hover { background-color: #D6D6D6; }
+      }
+
+      /* ปุ่มยืนยันสีแดง */
+      &.btn-confirm {
+        background-color: #FF5252;
+        color: white;
+        &:hover { background-color: #E53935; }
+      }
+
+      &:active {
+        transform: scale(0.95); /* กดยุบลงไปนิดนึง */
+      }
+    }
+  }
+}
+
+/* คีย์เฟรมสำหรับแอนิเมชันตอนเปิด */
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
