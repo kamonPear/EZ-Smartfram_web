@@ -1,0 +1,101 @@
+<div class="setup-container">
+  
+  <header class="header-section">
+    <div class="header-content">
+      <div class="logo-container clickable-logo" routerLink="/">
+        <img src="assets/images/logo.png" alt="Farm Logo">
+      </div>
+      <div class="title-group">
+        <h1>ระบบเซนเซอร์ <span *ngIf="selectedCoop" style="color: #4CAF50;">({{ selectedCoopName || ('คอกที่ ' + selectedCoop) }})</span></h1>
+      </div>
+    </div>
+  </header>
+
+  <main class="canvas-wrapper">
+    
+    <div class="farm-canvas">
+      
+      <div class="zone-feeder">
+        <span>รางอาหาร</span>
+      </div>
+
+      <div class="tracks-container">
+        <div class="track-row">
+          <div class="line"></div>
+          <span class="label">รางบน </span>
+        </div>
+        <div class="track-row">
+          <div class="line"></div>
+          <span class="label">รางกลาง </span>
+        </div>
+        <div class="track-row">
+          <div class="line"></div>
+          <span class="label">รางล่าง </span>
+        </div>
+      </div>
+
+      <div
+        class="free-slot"
+        *ngFor="let slot of placedSlots"
+        [ngClass]="slot.status"
+        [style.left.%]="slot.x"
+        [style.top.%]="slot.y"
+        (mouseenter)="setTooltipVisible(slot, true)"
+        (mouseleave)="setTooltipVisible(slot, false)">
+
+        <div class="slot-icon">
+          <img [src]="slot.device!.icon">
+        </div>
+        <span class="slot-text">{{ slot.device!.name }}</span>
+
+        <div class="status-tooltip" *ngIf="slot.showStatus">
+          สถานะ: <span [ngClass]="slot.status + '-text'">{{ getStatusLabel(slot.status) }}</span>
+        </div>
+      </div>
+
+      <div class="canvas-empty-hint" *ngIf="placedSlots.length === 0">
+        ยังไม่มีอุปกรณ์ที่จัดวางไว้ในคอกนี้
+      </div>
+
+      <div class="zone-door">
+        <span>ประตู</span>
+      </div>
+
+    </div>
+
+    <div class="status-panel">
+      <h2 class="status-title">ตรวจสอบรางเซนเซอร์</h2>
+      
+      <div class="dropdown-container">
+        <select class="track-select" (change)="onTrackChange($event)">
+          <option *ngFor="let track of trackStatuses" [value]="track.id">
+            {{ track.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="sensor-list-container" *ngIf="selectedTrackStatus">
+        
+        <ng-container *ngIf="getSensorsForSelectedTrack().length > 0; else noDevice">
+          <div class="sensor-item" *ngFor="let sensor of getSensorsForSelectedTrack()">
+            <div class="sensor-info">
+              <img [src]="sensor.device?.icon" style="width: 20px; height: 20px; object-fit: contain;">
+              <span class="sensor-name">{{ sensor.device?.name }}</span>
+            </div>
+            <div class="track-status" [ngClass]="sensor.status">
+              {{ getStatusLabel(sensor.status) }}
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #noDevice>
+          <div class="no-device-msg">ยังไม่ได้เพิ่มอุปกรณ์ในรางนี้</div>
+        </ng-template>
+
+      </div>
+      
+    </div>
+
+  </main>
+
+</div>

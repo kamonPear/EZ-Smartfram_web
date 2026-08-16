@@ -1,0 +1,99 @@
+<div class="dashboard-container">
+  <header class="header">
+  <div class="logo-container">
+    <img src="assets/images/logo.png" alt="Farm Logo">
+  </div>
+
+  <h1>EZ - SMART FARM</h1>
+</header>
+
+  <main class="main-content">
+    <div class="quick-actions">
+      <button class="action-card" routerLink="/add-coop">
+        <div class="action-icon">
+          <img src="assets/images/chicken.png" alt="Add coop">
+        </div>
+        <span class="action-label">เพิ่มคอกไก่</span>
+      </button>
+
+      <button class="action-card" routerLink="/arrange">
+        <div class="action-icon">
+            <img src="assets/images/esp32.png" alt="Arrange equipment">
+        </div>
+        <span class="action-label">เพิ่มอุปกรณ์</span>
+      </button>
+
+      <button class="action-card" routerLink="/add-vaccine">
+        <div class="action-icon">
+          <img src="assets/images/Vaccine.png" alt="Add vaccine">
+        </div>
+        <span class="action-label">เพิ่มข้อมูลยาวัคซีน</span>
+      </button>
+
+      <button class="action-card" routerLink="/add-egg">
+        <div class="action-icon">
+          <img src="assets/images/egg.png" alt="Add egg">
+        </div>
+        <span class="action-label">เพิ่มข้อมูลไข่ไก่</span>
+      </button>
+
+      <button class="action-card" (click)="openTemperatureSettings()">
+        <div class="action-icon">
+          <img src="assets/images/temp.png" alt="Temperature settings">
+        </div>
+        <span class="action-label">ตั้งค่าอุณหภูมิ</span>
+      </button>
+
+      <button class="action-card" routerLink="/chicken-sensor">
+        <div class="action-icon">
+           <img src="assets/images/esp32.png" alt="Chicken sensor">
+        </div>
+        <span class="action-label">สถานะการทำงานของอุปกรณ์</span>
+      </button>
+    </div>
+
+    <section class="coop-section">
+      <h2 class="section-title">คอกไก่ของคุณ</h2>
+
+      <div class="coop-grid" *ngIf="coops.length > 0">
+        <button class="coop-card" *ngFor="let coop of coops" (click)="selectCoop(coop)">
+          <button class="coop-delete-btn" title="ลบคอกนี้" (click)="requestDeleteCoop($event, coop)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="6" y1="6" x2="18" y2="18"/>
+              <line x1="18" y1="6" x2="6" y2="18"/>
+            </svg>
+          </button>
+
+          <div class="coop-icon">
+            <img src="assets/images/coopchicken.png" alt=" Coop Icon">
+          </div>
+          <span class="coop-name">{{ coop.name_coop || 'คอกที่ ' + coop.coop_id }}</span>
+          <span class="coop-amount">{{ coop.amount }} ตัว</span>
+        </button>
+      </div>
+
+      <div class="coop-empty" *ngIf="coops.length === 0">
+        <p>ยังไม่มีคอกไก่ในระบบ</p>
+        <button class="empty-add-btn" routerLink="/add-coop">+ เพิ่มคอกไก่</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="custom-modal-overlay" *ngIf="isDeleteModalOpen">
+    <div class="custom-modal">
+      <h3>ยืนยันการลบคอก</h3>
+      <p>
+        ต้องการลบ "{{ coopToDelete?.name_coop || ('คอกที่ ' + coopToDelete?.coop_id) }}" ใช่หรือไม่?<br>
+        ข้อมูลทั้งหมดของคอกนี้ (อุปกรณ์ ไข่ไก่ วัคซีน สุขภาพ) จะถูกลบออกจากระบบทั้งหมด และกู้คืนไม่ได้
+      </p>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="cancelDeleteCoop()" [disabled]="isDeleting">ยกเลิก</button>
+        <button class="btn-confirm" (click)="confirmDeleteCoop()" [disabled]="isDeleting">
+          {{ isDeleting ? 'กำลังลบ...' : 'ลบคอก' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,30 @@
+/* You can add global styles to this file, and also import other style files */
+
+:root {
+  --bg-app: #17232F;
+  --bg-header: #17232F;
+  --bg-panel: #17232F;
+  --bg-card: #1E2E3D;
+  --bg-card-alt: #263850;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: #2A3B4C;
+  --text-primary: #F2F5F8;
+  --text-secondary: #9FB0C0;
+  --text-muted: #6B7C8D;
+  --accent-green: #2FA83F;
+  --accent-green-dark: #228031;
+  --accent-red: #E5484D;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-app);
+  /* ทั้งเว็บเป็นธีมมืด บอกเบราว์เซอร์ตรงนี้แบบ global เพื่อให้เมนู/ปฏิทิน native (เช่น dropdown ของ <select>)
+     ใช้สีที่อ่านออกโดยอัตโนมัติ ไม่ต้องพึ่ง component style ที่อาจไปไม่ถึง popup ของเบราว์เซอร์ */
+  color-scheme: dark;
+}
+
+select {
+  color-scheme: dark;
+}

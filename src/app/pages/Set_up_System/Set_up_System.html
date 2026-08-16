@@ -1,0 +1,100 @@
+<div class="setup-container">
+  
+  <header class="header-section">
+    <div class="header-content">
+      <div class="logo-container clickable-logo" routerLink="/">
+        <img src="assets/images/logo.png" alt="Farm Logo">
+      </div>
+      <div class="title-group">
+        <!-- เพิ่มส่วนแสดงเลขคอกตรงนี้ครับ -->
+        <h1>จัดวางระบบเซนเซอร์ <span *ngIf="selectedCoop" style="color: #4CAF50;">({{ selectedCoopName || ('คอกที่ ' + selectedCoop) }})</span></h1>
+      </div>
+    </div>
+  </header>
+
+  <main class="canvas-wrapper">
+    <aside class="sensor-palette">
+      <h3 class="palette-title">ลากอุปกรณ์ไปวางบนแคนวาส</h3>
+      <div class="palette-list">
+        <div
+          class="palette-item"
+          *ngFor="let sensor of availableSensors"
+          draggable="true"
+          (dragstart)="onPaletteDragStart($event, sensor)">
+          <div class="palette-icon">
+            <img [src]="sensor.icon">
+          </div>
+          <span>{{ sensor.name }}</span>
+        </div>
+      </div>
+    </aside>
+
+    <div class="farm-canvas" (dragover)="onCanvasDragOver($event)" (drop)="onCanvasDrop($event)">
+
+      <div class="zone-feeder">
+        <span>รางอาหาร</span>
+      </div>
+
+      <div class="tracks-container">
+        <div class="track-row">
+          <div class="line"></div>
+          <span class="label">รางบน </span>
+        </div>
+        <div class="track-row">
+          <div class="line"></div>
+          <span class="label">รางกลาง </span>
+        </div>
+        <div class="track-row">
+          <div class="line"></div>
+          <span class="label">รางล่าง </span>
+        </div>
+      </div>
+
+      <div
+        class="free-slot"
+        *ngFor="let slot of placedSlots"
+        [ngClass]="slot.status"
+        [style.left.%]="slot.x"
+        [style.top.%]="slot.y"
+        draggable="true"
+        (dragstart)="onDeviceDragStart($event, slot)"
+        (click)="removeDevice(slot.id)">
+        <div class="slot-icon">
+          <img [src]="slot.device.icon">
+        </div>
+        <span class="slot-text">{{ slot.device.name }}</span>
+      </div>
+
+      <div class="canvas-empty-hint" *ngIf="placedSlots.length === 0">
+        ลากอุปกรณ์จากด้านซ้ายมาวางที่นี่
+      </div>
+
+      <div class="zone-door">
+        <span>ประตู</span>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="toolbar-section">
+    <button class="save-btn" (click)="saveLayout()">บันทึกการจัดวาง</button>
+  </footer>
+
+  <div class="custom-modal-overlay" *ngIf="isModalOpen">
+    <div class="custom-modal">
+      <h3>ยืนยันการลบอุปกรณ์</h3>
+      <p>คุณต้องการนำอุปกรณ์นี้ออกจากการจัดวางใช่หรือไม่?</p>
+      
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="cancelRemove()">ยกเลิก</button>
+        <button class="btn-confirm" (click)="confirmRemove()">ตกลง</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-notification" *ngIf="showToast">
+    <i class="fas fa-check-circle"></i> 
+    <span>{{ toastMessage }}</span>
+  </div>
+
+</div>
