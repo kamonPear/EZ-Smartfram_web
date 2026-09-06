@@ -2,24 +2,33 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
+
+interface Device {
+  device_id: number;
+  name: string;
+  icon: string;
+  current_status: string;
+}
 
 interface Coop {
   coop_id: number;
   name_coop: string;
   amount: number;
+  devices?: Device[];
 }
 
 @Component({
   selector: 'app-home-pages1',
   standalone: true,
-  imports: [CommonModule, RouterModule],
-
-  templateUrl: './Home_pages1.html', // ต้องมี ./ และชื่อไฟล์ต้องตรงเป๊ะ
+  imports: [CommonModule, RouterModule, DragDropModule],
+  templateUrl: './Home_pages1.html',
   styleUrls: ['./Home_pages1.scss']
 })
 export class HomePages1 implements OnInit {
 
   coops: Coop[] = [];
+  tooltipDeviceId: number | null = null;
 
   isDeleteModalOpen = false;
   coopToDelete: Coop | null = null;
@@ -87,5 +96,9 @@ export class HomePages1 implements OnInit {
   }
 
   openTemperatureSettings() {
+  }
+
+  drop(event: CdkDragDrop<Coop[]>) {
+    moveItemInArray(this.coops, event.previousIndex, event.currentIndex);
   }
 }

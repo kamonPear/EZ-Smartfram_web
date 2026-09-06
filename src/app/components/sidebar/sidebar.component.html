@@ -1,0 +1,40 @@
+<!-- Hamburger Button - ลอยอยู่มุมซ้ายบนทุกหน้า -->
+<button class="hamburger-btn" (click)="toggle()" [class.open]="isOpen()">
+  <span class="bar bar-1"></span>
+  <span class="bar bar-2"></span>
+  <span class="bar bar-3"></span>
+</button>
+
+<!-- Overlay กดพื้นหลังเพื่อปิด Sidebar -->
+<div class="sidebar-overlay" [class.visible]="isOpen()" (click)="close()"></div>
+
+<!-- Sidebar Panel -->
+<aside class="sidebar" [class.open]="isOpen()">
+  <!-- Header ของ Sidebar -->
+  <div class="sidebar-header">
+    <img src="assets/images/logo.png" alt="EZ Smart Farm Logo" class="sidebar-logo">
+    <div class="sidebar-title">
+      <span class="title-main">EZ-SmartFarm</span>
+      <span class="title-sub">เมนูหลัก</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a
+      *ngFor="let item of menuItems"
+      [routerLink]="item.route"
+      routerLinkActive="active"
+      class="nav-item"
+      (click)="close()"
+    >
+      <div class="nav-icon">
+        <img [src]="item.icon" [alt]="item.label">
+      </div>
+      <span class="nav-label">{{ item.label }}</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <span>EZ-SmartFarm v1.0</span>
+  </div>
+</aside>

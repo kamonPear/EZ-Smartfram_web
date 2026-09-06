@@ -8,68 +8,50 @@
 </header>
 
   <main class="main-content">
-    <div class="quick-actions">
-      <button class="action-card" routerLink="/add-coop">
-        <div class="action-icon">
-          <img src="assets/images/chicken.png" alt="Add coop">
-        </div>
-        <span class="action-label">เพิ่มคอกไก่</span>
-      </button>
-
-      <button class="action-card" routerLink="/arrange">
-        <div class="action-icon">
-            <img src="assets/images/esp32.png" alt="Arrange equipment">
-        </div>
-        <span class="action-label">เพิ่มอุปกรณ์</span>
-      </button>
-
-      <button class="action-card" routerLink="/add-vaccine">
-        <div class="action-icon">
-          <img src="assets/images/Vaccine.png" alt="Add vaccine">
-        </div>
-        <span class="action-label">เพิ่มข้อมูลยาวัคซีน</span>
-      </button>
-
-      <button class="action-card" routerLink="/add-egg">
-        <div class="action-icon">
-          <img src="assets/images/egg.png" alt="Add egg">
-        </div>
-        <span class="action-label">เพิ่มข้อมูลไข่ไก่</span>
-      </button>
-
-      <button class="action-card" (click)="openTemperatureSettings()">
-        <div class="action-icon">
-          <img src="assets/images/temp.png" alt="Temperature settings">
-        </div>
-        <span class="action-label">ตั้งค่าอุณหภูมิ</span>
-      </button>
-
-      <button class="action-card" routerLink="/chicken-sensor">
-        <div class="action-icon">
-           <img src="assets/images/esp32.png" alt="Chicken sensor">
-        </div>
-        <span class="action-label">สถานะการทำงานของอุปกรณ์</span>
-      </button>
-    </div>
 
     <section class="coop-section">
       <h2 class="section-title">คอกไก่ของคุณ</h2>
 
-      <div class="coop-grid" *ngIf="coops.length > 0">
-        <button class="coop-card" *ngFor="let coop of coops" (click)="selectCoop(coop)">
-          <button class="coop-delete-btn" title="ลบคอกนี้" (click)="requestDeleteCoop($event, coop)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="6" y1="6" x2="18" y2="18"/>
-              <line x1="18" y1="6" x2="6" y2="18"/>
-            </svg>
-          </button>
-
-          <div class="coop-icon">
-            <img src="assets/images/coopchicken.png" alt=" Coop Icon">
+      <div class="coop-grid" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)" *ngIf="coops.length > 0">
+        <div class="coop-card" cdkDrag *ngFor="let coop of coops" (click)="selectCoop(coop)">
+          <div class="coop-card-header">
+            <div class="coop-icon">
+              <img src="assets/images/coopchicken.png" alt=" Coop Icon">
+            </div>
+            <div class="coop-info">
+              <span class="coop-name">{{ coop.name_coop || 'คอกที่ ' + coop.coop_id }}</span>
+              <span class="coop-amount">{{ coop.amount }} ตัว</span>
+            </div>
+            <button class="coop-delete-btn" title="ลบคอกนี้" (click)="requestDeleteCoop($event, coop)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="6" y1="6" x2="18" y2="18"/>
+                <line x1="18" y1="6" x2="6" y2="18"/>
+              </svg>
+            </button>
           </div>
-          <span class="coop-name">{{ coop.name_coop || 'คอกที่ ' + coop.coop_id }}</span>
-          <span class="coop-amount">{{ coop.amount }} ตัว</span>
-        </button>
+
+          <div class="device-list" *ngIf="coop.devices && coop.devices.length > 0">
+            <h4>อุปกรณ์:</h4>
+            <div class="device-icons">
+              <div class="device-item"
+                *ngFor="let device of coop.devices"
+                (mouseenter)="tooltipDeviceId = device.device_id"
+                (mouseleave)="tooltipDeviceId = null">
+                <img [src]="device.icon || 'assets/images/esp32.png'" [alt]="device.name">
+                <span class="device-status" [class.online]="device.current_status === 'Online'"></span>
+                <div class="device-tooltip" *ngIf="tooltipDeviceId === device.device_id">
+                  <span class="tooltip-name">{{ device.name }}</span>
+                  <span class="tooltip-status" [class.online]="device.current_status === 'Online'">
+                    {{ device.current_status === 'Online' ? '● Online' : '● Offline' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="device-list empty" *ngIf="!coop.devices || coop.devices.length === 0">
+            <span>ไม่มีอุปกรณ์</span>
+          </div>
+        </div>
       </div>
 
       <div class="coop-empty" *ngIf="coops.length === 0">

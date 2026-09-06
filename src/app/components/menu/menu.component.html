@@ -1,0 +1,43 @@
+<div class="quick-actions">
+  <button class="action-card" routerLink="/add-coop">
+    <div class="action-icon">
+      <img src="assets/images/chicken.png" alt="Add coop">
+    </div>
+    <span class="action-label">เพิ่มคอกไก่</span>
+  </button>
+
+  <button class="action-card" routerLink="/arrange">
+    <div class="action-icon">
+        <img src="assets/images/esp32.png" alt="Arrange equipment">
+    </div>
+    <span class="action-label">เพิ่มอุปกรณ์</span>
+  </button>
+
+  <button class="action-card" routerLink="/add-vaccine">
+    <div class="action-icon">
+      <img src="assets/images/Vaccine.png" alt="Add vaccine">
+    </div>
+    <span class="action-label">เพิ่มข้อมูลยาวัคซีน</span>
+  </button>
+
+  <button class="action-card" routerLink="/add-egg">
+    <div class="action-icon">
+      <img src="assets/images/egg.png" alt="Add egg">
+    </div>
+    <span class="action-label">เพิ่มข้อมูลไข่ไก่</span>
+  </button>
+
+  <button class="action-card" (click)="openTemperatureSettings()">
+    <div class="action-icon">
+      <img src="assets/images/temp.png" alt="Temperature settings">
+    </div>
+    <span class="action-label">ตั้งค่าอุณหภูมิ</span>
+  </button>
+
+  <button class="action-card" routerLink="/chicken-sensor">
+    <div class="action-icon">
+       <img src="assets/images/esp32.png" alt="Chicken sensor">
+    </div>
+    <span class="action-label">สถานะการทำงานของอุปกรณ์</span>
+  </button>
+</div>
