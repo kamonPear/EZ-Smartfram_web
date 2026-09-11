@@ -10,10 +10,25 @@
   <main class="main-content">
 
     <section class="coop-section">
-      <h2 class="section-title">คอกไก่ของคุณ</h2>
+      <div class="section-title-row">
+        <h2 class="section-title">คอกไก่ของคุณ</h2>
+        <button class="arrange-farm-btn" routerLink="/farm-layout">
+          🗺️ จัดวางผังฟาร์ม
+        </button>
+      </div>
 
       <div class="coop-grid" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)" *ngIf="coops.length > 0">
-        <div class="coop-card" cdkDrag *ngFor="let coop of coops" (click)="selectCoop(coop)">
+        <div
+          class="coop-card"
+          cdkDrag
+          *ngFor="let coop of coops"
+          (click)="selectCoop(coop)"
+          (mouseenter)="hoveredCoopId = coop.coop_id"
+          (mouseleave)="hoveredCoopId = null"
+        >
+          <div class="coop-hover-anchor" *ngIf="hoveredCoopId === coop.coop_id" (click)="$event.stopPropagation()">
+            <app-coop-hover-card [coop]="coop"></app-coop-hover-card>
+          </div>
           <div class="coop-card-header">
             <div class="coop-icon">
               <img src="assets/images/coopchicken.png" alt=" Coop Icon">
@@ -22,11 +37,12 @@
               <span class="coop-name">{{ coop.name_coop || 'คอกที่ ' + coop.coop_id }}</span>
               <span class="coop-amount">{{ coop.amount }} ตัว</span>
             </div>
-            <button class="coop-delete-btn" title="ลบคอกนี้" (click)="requestDeleteCoop($event, coop)">
+            <button class="coop-edit-btn" title="แก้ไขคอกนี้" (click)="editCoop($event, coop)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="6" y1="6" x2="18" y2="18"/>
-                <line x1="18" y1="6" x2="6" y2="18"/>
+                <path d="M12 20h9"/>
+                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
               </svg>
+              <span>แก้ไข</span>
             </button>
           </div>
 
@@ -60,22 +76,5 @@
       </div>
     </section>
   </main>
-
-  <div class="custom-modal-overlay" *ngIf="isDeleteModalOpen">
-    <div class="custom-modal">
-      <h3>ยืนยันการลบคอก</h3>
-      <p>
-        ต้องการลบ "{{ coopToDelete?.name_coop || ('คอกที่ ' + coopToDelete?.coop_id) }}" ใช่หรือไม่?<br>
-        ข้อมูลทั้งหมดของคอกนี้ (อุปกรณ์ ไข่ไก่ วัคซีน สุขภาพ) จะถูกลบออกจากระบบทั้งหมด และกู้คืนไม่ได้
-      </p>
-
-      <div class="modal-actions">
-        <button class="btn-cancel" (click)="cancelDeleteCoop()" [disabled]="isDeleting">ยกเลิก</button>
-        <button class="btn-confirm" (click)="confirmDeleteCoop()" [disabled]="isDeleting">
-          {{ isDeleting ? 'กำลังลบ...' : 'ลบคอก' }}
-        </button>
-      </div>
-    </div>
-  </div>
 
 </div>

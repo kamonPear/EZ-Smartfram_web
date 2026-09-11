@@ -1,0 +1,350 @@
+<div class="edit-coop-container">
+  <header class="header-section">
+    <div class="header-content">
+      <div class="logo-container clickable-logo" routerLink="/home">
+        <img src="assets/images/logo.png" alt="Farm Logo">
+      </div>
+      <div class="title-group">
+        <h1>แก้ไขข้อมูลคอกไก่</h1>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-area">
+    <p class="loading-hint" *ngIf="isLoading">กำลังโหลดข้อมูลคอก...</p>
+
+    <ng-container *ngIf="!isLoading">
+      <div class="form-grid form-grid-single">
+
+        <div class="card info-card">
+          <div class="card-title-row">
+            <div class="card-title-icon">
+                <img src="assets/images/chicken.png" alt="Edit coop">
+            </div>
+            <h2>ข้อมูลไก่</h2>
+          </div>
+
+          <div class="field-stack">
+            <div class="input-pill">
+              <span class="input-pill-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.6 12.3 12.7 20.2a2 2 0 0 1-2.8 0l-6.1-6.1a2 2 0 0 1 0-2.8L11.7 3.4a2 2 0 0 1 1.4-.6H19a2 2 0 0 1 2 2v5.9a2 2 0 0 1-.4 1.6Z"/>
+                  <circle cx="16.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/>
+                </svg>
+              </span>
+              <input type="text" [(ngModel)]="coopName" placeholder="ระบุชื่อคอก">
+            </div>
+
+            <div class="input-pill">
+              <span class="input-pill-icon">
+                <img src="assets/images/chicken.png" alt="Edit coop">
+              </span>
+              <input type="number" [(ngModel)]="chickenCount" placeholder="จำนวนไก่" min="0">
+              <span class="input-pill-suffix">ตัว</span>
+            </div>
+
+            <div class="input-pill input-pill-clickable" [class.active]="activeField === 'birth'" (click)="selectDateField('birth')">
+              <span class="input-pill-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="17" rx="2"/>
+                  <line x1="3" y1="9" x2="21" y2="9"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                </svg>
+              </span>
+              <span class="input-pill-value" [class.placeholder]="!birthDate">{{ birthDate ? formatDate(birthDate) : 'วันเกิดไก่' }}</span>
+              <span class="input-pill-action">เลือกวันที่</span>
+            </div>
+
+            <div class="input-pill">
+              <span class="input-pill-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/>
+                  <path d="M14 3v5h5"/>
+                  <line x1="8.5" y1="13" x2="15.5" y2="13"/>
+                  <line x1="8.5" y1="17" x2="13" y2="17"/>
+                </svg>
+              </span>
+              <input type="text" [(ngModel)]="note" placeholder="หมายเหตุ (ถ้ามี)">
+            </div>
+
+            <div class="input-pill input-pill-clickable" [class.active]="activeField === 'received'" (click)="selectDateField('received')">
+              <span class="input-pill-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="17" rx="2"/>
+                  <line x1="3" y1="9" x2="21" y2="9"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                </svg>
+              </span>
+              <span class="input-pill-value" [class.placeholder]="!receivedDate">{{ receivedDate ? formatDate(receivedDate) : 'วันที่รับเข้าเลี้ยง' }}</span>
+              <span class="input-pill-action">เลือกวันที่</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- อุปกรณ์/เซนเซอร์ -->
+        <div class="card">
+          <div class="card-title-row">
+            <div class="card-title-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="3"/>
+                <path d="M9 9h6v6H9z"/>
+                <path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/>
+              </svg>
+            </div>
+            <h2>อุปกรณ์ / เซนเซอร์</h2>
+            <button class="section-action-btn" (click)="goToSetup()">จัดการอุปกรณ์</button>
+          </div>
+
+          <div class="record-list" *ngIf="devices.length > 0">
+            <div class="record-row" *ngFor="let device of devices">
+              <img class="device-row-icon" [src]="device.icon || 'assets/images/esp32.png'" [alt]="device.name">
+              <div class="record-row-main">
+                <span class="record-row-title">{{ device.name }}</span>
+                <span class="record-row-sub">{{ device.device_type || '-' }}</span>
+              </div>
+              <span class="status-dot" [class.online]="device.current_status === 'Online'">
+                {{ device.current_status === 'Online' ? 'Online' : 'Offline' }}
+              </span>
+            </div>
+          </div>
+          <p class="record-empty" *ngIf="devices.length === 0">ยังไม่มีอุปกรณ์ในคอกนี้</p>
+        </div>
+
+        <!-- ประวัติสุขภาพ -->
+        <div class="card">
+          <div class="card-title-row">
+            <div class="card-title-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.6 12.3 12.7 20.2a2 2 0 0 1-2.8 0l-6.1-6.1a2 2 0 0 1 0-2.8L11.7 3.4a2 2 0 0 1 1.4-.6H19a2 2 0 0 1 2 2v5.9a2 2 0 0 1-.4 1.6Z"/>
+              </svg>
+            </div>
+            <h2>ประวัติสุขภาพ</h2>
+            <button class="section-action-btn" (click)="openAddRecord('health')">+ เพิ่มบันทึก</button>
+          </div>
+
+          <div class="record-list" *ngIf="healthRecords.length > 0">
+            <div class="record-row" *ngFor="let record of healthRecords">
+              <div class="record-row-main">
+                <span class="record-row-title">สุขภาพดี {{ record.healthy }} / ป่วย {{ record.poor_health }} ตัว</span>
+                <span class="record-row-sub">{{ formatIsoDate(record.record_date) }}<ng-container *ngIf="record.note"> · {{ record.note }}</ng-container></span>
+              </div>
+              <div class="record-row-actions">
+                <button class="record-edit-btn" (click)="openEditRecord('health', record)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"/>
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                  </svg>
+                  <span>แก้ไข</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="record-empty" *ngIf="healthRecords.length === 0">ยังไม่มีประวัติสุขภาพ</p>
+        </div>
+
+        <!-- ประวัติวัคซีน -->
+        <div class="card">
+          <div class="card-title-row">
+            <div class="card-title-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 3 5 17"/>
+                <path d="m14.5 5.5 4 4"/>
+                <path d="M12 8 3 17l4 4 9-9"/>
+                <path d="m17 3 4 4"/>
+              </svg>
+            </div>
+            <h2>ประวัติวัคซีน</h2>
+            <button class="section-action-btn" (click)="openAddRecord('vaccine')">+ เพิ่มบันทึก</button>
+          </div>
+
+          <div class="record-list" *ngIf="vaccineRecords.length > 0">
+            <div class="record-row" *ngFor="let record of vaccineRecords">
+              <div class="record-row-main">
+                <span class="record-row-title">{{ record.name }}<ng-container *ngIf="record.method"> · {{ record.method }}</ng-container></span>
+                <span class="record-row-sub">{{ formatIsoDate(record.record_date) }}<ng-container *ngIf="record.note"> · {{ record.note }}</ng-container></span>
+              </div>
+              <div class="record-row-actions">
+                <button class="record-edit-btn" (click)="openEditRecord('vaccine', record)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"/>
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                  </svg>
+                  <span>แก้ไข</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="record-empty" *ngIf="vaccineRecords.length === 0">ยังไม่มีประวัติวัคซีน</p>
+        </div>
+
+        <!-- ประวัติไข่ไก่ -->
+        <div class="card">
+          <div class="card-title-row">
+            <div class="card-title-icon">
+              <img src="assets/images/chicken.png" alt="Egg">
+            </div>
+            <h2>ประวัติไข่ไก่</h2>
+            <button class="section-action-btn" (click)="openAddRecord('egg')">+ เพิ่มบันทึก</button>
+          </div>
+
+          <div class="record-list" *ngIf="eggRecords.length > 0">
+            <div class="record-row" *ngFor="let record of eggRecords">
+              <div class="record-row-main">
+                <span class="record-row-title">{{ record.number_egg }} ฟอง</span>
+                <span class="record-row-sub">{{ formatIsoDate(record.date_collect_egg) }}<ng-container *ngIf="record.note"> · {{ record.note }}</ng-container></span>
+              </div>
+              <div class="record-row-actions">
+                <button class="record-edit-btn" (click)="openEditRecord('egg', record)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"/>
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                  </svg>
+                  <span>แก้ไข</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="record-empty" *ngIf="eggRecords.length === 0">ยังไม่มีประวัติไข่ไก่</p>
+        </div>
+
+      </div>
+
+      <div class="action-row">
+        <button class="btn-cancel" routerLink="/home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="6" x2="18" y2="18"/>
+            <line x1="18" y1="6" x2="6" y2="18"/>
+          </svg>
+          ยกเลิก
+        </button>
+        <button class="btn-confirm" [disabled]="isSaving" (click)="saveCoop()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          {{ isSaving ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข' }}
+        </button>
+      </div>
+    </ng-container>
+  </main>
+
+  <div class="calendar-overlay" *ngIf="activeField" (click)="closeCalendar()">
+    <div class="card calendar-popup" (click)="$event.stopPropagation()">
+      <div class="card-title-row">
+        <div class="card-title-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="17" rx="2"/>
+            <line x1="3" y1="9" x2="21" y2="9"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+          </svg>
+        </div>
+        <h2>{{ activeField === 'birth' ? 'วันเกิดไก่' : activeField === 'received' ? 'วันที่รับเข้าเลี้ยง' : 'วันที่บันทึก' }}</h2>
+        <button class="popup-close" (click)="closeCalendar()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="6" x2="18" y2="18"/>
+            <line x1="18" y1="6" x2="6" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="calendar-header">
+        <button class="nav-btn" (click)="prevMonth()">&lsaquo;</button>
+        <span class="month-label">{{ monthLabel }}</span>
+        <button class="nav-btn" (click)="nextMonth()">&rsaquo;</button>
+      </div>
+
+      <div class="weekday-row">
+        <span class="weekday" *ngFor="let d of weekDayLabels">{{ d }}</span>
+      </div>
+
+      <div class="week-row" *ngFor="let week of calendarWeeks">
+        <button
+          class="day-cell"
+          *ngFor="let day of week"
+          [class.empty]="!day"
+          [class.selected]="isSelected(day)"
+          [class.today]="isToday(day)"
+          [disabled]="!day"
+          (click)="selectDay(day)">
+          {{ day ? day.getDate() : '' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit health/vaccine/egg record modal -->
+  <div class="custom-modal-overlay" *ngIf="openRecordModal">
+    <div class="custom-modal">
+      <h3>
+        {{ editingRecordId ? 'แก้ไข' : 'เพิ่ม' }}
+        {{ openRecordModal === 'health' ? 'บันทึกสุขภาพ' : openRecordModal === 'vaccine' ? 'บันทึกวัคซีน' : 'บันทึกไข่ไก่' }}
+      </h3>
+
+      <div class="field-stack modal-field-stack">
+        <ng-container *ngIf="openRecordModal === 'health'">
+          <div class="input-pill">
+            <input type="number" [(ngModel)]="healthForm.healthy" placeholder="จำนวนไก่สุขภาพดี" min="0">
+            <span class="input-pill-suffix">ตัว</span>
+          </div>
+          <div class="input-pill">
+            <input type="number" [(ngModel)]="healthForm.poorHealth" placeholder="จำนวนไก่ป่วย" min="0">
+            <span class="input-pill-suffix">ตัว</span>
+          </div>
+          <div class="input-pill">
+            <input type="text" [(ngModel)]="healthForm.note" placeholder="หมายเหตุ (ถ้ามี)">
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="openRecordModal === 'vaccine'">
+          <div class="input-pill">
+            <input type="text" [(ngModel)]="vaccineForm.name" placeholder="ชื่อวัคซีน">
+          </div>
+          <div class="input-pill">
+            <select class="input-pill-select" [(ngModel)]="vaccineForm.method">
+              <option value="" disabled>เลือกวิธีให้ยา</option>
+              <option *ngFor="let m of vaccineMethods" [value]="m">{{ m }}</option>
+            </select>
+          </div>
+          <div class="input-pill">
+            <input type="text" [(ngModel)]="vaccineForm.recommendedAge" placeholder="ช่วงอายุที่แนะนำ (ถ้ามี)">
+          </div>
+          <div class="input-pill">
+            <input type="text" [(ngModel)]="vaccineForm.note" placeholder="หมายเหตุ (ถ้ามี)">
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="openRecordModal === 'egg'">
+          <div class="input-pill">
+            <input type="number" [(ngModel)]="eggForm.numberEgg" placeholder="จำนวนไข่" min="1">
+            <span class="input-pill-suffix">ฟอง</span>
+          </div>
+          <div class="input-pill">
+            <input type="text" [(ngModel)]="eggForm.note" placeholder="หมายเหตุ (ถ้ามี)">
+          </div>
+        </ng-container>
+
+        <div class="input-pill input-pill-clickable" [class.active]="activeField === 'record'" (click)="openRecordCalendar()">
+          <span class="input-pill-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="17" rx="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+            </svg>
+          </span>
+          <span class="input-pill-value" [class.placeholder]="!recordDate">{{ recordDate ? formatDate(recordDate) : 'วันที่บันทึก' }}</span>
+          <span class="input-pill-action">เลือกวันที่</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="closeRecordModal()" [disabled]="isSavingRecord">ยกเลิก</button>
+        <button class="btn-confirm" (click)="saveRecord()" [disabled]="isSavingRecord">
+          {{ isSavingRecord ? 'กำลังบันทึก...' : 'บันทึก' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

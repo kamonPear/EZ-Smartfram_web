@@ -1,13 +1,9 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // 1. นำเข้า ChangeDetectorRef
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router'; 
+import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
-
-interface Coop {
-  coop_id: number;
-  name_coop: string;
-}
+import { Coop, deviceSummary } from '../../shared/coop-summary.util';
 
 @Component({
   selector: 'app-arrange-equipment',
@@ -23,7 +19,7 @@ export class ArrangeEquipmentComponent implements OnInit {
   constructor(
     private router: Router,
     private api: ApiService,
-    private cdr: ChangeDetectorRef // 2. Inject ChangeDetectorRef เข้ามา
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -31,17 +27,10 @@ export class ArrangeEquipmentComponent implements OnInit {
   }
 
   loadCoopsFromDatabase() {
-    this.api.get<any[]>(`/coops`).subscribe({
+    this.api.get<Coop[]>(`/coops`).subscribe({
       next: (data) => {
-        // ใช้ .map ดึงรหัสคอกและชื่อคอก (เผื่อหลังบ้านส่งชื่อฟิลด์มาเป็น id เฉยๆ เลยใส่ดักไว้ให้ด้วยครับ)
-        this.coops = data.map(item => {
-          return { coop_id: item.coop_id || item.id, name_coop: item.name_coop || '' };
-        });
-
-        console.log('ดึงข้อมูลคอกสำเร็จ:', this.coops);
-        
-        // 3. บังคับให้ Angular อัปเดตหน้าจอเดี๋ยวนี้! 
-        this.cdr.detectChanges(); 
+        this.coops = data || [];
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('ดึงข้อมูลล้มเหลว:', err);
@@ -49,9 +38,15 @@ export class ArrangeEquipmentComponent implements OnInit {
     });
   }
 
+  deviceCount(coop: Coop): number {
+    return deviceSummary(coop).total;
+  }
+
+  onlineCount(coop: Coop): number {
+    return deviceSummary(coop).online;
+  }
+
   selectCoop(coop: Coop) {
-    const finalNumber = coop.coop_id ? coop.coop_id.toString() : '';
-    console.log('เลือกคอกไก่ที่:', finalNumber);
-    this.router.navigate(['/setup'], { queryParams: { coop: finalNumber } }); 
+    this.router.navigate(['/setup'], { queryParams: { coop: coop.coop_id.toString() } });
   }
 }

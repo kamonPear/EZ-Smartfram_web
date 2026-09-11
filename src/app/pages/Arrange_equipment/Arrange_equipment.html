@@ -14,25 +14,43 @@
   </header>
 
   <main class="content-area">
-    <div class="coop-grid">
-      <div class="coop-card" *ngFor="let coop of coops">
-        
-        <div class="coop-header">
-  <span>คอก: </span>
-  <input
-    type="text"
-    class="coop-name-input"
-    [value]="coop.name_coop || ('คอกที่ ' + coop.coop_id)"
-    readonly
-    placeholder="ไม่มีชื่อคอก">
-</div>
-        
-        <div class="coop-visual" (click)="selectCoop(coop)">
-          <div class="green-zone"></div>
-          <div class="red-zone"></div>
+    <div class="coop-grid" *ngIf="coops.length > 0">
+      <div class="coop-card" *ngFor="let coop of coops" (click)="selectCoop(coop)">
+
+        <div class="coop-card-header">
+          <div class="coop-icon">
+            <img src="assets/images/coopchicken.png" alt="Coop Icon">
+          </div>
+          <div class="coop-info">
+            <span class="coop-name">{{ coop.name_coop || 'คอกที่ ' + coop.coop_id }}</span>
+            <span class="coop-amount">{{ coop.amount }} ตัว</span>
+          </div>
+        </div>
+
+        <div class="coop-device-summary">
+          <ng-container *ngIf="deviceCount(coop) > 0; else noDevice">
+            <span class="device-dot" [class.online]="onlineCount(coop) > 0"></span>
+            <span>อุปกรณ์ {{ deviceCount(coop) }} ชิ้น · ออนไลน์ {{ onlineCount(coop) }}</span>
+          </ng-container>
+          <ng-template #noDevice>
+            <span class="no-device">ยังไม่มีอุปกรณ์</span>
+          </ng-template>
+        </div>
+
+        <div class="coop-cta">
+          <span>จัดวางอุปกรณ์</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
         </div>
 
       </div>
+    </div>
+
+    <div class="coop-empty" *ngIf="coops.length === 0">
+      <p>ยังไม่มีคอกไก่ในระบบ</p>
+      <button class="empty-add-btn" routerLink="/add-coop">+ เพิ่มคอกไก่</button>
     </div>
   </main>
 </div>

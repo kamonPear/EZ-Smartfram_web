@@ -7,7 +7,7 @@
 
 .header-section {
   background-color: var(--bg-header);
-  border: 1px solid #72d572;
+  border: 1px solid var(--accent-green-bright);
   width: 98%;
   padding: 40px 0;
   margin: 20px auto 30px;
@@ -47,13 +47,13 @@
     font-size: 3.5rem;
     margin: 0;
     font-weight: bold;
-    color: #fcfcfc; 
+    color: var(--text-title); 
   }
   p {
     font-size: 1.8rem;
     margin: 0;
     font-weight: 500;
-    color: #fcfcfc; 
+    color: var(--text-title); 
   }
 }
 
@@ -63,7 +63,7 @@
   width: 110px; 
   height: 110px; 
   
-  background-color: rgba(255, 255, 255, 0.2); 
+  background-color: rgba(var(--fg-rgb), 0.2); 
   border-radius: 30%; 
   display: flex;
   justify-content: center;
@@ -93,77 +93,136 @@
 .coop-card {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 16px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 22px;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 
-  .coop-header {
+  &:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent-green);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.coop-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  .coop-icon {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 1.5rem;
-    font-weight: 500;
-    color: var(--text-primary);
+    justify-content: center;
 
-    /* สไตล์สำหรับช่องแสดงชื่อคอก */
-    .coop-name-input {
-      width: 140px;
-      max-width: 100%;
-      height: 35px;
-      background-color: var(--bg-card);
-      border: 2px solid var(--border-strong);
-      border-radius: 15px;
-      padding: 0 14px;
-      text-align: left;
-      font-size: 1.1rem;
-      font-family: inherit;
+    img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+  }
+
+  .coop-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+
+    .coop-name {
       color: var(--text-primary);
-      outline: none;
+      font-size: 1.15rem;
+      font-weight: 600;
       overflow: hidden;
       text-overflow: ellipsis;
-      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
 
-      /* เอฟเฟกต์เมื่อคลิกกำลังพิมพ์ */
-      &:focus {
-        background-color: var(--bg-card-alt);
-        border-color: var(--accent-green);
-        box-shadow: 0 0 5px rgba(47, 168, 63, 0.3);
-      }
+    .coop-amount {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
     }
   }
 }
 
-.coop-visual {
-  position: relative;
-  width: 100%;
-  height: 200px;
-  background-color: transparent;
-  cursor: pointer;
-  transition: transform 0.2s ease-in-out;
-  
-  &:hover {
-    transform: scale(1.05);
+.coop-device-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+
+  .device-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(var(--fg-rgb), 0.3);
+    flex-shrink: 0;
+
+    &.online {
+      background: var(--accent-green);
+      box-shadow: 0 0 6px rgba(114, 213, 114, 0.6);
+    }
   }
 
-  .green-zone {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 90%;
-    height: 90%;
-    background-color: #99C199;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 5px;
+  .no-device {
+    color: rgba(var(--fg-rgb), 0.4);
+  }
+}
+
+.coop-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(114, 213, 114, 0.14);
+  border: 1px solid rgba(114, 213, 114, 0.4);
+  color: var(--accent-green-bright);
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 14px;
+  padding: 10px;
+  transition: all 0.2s ease;
+
+  svg { width: 16px; height: 16px; }
+
+  .coop-card:hover & {
+    background: var(--accent-green);
+    color: var(--text-title);
+  }
+}
+
+.coop-empty {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--text-secondary);
+
+  p {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
   }
 
-  .red-zone {
-    position: absolute;
-    top: 9.3%;
-    left: 9.5%;
-    width: 50%;
-    height: 65%;
-    background-color: #D98B8B;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 5px;
-    z-index: 1;
+  .empty-add-btn {
+    background: var(--accent-green);
+    color: var(--text-title);
+    border: none;
+    border-radius: 14px;
+    padding: 12px 24px;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 0.9;
+    }
   }
 }
 

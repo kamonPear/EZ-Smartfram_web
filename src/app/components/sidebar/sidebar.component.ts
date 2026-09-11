@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { ThemeService } from '../../services/theme.service';
 
 interface MenuItem {
   label: string;
@@ -16,12 +17,27 @@ interface MenuItem {
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   isOpen = signal(false);
+
+  constructor(private location: Location, private themeService: ThemeService) {}
+
+  ngOnInit(): void {
+    this.themeService.load();
+  }
+
+  isDarkTheme() {
+    return this.themeService.isDark();
+  }
+
+  toggleTheme() {
+    this.themeService.toggle();
+  }
 
   menuItems: MenuItem[] = [
     { label: 'หน้าหลัก',                  icon: 'assets/images/logo.png',    route: '/home' },
     { label: 'เพิ่มคอกไก่',               icon: 'assets/images/chicken.png', route: '/add-coop' },
+    { label: 'จัดวางผังฟาร์ม',            icon: 'assets/images/coopchicken.png', route: '/farm-layout' },
     { label: 'เพิ่มอุปกรณ์',              icon: 'assets/images/esp32.png',   route: '/arrange' },
     { label: 'เพิ่มข้อมูลยาวัคซีน',       icon: 'assets/images/Vaccine.png', route: '/add-vaccine' },
     { label: 'เพิ่มข้อมูลไข่ไก่',         icon: 'assets/images/egg.png',     route: '/add-egg' },
@@ -35,5 +51,9 @@ export class SidebarComponent {
 
   close() {
     this.isOpen.set(false);
+  }
+
+  goBack() {
+    this.location.back();
   }
 }

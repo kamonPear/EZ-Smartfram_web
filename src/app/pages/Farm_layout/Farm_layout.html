@@ -1,0 +1,103 @@
+<div class="setup-container">
+
+  <header class="header-section">
+    <div class="header-content">
+      <div class="logo-container clickable-logo" routerLink="/home">
+        <img src="assets/images/logo.png" alt="Farm Logo">
+      </div>
+      <div class="title-group">
+        <h1>จัดวางผังฟาร์ม</h1>
+      </div>
+    </div>
+  </header>
+
+  <div class="shape-picker">
+    <span class="shape-picker-label">รูปแบบฟาร์ม</span>
+    <button
+      class="shape-btn"
+      [class.active]="shape === 'circle'"
+      (click)="selectShape('circle')"
+    >
+      ⬤ วงกลม
+    </button>
+    <button
+      class="shape-btn"
+      [class.active]="shape === 'triangle'"
+      (click)="selectShape('triangle')"
+    >
+      ▲ สามเหลี่ยม
+    </button>
+  </div>
+
+  <main class="canvas-wrapper">
+    <aside class="sensor-palette">
+      <h3 class="palette-title">คอกที่ยังไม่ได้วาง ({{ unplacedCoops.length }})</h3>
+      <div class="palette-list">
+        <div
+          class="palette-item"
+          *ngFor="let coop of unplacedCoops"
+          draggable="true"
+          (dragstart)="onDragStart($event, coop)"
+          (mouseenter)="hoveredCoopId = coop.coop_id"
+          (mouseleave)="hoveredCoopId = null"
+        >
+          <div class="palette-icon">
+            <img src="assets/images/coopchicken.png" [alt]="coop.name_coop">
+          </div>
+          <span>{{ coop.name_coop || ('คอกที่ ' + coop.coop_id) }}</span>
+
+          <div class="hover-anchor" *ngIf="hoveredCoopId === coop.coop_id">
+            <app-coop-hover-card [coop]="coop"></app-coop-hover-card>
+          </div>
+        </div>
+
+        <p class="palette-empty" *ngIf="unplacedCoops.length === 0">
+          วางครบทุกคอกแล้ว 🎉
+        </p>
+      </div>
+    </aside>
+
+    <div class="farm-canvas" (dragover)="onCanvasDragOver($event)" (drop)="onCanvasDrop($event)">
+      <svg class="shape-boundary" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <circle *ngIf="shape === 'circle'" cx="50" cy="50" r="48" />
+        <polygon *ngIf="shape === 'triangle'" points="50,4 4,96 96,96" />
+      </svg>
+
+      <div
+        class="coop-marker"
+        *ngFor="let coop of placedCoops"
+        [style.left.%]="coop.pos_x"
+        [style.top.%]="coop.pos_y"
+        draggable="true"
+        (dragstart)="onDragStart($event, coop)"
+        (mouseenter)="hoveredCoopId = coop.coop_id"
+        (mouseleave)="hoveredCoopId = null"
+      >
+        <button class="unplace-btn" title="เอาออกจากผัง" (click)="unplace(coop)">×</button>
+        <div class="marker-icon">
+          <img src="assets/images/coopchicken.png" [alt]="coop.name_coop">
+        </div>
+        <span class="marker-label">{{ coop.name_coop || ('คอกที่ ' + coop.coop_id) }}</span>
+
+        <div class="hover-anchor" *ngIf="hoveredCoopId === coop.coop_id">
+          <app-coop-hover-card [coop]="coop"></app-coop-hover-card>
+        </div>
+      </div>
+
+      <div class="canvas-empty-hint" *ngIf="placedCoops.length === 0">
+        ลากคอกจากด้านซ้ายมาวางภายใน{{ shape === 'circle' ? 'วงกลม' : 'สามเหลี่ยม' }}นี้
+      </div>
+    </div>
+  </main>
+
+  <footer class="toolbar-section">
+    <button class="save-btn" [disabled]="isSaving" (click)="saveLayout()">
+      {{ isSaving ? 'กำลังบันทึก...' : 'บันทึกผังฟาร์ม' }}
+    </button>
+  </footer>
+
+  <div class="toast-notification" *ngIf="showToast">
+    <span>{{ toastMessage }}</span>
+  </div>
+
+</div>

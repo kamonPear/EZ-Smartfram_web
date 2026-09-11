@@ -14,17 +14,72 @@
   --accent-green: #2FA83F;
   --accent-green-dark: #228031;
   --accent-red: #E5484D;
+
+  /* โทเค็นเพิ่มเติม รวบรวมจากสีที่ถูกเขียนซ้ำตรงๆ (hardcoded) ในหลายหน้า
+     เพื่อให้ธีมสว่าง/มืดสลับได้ครบ ไม่ใช่แค่ 12 ตัวแปรเดิมด้านบน */
+  --overlay-faint: rgba(255, 255, 255, 0.04);
+  --overlay-soft: rgba(255, 255, 255, 0.08);
+  --overlay-medium: rgba(255, 255, 255, 0.12);
+  --text-title: #FCFCFC;
+  --accent-green-bright: #72D572;
+  --danger-grad-start: #E57373;
+  --danger-grad-end: #C62828;
+  --success-grad-start: #34D058;
+  --success-grad-end: #28A745;
+
+  /* ช่องสี RGB (ไม่มี alpha) ของ "สีตัวหนังสือ/ไอคอนหลักบนพื้นการ์ด" ใช้คู่กับ
+     rgba(var(--fg-rgb), X) แทนการเขียน rgba(255,255,255,X) ตรงๆ ทั้งไฟล์ - ทำให้
+     ทุกจุดที่เคย hardcode สีขาวโปร่งใสไว้ (placeholder, ไอคอนจาง, hover overlay ฯลฯ)
+     สลับเป็นสีเข้มโปร่งใสอัตโนมัติตอนเป็นธีมสว่าง โดยยังคงค่า alpha เดิมที่จูนไว้ */
+  --fg-rgb: 255, 255, 255;
+}
+
+/* ธีมสว่าง - ค่าสีอ้างอิงจากปาเล็ตต์ light ของแอปมือถือ (app_theme.dart) */
+[data-theme="light"] {
+  --bg-app: #F4F1EC;
+  --bg-header: #F4F1EC;
+  --bg-panel: #F4F1EC;
+  --bg-card: #FFFFFF;
+  --bg-card-alt: #EFE6D8;
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-strong: #DDD3C4;
+  --text-primary: #20242B;
+  --text-secondary: #5B6472;
+  --text-muted: #8A93A0;
+  --accent-green: #2E9E4F;
+  --accent-green-dark: #22793B;
+  --accent-red: #D1443B;
+
+  --overlay-faint: rgba(0, 0, 0, 0.04);
+  --overlay-soft: rgba(0, 0, 0, 0.08);
+  --overlay-medium: rgba(0, 0, 0, 0.12);
+  --text-title: #20242B;
+  --accent-green-bright: #2E9E4F;
+  --danger-grad-start: #EF9A9A;
+  --danger-grad-end: #D1443B;
+  --success-grad-start: #5FCE7C;
+  --success-grad-end: #2E9E4F;
+
+  --fg-rgb: 32, 36, 43;
 }
 
 body {
   margin: 0;
   padding: 0;
   background-color: var(--bg-app);
-  /* ทั้งเว็บเป็นธีมมืด บอกเบราว์เซอร์ตรงนี้แบบ global เพื่อให้เมนู/ปฏิทิน native (เช่น dropdown ของ <select>)
-     ใช้สีที่อ่านออกโดยอัตโนมัติ ไม่ต้องพึ่ง component style ที่อาจไปไม่ถึง popup ของเบราว์เซอร์ */
+  /* บอกเบราว์เซอร์ให้เมนู/ปฏิทิน native (เช่น dropdown ของ <select>) ใช้สีที่อ่านออกโดยอัตโนมัติ
+     ตามธีมปัจจุบัน ไม่ต้องพึ่ง component style ที่อาจไปไม่ถึง popup ของเบราว์เซอร์ */
   color-scheme: dark;
+}
+
+[data-theme="light"] body {
+  color-scheme: light;
 }
 
 select {
   color-scheme: dark;
+}
+
+[data-theme="light"] select {
+  color-scheme: light;
 }

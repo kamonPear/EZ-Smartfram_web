@@ -3,25 +3,13 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
-
-interface Device {
-  device_id: number;
-  name: string;
-  icon: string;
-  current_status: string;
-}
-
-interface Coop {
-  coop_id: number;
-  name_coop: string;
-  amount: number;
-  devices?: Device[];
-}
+import { Coop } from '../../shared/coop-summary.util';
+import { CoopHoverCard } from '../../shared/coop-hover-card/coop-hover-card';
 
 @Component({
   selector: 'app-home-pages1',
   standalone: true,
-  imports: [CommonModule, RouterModule, DragDropModule],
+  imports: [CommonModule, RouterModule, DragDropModule, CoopHoverCard],
   templateUrl: './Home_pages1.html',
   styleUrls: ['./Home_pages1.scss']
 })
@@ -29,10 +17,7 @@ export class HomePages1 implements OnInit {
 
   coops: Coop[] = [];
   tooltipDeviceId: number | null = null;
-
-  isDeleteModalOpen = false;
-  coopToDelete: Coop | null = null;
-  isDeleting = false;
+  hoveredCoopId: number | null = null;
 
   constructor(
     private router: Router,
@@ -62,37 +47,9 @@ export class HomePages1 implements OnInit {
     });
   }
 
-  requestDeleteCoop(event: Event, coop: Coop) {
+  editCoop(event: Event, coop: Coop) {
     event.stopPropagation();
-    this.coopToDelete = coop;
-    this.isDeleteModalOpen = true;
-  }
-
-  cancelDeleteCoop() {
-    this.coopToDelete = null;
-    this.isDeleteModalOpen = false;
-  }
-
-  confirmDeleteCoop() {
-    if (!this.coopToDelete) return;
-    const coopId = this.coopToDelete.coop_id;
-
-    this.isDeleting = true;
-    this.api.delete<any>(`/coops?id=${coopId}`).subscribe({
-      next: () => {
-        this.isDeleting = false;
-        this.coops = this.coops.filter(c => c.coop_id !== coopId);
-        this.isDeleteModalOpen = false;
-        this.coopToDelete = null;
-        this.cdr.detectChanges();
-      },
-      error: (err: any) => {
-        this.isDeleting = false;
-        console.error('ลบคอกไม่สำเร็จ:', err);
-        alert('ลบคอกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
-        this.cdr.detectChanges();
-      }
-    });
+    this.router.navigate(['/edit-coop'], { queryParams: { id: coop.coop_id } });
   }
 
   openTemperatureSettings() {
