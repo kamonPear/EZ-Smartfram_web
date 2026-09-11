@@ -4,6 +4,8 @@ import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { Device, EggRecord, HealthRecord, VaccineRecord } from '../../shared/coop-summary.util';
+import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picker-calendar';
+import { DayMarker, loadCalendarMarkers } from '../../shared/calendar-markers.util';
 
 type RecordKind = 'health' | 'vaccine' | 'egg';
 
@@ -12,17 +14,14 @@ const VACCINE_METHODS = ['พ่น', 'ฉีด', 'หยอดปาก', 'ผ
 @Component({
   selector: 'app-edit-coop',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, DatePickerCalendar],
   templateUrl: './Edit_coop.html',
   styleUrls: ['./Edit_coop.scss']
 })
 export class EditCoopComponent implements OnInit {
 
-  weekDayLabels = ['MON', 'TUES', 'WEDNES', 'THURS', 'FRI', 'SATUR', 'SUN'];
   vaccineMethods = VACCINE_METHODS;
-
-  currentDate = new Date();
-  calendarWeeks: (Date | null)[][] = [];
+  dayMarkers: Map<string, DayMarker> | null = null;
 
   coopId: string | null = null;
   isLoading = true;
@@ -55,9 +54,7 @@ export class EditCoopComponent implements OnInit {
     private route: ActivatedRoute,
     private api: ApiService,
     private cdr: ChangeDetectorRef
-  ) {
-    this.buildCalendar();
-  }
+  ) {}
 
   ngOnInit(): void {
     this.coopId = this.route.snapshot.queryParamMap.get('id');
@@ -67,6 +64,10 @@ export class EditCoopComponent implements OnInit {
       return;
     }
     this.loadCoop();
+    loadCalendarMarkers(this.api, Number(this.coopId)).subscribe({
+      next: (markers) => this.dayMarkers = markers,
+      error: (err) => console.error('โหลดข้อมูลมาร์คปฏิทินไม่สำเร็จ:', err)
+    });
   }
 
   loadCoop() {
@@ -97,49 +98,11 @@ export class EditCoopComponent implements OnInit {
     this.router.navigate(['/setup'], { queryParams: { coop: this.coopId } });
   }
 
-  get monthLabel(): string {
-    return this.currentDate.toLocaleString('en-US', { month: 'long' }).toUpperCase()
-      + ' ' + this.currentDate.getFullYear();
-  }
-
-  buildCalendar() {
-    const year = this.currentDate.getFullYear();
-    const month = this.currentDate.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const startOffset = (firstDay.getDay() + 6) % 7; // ให้วันจันทร์เป็นคอลัมน์แรก
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-    const cells: (Date | null)[] = [];
-    for (let i = 0; i < startOffset; i++) cells.push(null);
-    for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
-    while (cells.length % 7 !== 0) cells.push(null);
-
-    const weeks: (Date | null)[][] = [];
-    for (let i = 0; i < cells.length; i += 7) {
-      weeks.push(cells.slice(i, i + 7));
-    }
-    this.calendarWeeks = weeks;
-  }
-
-  prevMonth() {
-    this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() - 1, 1);
-    this.buildCalendar();
-  }
-
-  nextMonth() {
-    this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 1);
-    this.buildCalendar();
-  }
-
   selectDateField(field: 'birth' | 'received') {
-    this.currentDate = (field === 'birth' ? this.birthDate : this.receivedDate) || new Date();
-    this.buildCalendar();
     this.activeField = field;
   }
 
   openRecordCalendar() {
-    this.currentDate = this.recordDate || new Date();
-    this.buildCalendar();
     this.activeField = 'record';
   }
 
@@ -147,8 +110,13 @@ export class EditCoopComponent implements OnInit {
     this.activeField = null;
   }
 
-  selectDay(day: Date | null) {
-    if (!day) return;
+  get activeFieldDate(): Date | null {
+    if (this.activeField === 'received') return this.receivedDate;
+    if (this.activeField === 'record') return this.recordDate;
+    return this.birthDate;
+  }
+
+  onDaySelected(day: Date) {
     if (this.activeField === 'birth') {
       this.birthDate = day;
     } else if (this.activeField === 'received') {
@@ -157,18 +125,6 @@ export class EditCoopComponent implements OnInit {
       this.recordDate = day;
     }
     this.activeField = null;
-  }
-
-  isSelected(day: Date | null): boolean {
-    if (!day || !this.activeField) return false;
-    const target = this.activeField === 'received' ? this.receivedDate
-      : this.activeField === 'record' ? this.recordDate
-      : this.birthDate;
-    return !!target && day.toDateString() === target.toDateString();
-  }
-
-  isToday(day: Date | null): boolean {
-    return !!day && day.toDateString() === new Date().toDateString();
   }
 
   formatDate(date: Date | null): string {

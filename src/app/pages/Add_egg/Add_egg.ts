@@ -3,22 +3,21 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picker-calendar';
+import { DayMarker, loadCalendarMarkers } from '../../shared/calendar-markers.util';
 
 @Component({
   selector: 'app-add-egg',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, DatePickerCalendar],
   templateUrl: './Add_egg.html',
   styleUrls: ['./Add_egg.scss']
 })
 export class AddEggComponent {
 
-  weekDayLabels = ['MON', 'TUES', 'WEDNES', 'THURS', 'FRI', 'SATUR', 'SUN'];
-
-  currentDate = new Date();
-  calendarWeeks: (Date | null)[][] = [];
   collectDate: Date | null = new Date();
   isCalendarOpen: boolean = false;
+  dayMarkers: Map<string, DayMarker> | null = null;
 
   coops: any[] = [];
   coopId: number | null = null;
@@ -28,8 +27,8 @@ export class AddEggComponent {
   isCoopDropdownOpen: boolean = false;
 
   constructor(private router: Router, private api: ApiService) {
-    this.buildCalendar();
     this.loadCoops();
+    this.loadMarkers();
   }
 
   get selectedCoopName(): string {
@@ -44,6 +43,7 @@ export class AddEggComponent {
   selectCoop(coop: any) {
     this.coopId = coop.coop_id;
     this.isCoopDropdownOpen = false;
+    this.loadMarkers();
   }
 
   closeDropdowns() {
@@ -57,38 +57,12 @@ export class AddEggComponent {
     });
   }
 
-  get monthLabel(): string {
-    return this.currentDate.toLocaleString('en-US', { month: 'long' }).toUpperCase()
-      + ' ' + this.currentDate.getFullYear();
-  }
-
-  buildCalendar() {
-    const year = this.currentDate.getFullYear();
-    const month = this.currentDate.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const startOffset = (firstDay.getDay() + 6) % 7; // ให้วันจันทร์เป็นคอลัมน์แรก
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-    const cells: (Date | null)[] = [];
-    for (let i = 0; i < startOffset; i++) cells.push(null);
-    for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
-    while (cells.length % 7 !== 0) cells.push(null);
-
-    const weeks: (Date | null)[][] = [];
-    for (let i = 0; i < cells.length; i += 7) {
-      weeks.push(cells.slice(i, i + 7));
-    }
-    this.calendarWeeks = weeks;
-  }
-
-  prevMonth() {
-    this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() - 1, 1);
-    this.buildCalendar();
-  }
-
-  nextMonth() {
-    this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 1);
-    this.buildCalendar();
+  loadMarkers() {
+    // ก่อนเลือกคอก โชว์มาร์คปฏิทินรวมทั้งฟาร์ม พอเลือกคอกแล้วค่อยกรองให้เหลือแค่คอกนั้น
+    loadCalendarMarkers(this.api, this.coopId).subscribe({
+      next: (markers) => this.dayMarkers = markers,
+      error: (err) => console.error('โหลดข้อมูลมาร์คปฏิทินไม่สำเร็จ:', err)
+    });
   }
 
   openCalendar() {
@@ -100,18 +74,9 @@ export class AddEggComponent {
     this.isCalendarOpen = false;
   }
 
-  selectDay(day: Date | null) {
-    if (!day) return;
+  onDaySelected(day: Date) {
     this.collectDate = day;
     this.isCalendarOpen = false;
-  }
-
-  isSelected(day: Date | null): boolean {
-    return !!day && !!this.collectDate && day.toDateString() === this.collectDate.toDateString();
-  }
-
-  isToday(day: Date | null): boolean {
-    return !!day && day.toDateString() === new Date().toDateString();
   }
 
   formatDate(date: Date | null): string {
