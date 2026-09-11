@@ -1,10 +1,19 @@
-.setup-container {
+.device-status-container {
   font-family: 'Kanit', sans-serif;
   width: 100%;
   min-height: 100vh;
   background-color: var(--bg-app);
   display: flex;
   flex-direction: column;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+.loading-hint {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 60px 0;
+  font-size: 1rem;
 }
 
 .header-section {
@@ -16,46 +25,57 @@
   border-radius: 24px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
+}
 
-  .header-content {
-    position: relative; 
-    width: 100%;
-    min-height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center; 
+.header-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clickable-logo {
+  position: absolute;
+  left: 40px;
+  cursor: pointer;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: scale(1.05);
   }
+}
 
-  .clickable-logo {
-    position: absolute;
-    left: 40px; 
-    top: 50%; 
-    transform: translateY(-50%); 
-    cursor: pointer;  
-    transition: transform 0.2s; 
-    z-index: 10;
-    
-    &:hover {
-      transform: translateY(-50%) scale(1.05); 
-    }
+.logo-container {
+  width: 92px;
+  height: 92px;
+  background-color: var(--overlay-faint);
+  border: 1px solid var(--overlay-medium);
+  border-radius: 22px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 
-    img {
-      width: 100px; 
-      height: auto;
-      border-radius: 15px; 
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
-    }
+  img {
+    max-width: 82%;
+    max-height: 82%;
+    object-fit: contain;
   }
+}
 
-  .title-group {
-    width: 100%; 
-    text-align: center; 
-    h1 {
-      font-size: 3.5rem;
-      margin: 0;
-      font-weight: bold;
-      color: var(--text-title); 
-      letter-spacing: 2px;
+.title-group {
+  text-align: center;
+
+  h1 {
+    font-size: 2.6rem;
+    margin: 0;
+    font-weight: bold;
+    color: var(--text-title);
+    letter-spacing: 1px;
+
+    .coop-name {
+      color: #4CAF50;
     }
   }
 }
@@ -163,7 +183,6 @@
     }
   }
 
-  /* --- อุปกรณ์ที่แสดงตามตำแหน่งจริงบนแคนวาส (ตรงกับหน้าจัดวางระบบ) --- */
   .free-slot {
     position: absolute;
     transform: translate(-50%, -50%);
@@ -203,8 +222,6 @@
 
     &.normal { background-color: #3F9043; }
     &.offline { background-color: #9E9E9E; }
-    &.warning { background-color: #FFC107; color: #333; }
-    &.error { background-color: #D32F2F; }
 
     .status-tooltip {
       position: absolute;
@@ -223,8 +240,6 @@
 
       .normal-text { color: #3F9043; font-weight: bold; }
       .offline-text { color: #9E9E9E; font-weight: bold; }
-      .warning-text { color: #F57F17; font-weight: bold; }
-      .error-text { color: #D32F2F; font-weight: bold; }
     }
   }
 
@@ -242,125 +257,20 @@
   }
 }
 
-.toolbar-section {
-  display: flex;
-  justify-content: flex-end; 
-  padding: 20px 50px 40px;
-  
-  .save-btn { 
-    background-color: #A5D6A7; 
-    color: #000;
-    padding: 15px 40px;
-    border: none; 
-    border-radius: 30px; 
-    font-size: 1.2rem;
-    font-weight: bold; 
-    font-family: 'Kanit', sans-serif;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    transition: background-color 0.2s;
-
-    &:hover { background-color: #81C784; }
-  }
-}
-
-.custom-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.6); 
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000; 
-  backdrop-filter: blur(2px); 
-}
-
-.custom-modal {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-strong);
-  padding: 30px 40px;
-  border-radius: 20px;
-  box-shadow: 0 15px 30px rgba(0,0,0,0.4);
-  text-align: center;
-  width: 350px;
-  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-
-  h3 {
-    margin-top: 0;
-    color: var(--text-primary);
-    font-size: 1.5rem;
-    font-weight: bold;
-  }
-
-  p {
-    color: var(--text-secondary);
-    margin-bottom: 30px;
-    font-size: 1.1rem;
-  }
-
-  .modal-actions {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-
-    button {
-      padding: 12px 30px;
-      border: none;
-      border-radius: 10px;
-      font-size: 1.1rem;
-      font-family: 'Kanit', sans-serif;
-      font-weight: bold;
-      cursor: pointer;
-      transition: transform 0.1s, background-color 0.2s;
-
-      &.btn-cancel {
-        background-color: var(--bg-card-alt);
-        color: var(--text-primary);
-        &:hover { background-color: var(--border-strong); }
-      }
-
-      &.btn-confirm {
-        background-color: #FF5252;
-        color: var(--text-title);
-        &:hover { background-color: #E53935; }
-      }
-
-      &:active {
-        transform: scale(0.95); 
-      }
-    }
-  }
-}
-
-@keyframes popIn {
-  from {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.status-panel {
+.sensor-table-panel {
   background-color: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: 20px;
   padding: 25px 30px;
-  width: 350px;
+  width: 380px;
   flex-shrink: 0;
-  font-family: 'Kanit', sans-serif;
   box-shadow: 0 4px 10px rgba(0,0,0,0.25);
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.status-title {
+.panel-title {
   text-align: center;
   font-size: 20px;
   font-weight: 800;
@@ -406,20 +316,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 8px 10px;
   border-radius: 8px;
   border-bottom: 1px solid var(--border-subtle);
-  transition: all 0.2s ease-in-out;
-  cursor: pointer;
-
-  &:hover, &.active-hover {
-    background-color: rgba(47, 168, 63, 0.15);
-    transform: translateX(4px);
-
-    .sensor-info {
-      color: var(--accent-green);
-    }
-  }
 
   &:last-child {
     border-bottom: none;
@@ -433,7 +333,20 @@
   font-weight: 700;
   font-size: 14px;
   color: var(--text-primary);
-  transition: color 0.2s;
+  min-width: 0;
+
+  img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .sensor-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .no-device-msg {
@@ -445,36 +358,32 @@
 }
 
 .track-status {
+  flex-shrink: 0;
   font-weight: 700;
   font-size: 14px;
   padding: 6px 18px;
   border-radius: 20px;
   min-width: 80px;
   text-align: center;
+  color: var(--text-secondary);
   background-color: var(--bg-card);
   box-shadow: 0 2px 6px rgba(0,0,0,0.25);
   border: 1px solid var(--border-subtle);
   transition: all 0.3s ease;
+
+  &.online {
+    color: #4CBB5A;
+    border-color: rgba(76, 187, 90, 0.4);
+  }
 }
 
-.track-status.normal {
-  color: #4CBB5A;
-  border-color: rgba(47, 168, 63, 0.4);
-}
-.track-status.offline {
-  color: var(--text-secondary);
-  border-color: var(--border-strong);
-}
-.track-status.warning {
-  color: #FFB74D;
-  border-color: rgba(255, 183, 77, 0.4);
-}
-.track-status.error {
-  color: #FF6B6B;
-  border-color: rgba(255, 107, 107, 0.4);
-  background-color: rgba(255, 107, 107, 0.12);
-}
-.track-status.empty {
-  background-color: var(--bg-card-alt);
-  color: var(--text-secondary);
+@media (max-width: 900px) {
+  .canvas-wrapper {
+    flex-direction: column;
+    padding: 20px 24px;
+  }
+
+  .sensor-table-panel {
+    width: 100%;
+  }
 }

@@ -42,7 +42,7 @@ export class HomePages1 implements OnInit {
   }
 
   selectCoop(coop: Coop) {
-    this.router.navigate(['/system-sensor'], {
+    this.router.navigate(['/data-coop'], {
       state: { coopNumber: coop.coop_id?.toString() }
     });
   }

@@ -59,92 +59,185 @@
 }
 
 .coop-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
 .coop-card {
+  position: relative;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  padding: 24px 15px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  width: 280px;
 
-  .coop-header {
+  &:hover {
+    transform: translateY(-5px);
+    background-color: var(--bg-card-alt);
+    border-color: var(--accent-green);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .coop-card-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 1.5rem;
-    font-weight: 500;
-    color: var(--text-primary);
+    width: 100%;
 
-    /* ช่องแสดงชื่อคอก */
-    .coop-name-input {
-      width: 140px;
-      max-width: 100%;
-      height: 35px;
-      background-color: var(--bg-card);
-      border: 2px solid var(--border-strong);
-      border-radius: 15px;
-      padding: 0 14px;
-      text-align: left;
-      font-size: 1.1rem;
-      font-family: inherit;
-      color: var(--text-primary);
-      outline: none;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      transition: all 0.2s ease;
+    .coop-icon {
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
 
-      /* เอฟเฟกต์เวลาคลิกเพื่อพิมพ์ */
-      &:focus {
-        background-color: var(--bg-card-alt);
-        border-color: var(--accent-green);
-        box-shadow: 0 0 5px rgba(47, 168, 63, 0.3);
+      img {
+        width: 42px;
+        height: 42px;
+        object-fit: contain;
+      }
+    }
+
+    .coop-info {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+
+      .coop-name {
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+
+      .coop-amount {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+      }
+    }
+  }
+
+  .device-list {
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 15px;
+    width: 100%;
+
+    h4 {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin: 0 0 10px 0;
+      font-weight: normal;
+    }
+
+    .device-icons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+
+      .device-item {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        background: rgba(var(--fg-rgb), 0.05);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px;
+        cursor: pointer;
+        transition: background-color 0.2s, box-shadow 0.2s;
+
+        &:hover {
+          background: var(--overlay-medium);
+        }
+
+        img {
+          width: 24px;
+          height: 24px;
+          object-fit: contain;
+        }
+
+        .device-status {
+          position: absolute;
+          bottom: 0;
+          right: 0;
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background-color: var(--accent-red, #e53e3e);
+          border: 2px solid var(--bg-card);
+
+          &.online {
+            background-color: var(--accent-green, #48bb78);
+          }
+        }
+
+        /* Custom Tooltip */
+        .device-tooltip {
+          position: absolute;
+          bottom: calc(100% + 10px);
+          left: 50%;
+          transform: translateX(-50%);
+          background-color: #1a2535;
+          border: 1px solid rgba(114, 213, 114, 0.3);
+          border-radius: 8px;
+          padding: 8px 12px;
+          white-space: nowrap;
+          z-index: 100;
+          pointer-events: none;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+
+          &::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: rgba(114, 213, 114, 0.3);
+          }
+
+          .tooltip-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #e2e8f0;
+          }
+
+          .tooltip-status {
+            font-size: 0.75rem;
+            color: #e53e3e;
+
+            &.online {
+              color: var(--accent-green-bright);
+            }
+          }
+        }
+      }
+    }
+
+    &.empty {
+      text-align: center;
+      span {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        font-style: italic;
       }
     }
   }
 }
 
-.coop-visual {
-  position: relative;
-  width: 100%;
-  height: 200px;
-  background-color: transparent;
-  cursor: pointer;
-  transition: transform 0.2s ease-in-out;
-  
-  &:hover {
-    transform: scale(1.05);
+@media (max-width: 768px) {
+  .header-section h1 {
+    font-size: 2.5rem;
   }
-
-  .green-zone {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 90%;
-    height: 90%;
-    background-color: #99C199;
-    border: 1px solid rgba(var(--fg-rgb), 0.2);
-    border-radius: 5px;
-  }
-
-  .red-zone {
-    position: absolute;
-    top: 9.3%;
-    left: 9.5%;
-    width: 50%;
-    height: 65%;
-    background-color: #D98B8B;
-    border: 1px solid rgba(var(--fg-rgb), 0.2);
-    border-radius: 5px;
-    z-index: 1;
-  }
-}
-
-@media (max-width: 992px) {
-  .coop-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (max-width: 600px) {
-  .coop-grid { grid-template-columns: 1fr; }
 }

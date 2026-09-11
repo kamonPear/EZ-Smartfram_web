@@ -1,0 +1,222 @@
+.setup-container {
+  font-family: 'Kanit', sans-serif;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-app);
+  display: flex;
+  flex-direction: column;
+}
+
+.header-section {
+  background-color: var(--bg-header);
+  border: 1px solid var(--accent-green-bright);
+  width: 96%;
+  margin: 20px auto 30px;
+  padding: 40px 0;
+  border-radius: 24px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+
+  .header-content {
+    position: relative;
+    width: 100%;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .clickable-logo {
+    position: absolute;
+    left: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    transition: transform 0.2s;
+    z-index: 10;
+
+    &:hover {
+      transform: translateY(-50%) scale(1.05);
+    }
+
+    img {
+      width: 100px;
+      height: auto;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+  }
+
+  .title-group {
+    width: 100%;
+    text-align: center;
+    h1 {
+      font-size: 3.5rem;
+      margin: 0;
+      font-weight: bold;
+      color: var(--text-title);
+      letter-spacing: 2px;
+    }
+  }
+}
+
+.loading-hint {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 60px 0;
+  font-size: 1rem;
+}
+
+.content-area {
+  flex: 1;
+  padding: 0 50px 50px;
+  display: flex;
+  justify-content: center;
+}
+
+.status-panel {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 30px 40px;
+  width: 100%;
+  max-width: 720px;
+  font-family: 'Kanit', sans-serif;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.panel-section + .panel-section {
+  padding-top: 18px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.section-title {
+  color: var(--text-title);
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 12px;
+}
+
+.device-link-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  .section-title {
+    margin: 0 0 4px;
+  }
+}
+
+.device-summary-text {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.section-action-btn {
+  flex-shrink: 0;
+  background: rgba(114, 213, 114, 0.14);
+  border: 1px solid rgba(114, 213, 114, 0.4);
+  color: var(--accent-green-bright);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba(114, 213, 114, 0.24);
+  }
+}
+
+.info-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+
+  .info-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .info-value {
+    color: var(--text-title);
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* Record list rows (health / vaccine / egg) - matches Edit_coop's card layout */
+.record-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.record-empty {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 14px 0;
+  margin: 0;
+}
+
+.record-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.record-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.record-row-title {
+  color: var(--text-title);
+  font-weight: 600;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.record-row-sub {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .content-area {
+    padding: 0 20px 30px;
+  }
+
+  .status-panel {
+    padding: 24px;
+  }
+}

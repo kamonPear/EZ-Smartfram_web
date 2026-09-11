@@ -1,0 +1,97 @@
+<div class="setup-container">
+
+  <header class="header-section">
+    <div class="header-content">
+      <div class="logo-container clickable-logo" routerLink="/">
+        <img src="assets/images/logo.png" alt="Farm Logo">
+      </div>
+      <div class="title-group">
+        <h1>ข้อมูลคอกไก่ <span *ngIf="selectedCoop" style="color: #4CAF50;">({{ selectedCoopName || ('คอกที่ ' + selectedCoop) }})</span></h1>
+      </div>
+    </div>
+  </header>
+
+  <p class="loading-hint" *ngIf="isLoading">กำลังโหลดข้อมูลคอก...</p>
+
+  <main class="content-area" *ngIf="!isLoading">
+
+    <div class="status-panel">
+
+      <div class="panel-section">
+        <h3 class="section-title">ข้อมูลไก่</h3>
+        <div class="info-row">
+          <span class="info-label">ชื่อคอก</span>
+          <span class="info-value">{{ selectedCoopName || ('คอกที่ ' + selectedCoop) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">จำนวนไก่</span>
+          <span class="info-value">{{ chickenCount !== null ? (chickenCount + ' ตัว') : '-' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">วันเกิดไก่</span>
+          <span class="info-value">{{ formatDate(birthDate) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">วันที่รับเข้าเลี้ยง</span>
+          <span class="info-value">{{ formatDate(receivedDate) }}</span>
+        </div>
+        <div class="info-row" *ngIf="note">
+          <span class="info-label">หมายเหตุ</span>
+          <span class="info-value">{{ note }}</span>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="device-link-row">
+          <div>
+            <h3 class="section-title">อุปกรณ์ / เซนเซอร์</h3>
+            <span class="device-summary-text">ออนไลน์ {{ deviceOnlineCount }} / {{ devicesList.length }}</span>
+          </div>
+          <button class="section-action-btn" (click)="goToDeviceStatus()">ดูสถานะอุปกรณ์</button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h3 class="section-title">ประวัติสุขภาพ</h3>
+        <div class="record-list" *ngIf="healthRecords.length > 0">
+          <div class="record-row" *ngFor="let record of healthRecords">
+            <div class="record-row-main">
+              <span class="record-row-title">สุขภาพดี {{ record.healthy }} / ป่วย {{ record.poor_health }} ตัว</span>
+              <span class="record-row-sub">{{ formatThaiDate(record.record_date) }}<ng-container *ngIf="record.note"> · {{ record.note }}</ng-container></span>
+            </div>
+          </div>
+        </div>
+        <p class="record-empty" *ngIf="healthRecords.length === 0">ยังไม่มีประวัติสุขภาพ</p>
+      </div>
+
+      <div class="panel-section">
+        <h3 class="section-title">ประวัติวัคซีน</h3>
+        <div class="record-list" *ngIf="vaccineRecords.length > 0">
+          <div class="record-row" *ngFor="let record of vaccineRecords">
+            <div class="record-row-main">
+              <span class="record-row-title">{{ record.name }}<ng-container *ngIf="record.method"> · {{ record.method }}</ng-container></span>
+              <span class="record-row-sub">{{ formatThaiDate(record.record_date) }}<ng-container *ngIf="record.note"> · {{ record.note }}</ng-container></span>
+            </div>
+          </div>
+        </div>
+        <p class="record-empty" *ngIf="vaccineRecords.length === 0">ยังไม่มีประวัติวัคซีน</p>
+      </div>
+
+      <div class="panel-section">
+        <h3 class="section-title">ประวัติไข่ไก่</h3>
+        <div class="record-list" *ngIf="eggRecords.length > 0">
+          <div class="record-row" *ngFor="let record of eggRecords">
+            <div class="record-row-main">
+              <span class="record-row-title">{{ record.number_egg }} ฟอง</span>
+              <span class="record-row-sub">{{ formatThaiDate(record.date_collect_egg) }}<ng-container *ngIf="record.note"> · {{ record.note }}</ng-container></span>
+            </div>
+          </div>
+        </div>
+        <p class="record-empty" *ngIf="eggRecords.length === 0">ยังไม่มีประวัติไข่ไก่</p>
+      </div>
+
+    </div>
+
+  </main>
+
+</div>

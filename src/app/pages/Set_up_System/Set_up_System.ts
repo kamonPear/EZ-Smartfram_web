@@ -263,7 +263,7 @@ export class SetUpSystem implements OnInit {
           this.showToast = false; 
           this.cdr.detectChanges();
 
-          this.router.navigate(['/system-sensor'], { 
+          this.router.navigate(['/data-coop'], {
             state: { 
               slotsData: this.slots, 
               coopNumber: this.selectedCoop 

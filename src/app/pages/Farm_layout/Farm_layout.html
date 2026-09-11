@@ -27,6 +27,13 @@
     >
       ▲ สามเหลี่ยม
     </button>
+    <button
+      class="shape-btn"
+      [class.active]="shape === 'square'"
+      (click)="selectShape('square')"
+    >
+      ■ สี่เหลี่ยม
+    </button>
   </div>
 
   <main class="canvas-wrapper">
@@ -61,6 +68,7 @@
       <svg class="shape-boundary" viewBox="0 0 100 100" preserveAspectRatio="none">
         <circle *ngIf="shape === 'circle'" cx="50" cy="50" r="48" />
         <polygon *ngIf="shape === 'triangle'" points="50,4 4,96 96,96" />
+        <rect *ngIf="shape === 'square'" x="4" y="4" width="92" height="92" />
       </svg>
 
       <div
@@ -85,7 +93,7 @@
       </div>
 
       <div class="canvas-empty-hint" *ngIf="placedCoops.length === 0">
-        ลากคอกจากด้านซ้ายมาวางภายใน{{ shape === 'circle' ? 'วงกลม' : 'สามเหลี่ยม' }}นี้
+        ลากคอกจากด้านซ้ายมาวางภายใน{{ shapeLabel }}นี้
       </div>
     </div>
   </main>

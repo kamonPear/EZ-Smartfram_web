@@ -5,12 +5,13 @@ import { HomePages1 } from './pages/Home_pages/Home_pages1';
 import { ArrangeEquipmentComponent } from './pages/Arrange_equipment/Arrange_equipment';
 import { SetUpSystem } from './pages/Set_up_System/Set_up_System';
 import { ChickensensorSystemComponent } from './pages/Chicken_sensor_System/Chicken_sensor_System';
-import { SystemSensorComponent } from './pages/System_sensor/System_sensor';
+import { DataCoopComponent } from './pages/Data_coop/Data_coop';
 import { AddCoopComponent } from './pages/Add_coop/Add_coop';
 import { EditCoopComponent } from './pages/Edit_coop/Edit_coop';
 import { AddVaccineComponent } from './pages/Add_vaccine/Add_vaccine';
 import { AddEggComponent } from './pages/Add_egg/Add_egg';
 import { FarmLayoutComponent } from './pages/Farm_layout/Farm_layout';
+import { DeviceStatusComponent } from './pages/Device_status/Device_status';
 
 export const routes: Routes = [
   // ถ้าเปิดหน้าเว็บมาครั้งแรก (Path ว่าง) ให้สั่ง Redirect ไปที่หน้า home
@@ -35,5 +36,7 @@ export const routes: Routes = [
 
   { path: 'chicken-sensor', component: ChickensensorSystemComponent },
 
-  { path: 'system-sensor', component: SystemSensorComponent }
+  { path: 'data-coop', component: DataCoopComponent },
+
+  { path: 'device-status', component: DeviceStatusComponent }
 ];

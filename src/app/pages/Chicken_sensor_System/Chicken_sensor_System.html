@@ -13,20 +13,37 @@
 
   <main class="content-area">
     <div class="coop-grid">
-      <div class="coop-card" *ngFor="let coop of coops">
-        <div class="coop-header">
-          <span>คอก:</span>
-          <input
-            type="text"
-            class="coop-name-input"
-            [value]="coop.name_coop || ('คอกที่ ' + coop.coop_id)"
-            readonly
-            placeholder="ไม่มีชื่อคอก">
+      <div class="coop-card" *ngFor="let coop of coops" (click)="selectCoop(coop)">
+        <div class="coop-card-header">
+          <div class="coop-icon">
+            <img src="assets/images/coopchicken.png" alt="Coop Icon">
+          </div>
+          <div class="coop-info">
+            <span class="coop-name">{{ coop.name_coop || 'คอกที่ ' + coop.coop_id }}</span>
+            <span class="coop-amount">{{ coop.amount }} ตัว</span>
+          </div>
         </div>
-        
-        <div class="coop-visual" (click)="selectCoop(coop)">
-          <div class="green-zone"></div>
-          <div class="red-zone"></div>
+
+        <div class="device-list" *ngIf="coop.devices && coop.devices.length > 0">
+          <h4>อุปกรณ์:</h4>
+          <div class="device-icons">
+            <div class="device-item"
+              *ngFor="let device of coop.devices"
+              (mouseenter)="tooltipDeviceId = device.device_id"
+              (mouseleave)="tooltipDeviceId = null">
+              <img [src]="device.icon || 'assets/images/esp32.png'" [alt]="device.name">
+              <span class="device-status" [class.online]="device.current_status === 'Online'"></span>
+              <div class="device-tooltip" *ngIf="tooltipDeviceId === device.device_id">
+                <span class="tooltip-name">{{ device.name }}</span>
+                <span class="tooltip-status" [class.online]="device.current_status === 'Online'">
+                  {{ device.current_status === 'Online' ? '● Online' : '● Offline' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="device-list empty" *ngIf="!coop.devices || coop.devices.length === 0">
+          <span>ไม่มีอุปกรณ์</span>
         </div>
       </div>
     </div>

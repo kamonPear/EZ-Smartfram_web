@@ -207,7 +207,8 @@
     pointer-events: none;
 
     circle,
-    polygon {
+    polygon,
+    rect {
       fill: rgba(114, 213, 114, 0.06);
       stroke: var(--accent-green-bright);
       stroke-width: 0.6;

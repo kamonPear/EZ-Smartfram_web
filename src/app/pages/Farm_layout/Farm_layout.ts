@@ -1,11 +1,11 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { CoopHoverCard } from '../../shared/coop-hover-card/coop-hover-card';
 import { Coop } from '../../shared/coop-summary.util';
 
-type FarmShape = 'circle' | 'triangle';
+type FarmShape = 'circle' | 'triangle' | 'square';
 
 @Component({
   selector: 'app-farm-layout',
@@ -32,9 +32,13 @@ export class FarmLayoutComponent implements OnInit {
     c: { x: 96, y: 96 },
   };
 
+  // ขอบเขตสี่เหลี่ยมในพื้นที่ % (0-100) ตรงกับ <rect> ของ SVG พอดี
+  private readonly square = { min: 4, max: 96 };
+
   constructor(
     private api: ApiService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -73,6 +77,25 @@ export class FarmLayoutComponent implements OnInit {
   selectShape(shape: FarmShape) {
     if (this.shape === shape) return;
     this.shape = shape;
+
+    // เปลี่ยนรูปทรงแล้วขอบเขตเปลี่ยนไป ตำแหน่งเดิมอาจไม่พอดีกับทรงใหม่ จึงเคลียร์ตำแหน่งทั้งหมด
+    // ให้ผู้ใช้เริ่มจัดวางใหม่ (ยังไม่ได้บันทึกจนกว่าจะกด "บันทึกผังฟาร์ม" จึงย้อนกลับได้เสมอ)
+    const hadPlacements = this.placedCoops.length > 0;
+    this.coops.forEach((c) => {
+      c.pos_x = null;
+      c.pos_y = null;
+    });
+
+    if (hadPlacements) {
+      this.toastMessage = `เปลี่ยนเป็น${this.shapeLabel}แล้ว เริ่มจัดวางคอกใหม่ได้เลย`;
+      this.flashToast();
+    }
+  }
+
+  get shapeLabel(): string {
+    if (this.shape === 'circle') return 'วงกลม';
+    if (this.shape === 'square') return 'สี่เหลี่ยม';
+    return 'สามเหลี่ยม';
   }
 
   // เริ่มลากคอกจากถาด "ยังไม่ได้วาง" หรือจากตำแหน่งที่วางอยู่แล้วบนแคนวาส (ใช้ตัวแปรเดียว
@@ -99,7 +122,7 @@ export class FarmLayoutComponent implements OnInit {
       this.draggedCoop.pos_x = x;
       this.draggedCoop.pos_y = y;
     } else {
-      this.toastMessage = `วางได้แค่ภายใน${this.shape === 'circle' ? 'วงกลม' : 'สามเหลี่ยม'}เท่านั้น`;
+      this.toastMessage = `วางได้แค่ภายใน${this.shapeLabel}เท่านั้น`;
       this.flashToast();
     }
 
@@ -113,13 +136,20 @@ export class FarmLayoutComponent implements OnInit {
   }
 
   private isInsideShape(x: number, y: number): boolean {
-    return this.shape === 'circle' ? this.isInsideCircle(x, y) : this.isInsideTriangle(x, y);
+    if (this.shape === 'circle') return this.isInsideCircle(x, y);
+    if (this.shape === 'square') return this.isInsideSquare(x, y);
+    return this.isInsideTriangle(x, y);
   }
 
   private isInsideCircle(x: number, y: number): boolean {
     const dx = x - 50;
     const dy = y - 50;
     return dx * dx + dy * dy <= 48 * 48;
+  }
+
+  private isInsideSquare(x: number, y: number): boolean {
+    const { min, max } = this.square;
+    return x >= min && x <= max && y >= min && y <= max;
   }
 
   private isInsideTriangle(x: number, y: number): boolean {
@@ -163,7 +193,7 @@ export class FarmLayoutComponent implements OnInit {
       next: () => {
         this.isSaving = false;
         this.toastMessage = 'บันทึกผังฟาร์มเรียบร้อย!';
-        this.flashToast();
+        this.flashToast(() => this.router.navigate(['/home']));
       },
       error: (err) => {
         this.isSaving = false;
@@ -174,12 +204,13 @@ export class FarmLayoutComponent implements OnInit {
     });
   }
 
-  private flashToast() {
+  private flashToast(onDone?: () => void) {
     this.showToast = true;
     this.cdr.detectChanges();
     setTimeout(() => {
       this.showToast = false;
       this.cdr.detectChanges();
+      onDone?.();
     }, 2000);
   }
 }
