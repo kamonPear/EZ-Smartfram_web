@@ -8,55 +8,9 @@
   background-color: var(--bg-app);
 }
 
-.header {
-  background-color: var(--bg-header);
-  border: 1px solid var(--accent-green-bright);
-  width: 98%;
-  padding: 40px 0;
-  border-radius: 24px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-  margin-top: 20px;
-  margin-bottom: 30px;
-
-
-  /* เพิ่มคำสั่งเหล่านี้เพื่อจัดตำแหน่ง Logo และ ข้อความ */
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center; /* บังคับให้ตัวหนังสืออยู่กึ่งกลางเสมอ */
-}
-  /* สไตล์ของกล่องใส่โลโก้ */
-  .logo-container {
-    position: absolute; /* ลอยตัวอยู่เหนือพื้นหลัง */
-    left: 40px; /* ระยะห่างจากขอบด้านซ้าย */
-    width: 92px; /* ความกว้างของโลโก้ */
-    height: 92px; /* ความสูงของโลโก้ */
-
-    background-color: var(--overlay-faint);
-    border: 1px solid var(--overlay-medium);
-    border-radius: 22px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-
-    img {
-      max-width: 82%;
-      max-height: 82%;
-      object-fit: contain; /* ทำให้โลโก้ไม่เสียสัดส่วน */
-    }
-  }
-
-  h1 {
-    color: var(--text-title);
-    font-size: 4rem;
-    font-weight: bold;
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-  }
-
+/* ดีไซน์ของ .header (การ์ดโลโก้+ชื่อระบบ) ย้ายไปรวมไว้ที่ styles.scss แล้ว
+   เพื่อให้ทุกหน้าในเว็บใช้ขนาด/พฤติกรรม responsive เดียวกัน ไม่ต้อง copy ซ้ำ
+   และไม่ชนกับปุ่มแฮมเบอร์เกอร์ที่ลอยมุมซ้ายบนทุกหน้า */
 
 .main-content {
   background-color: var(--bg-panel);
@@ -540,11 +494,14 @@
 
 /* Responsive เผื่อหน้าจอเล็กลง */
 @media (max-width: 768px) {
-  .header h1 {
-    font-size: 2.5rem;
-  }
   .quick-actions,
   .coop-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .quick-actions {
+    grid-template-columns: repeat(1, 1fr);
   }
 }

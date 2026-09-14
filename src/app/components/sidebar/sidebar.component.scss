@@ -2,14 +2,16 @@
    Hamburger Button
 ==================================================== */
 .hamburger-btn {
+  // ปุ่มลอยตายตัวมุมซ้ายบนเสมอทุกหน้า ไม่ผูกกับความสูงของ header แต่ละหน้า
+  // (เดิมใช้ top:210px คำนวณจากความสูง header หน้าแรกอย่างเดียว พอไปหน้าอื่น
+  // ที่ header ไม่สูงเท่ากันเลยดูลอยเกะกะ) header ทุกหน้าเว้น margin-top ไว้
+  // พอสำหรับปุ่มนี้แล้ว (ดู .header/.header-section ใน styles.scss)
   position: fixed;
-  // อยู่ใต้การ์ดโลโก้ของ header หน้าแรก (margin-top 20px + padding 40px บน-ล่าง
-  // + ตัวอักษร h1 4rem ≈ สูงรวม ~180px) ไม่งั้นปุ่มจะไปทับโลโก้/เส้นขอบสีเขียว
-  top: 210px;
-  left: 20px;
+  top: 14px;
+  left: 14px;
   z-index: 1100;
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   background-color: var(--bg-card);
   border: 1px solid rgba(114, 213, 114, 0.3);
   border-radius: 12px;
@@ -20,9 +22,7 @@
   justify-content: center;
   gap: 5px;
   backdrop-filter: blur(8px);
-  transition: background-color 0.3s, border-color 0.3s,
-              top 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.3s, border-color 0.3s;
 
   &:hover {
     background-color: var(--bg-card-alt);
@@ -31,7 +31,7 @@
 
   .bar {
     display: block;
-    width: 22px;
+    width: 20px;
     height: 2px;
     background-color: var(--text-primary);
     border-radius: 2px;
@@ -40,12 +40,8 @@
                 width 0.35s ease;
   }
 
-  /* Animate to X when open, and shift right + down to sit under the "EZ-SmartFarm"
-     title text instead of overlapping the logo icon */
+  /* Animate to X เมื่อเปิด sidebar โดยปุ่มอยู่ตำแหน่งเดิม (ไม่ขยับ) */
   &.open {
-    top: 60px;
-    left: 220px;
-
     .bar-1 {
       transform: translateY(7px) rotate(45deg);
     }
