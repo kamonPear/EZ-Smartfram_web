@@ -22,7 +22,8 @@
   justify-content: center;
   gap: 5px;
   backdrop-filter: blur(8px);
-  transition: background-color 0.3s, border-color 0.3s;
+  transition: background-color 0.3s, border-color 0.3s,
+              left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
     background-color: var(--bg-card-alt);
@@ -40,8 +41,11 @@
                 width 0.35s ease;
   }
 
-  /* Animate to X เมื่อเปิด sidebar โดยปุ่มอยู่ตำแหน่งเดิม (ไม่ขยับ) */
+  /* ตอนเปิด sidebar ปุ่มจะกลายเป็นกากบาทและขยับไปชิดขวาของแผง sidebar (280px)
+     แทน เพื่อไม่ให้ไปทับโลโก้/ชื่อระบบที่อยู่มุมซ้ายบนของแผง */
   &.open {
+    left: 222px;
+
     .bar-1 {
       transform: translateY(7px) rotate(45deg);
     }
