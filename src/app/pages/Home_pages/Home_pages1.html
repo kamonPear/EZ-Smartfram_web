@@ -17,7 +17,32 @@
         </button>
       </div>
 
-      <div class="coop-grid" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)" *ngIf="coops.length > 0">
+      <div class="coop-grid" *ngIf="isLoading">
+        <div class="coop-card coop-skeleton" *ngFor="let _ of skeletonPlaceholders">
+          <div class="coop-card-header">
+            <div class="skeleton-block skeleton-icon"></div>
+            <div class="coop-info">
+              <div class="skeleton-block skeleton-line skeleton-line--title"></div>
+              <div class="skeleton-block skeleton-line skeleton-line--amount"></div>
+            </div>
+          </div>
+          <div class="device-list">
+            <div class="skeleton-block skeleton-line skeleton-line--label"></div>
+            <div class="device-icons">
+              <div class="skeleton-block skeleton-dot"></div>
+              <div class="skeleton-block skeleton-dot"></div>
+              <div class="skeleton-block skeleton-dot"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="coop-empty" *ngIf="!isLoading && loadError">
+        <p>เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ ลองใหม่อีกครั้ง</p>
+        <button class="empty-add-btn" (click)="loadCoops()">🔄 โหลดใหม่</button>
+      </div>
+
+      <div class="coop-grid" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)" *ngIf="!isLoading && !loadError && coops.length > 0">
         <div
           class="coop-card"
           cdkDrag
@@ -70,7 +95,7 @@
         </div>
       </div>
 
-      <div class="coop-empty" *ngIf="coops.length === 0">
+      <div class="coop-empty" *ngIf="!isLoading && !loadError && coops.length === 0">
         <p>ยังไม่มีคอกไก่ในระบบ</p>
         <button class="empty-add-btn" routerLink="/add-coop">+ เพิ่มคอกไก่</button>
       </div>

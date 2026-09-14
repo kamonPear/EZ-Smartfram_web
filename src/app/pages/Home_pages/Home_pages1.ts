@@ -18,6 +18,10 @@ export class HomePages1 implements OnInit {
   coops: Coop[] = [];
   tooltipDeviceId: number | null = null;
   hoveredCoopId: number | null = null;
+  isLoading = true;
+  loadError = false;
+  // การ์ดโครงร่างระหว่างโหลด ใช้แค่ให้ *ngFor วนสร้างจำนวนที่ต้องการ (ไม่ผูกข้อมูลจริง)
+  skeletonPlaceholders = [0, 1, 2];
 
   constructor(
     private router: Router,
@@ -30,13 +34,19 @@ export class HomePages1 implements OnInit {
   }
 
   loadCoops() {
+    this.isLoading = true;
+    this.loadError = false;
     this.api.get<Coop[]>('/coops').subscribe({
       next: (data) => {
         this.coops = data || [];
+        this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: (err: any) => {
         console.error('ดึงข้อมูลคอกไก่ล้มเหลว:', err);
+        this.isLoading = false;
+        this.loadError = true;
+        this.cdr.detectChanges();
       }
     });
   }
