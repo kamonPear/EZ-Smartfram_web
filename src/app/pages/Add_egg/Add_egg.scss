@@ -24,6 +24,8 @@
   gap: 30px;
 }
 
+/* ตอนนี้ .form-grid มีแค่ฟอร์มเพิ่มไข่การ์ดเดียว (แผงสรุปผลย้ายลงไปไว้ใต้ปุ่ม
+   บันทึก/ยกเลิกแล้ว) เลยจำกัดความกว้างและจัดกลางแทนการยืดเต็ม 2 คอลัมน์ */
 .form-grid-single {
   grid-template-columns: minmax(0, 1fr);
   max-width: 640px;
@@ -51,6 +53,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-bottom: 22px;
 
   .card-title-left {
@@ -227,6 +231,22 @@
   position: relative;
 }
 
+// คอกที่ถูกล็อกไว้ (เปิดมาจากหน้าข้อมูลคอกไก่พร้อม coop_id) - เปลี่ยน cursor
+// เป็น default และจางลงเล็กน้อยให้เห็นว่ากดเปลี่ยนไม่ได้
+.is-locked {
+  cursor: default;
+  opacity: 0.85;
+}
+
+.input-pill-lock {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--accent-green-bright);
+
+  svg { width: 100%; height: 100%; }
+}
+
 .input-pill-chevron {
   flex-shrink: 0;
   width: 16px;
@@ -247,14 +267,17 @@
   top: calc(100% + 8px);
   left: 0;
   right: 0;
-  background: #1B2A38;
+  // ✅ ต้องใช้สีตามธีม ไม่ใช่ค่าตายตัวสีเข้ม - เดิม background เป็นสีเข้มตายตัว
+  // ทั้งที่ตอนโหมดสว่างตัวหนังสือ (var(--text-title)) จะเป็นสีเข้มด้วยเหมือนกัน
+  // เลยกลายเป็นตัวหนังสือสีเข้มบนพื้นสีเข้ม อ่านไม่ออกเลย
+  background: var(--bg-card);
   border: 1.5px solid var(--border-strong);
   border-radius: 18px;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
   z-index: 50;
-  max-height: 240px;
+  max-height: 260px;
   overflow-y: auto;
-  padding: 6px;
+  padding: 8px;
 
   &::-webkit-scrollbar { width: 6px; }
   &::-webkit-scrollbar-track { background: transparent; }
@@ -262,18 +285,45 @@
 }
 
 .pill-dropdown-item {
-  padding: 10px 14px;
-  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 14px;
   color: var(--text-title);
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  .pill-dropdown-item-icon {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: rgba(114, 213, 114, 0.14);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img { width: 20px; height: 20px; object-fit: contain; }
+  }
+
+  & + .pill-dropdown-item {
+    margin-top: 2px;
+  }
 
   &:hover {
-    background: rgba(114, 213, 114, 0.16);
+    background: rgba(114, 213, 114, 0.14);
     color: var(--accent-green-bright);
   }
+}
+
+.pill-dropdown-empty {
+  padding: 16px 14px;
+  color: rgba(var(--fg-rgb), 0.5);
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 .pill-dropdown-backdrop {
@@ -282,59 +332,392 @@
   z-index: 40;
 }
 
-/* Actions */
-.action-row {
+/* สรุปยอด + กราฟ + ประวัติของคอกที่เลือก (การ์ดคอลัมน์ขวา) - ใช้กราฟแท่ง SVG/CSS
+   ธรรมดาแทนการดึงไลบรารีกราฟใหม่มาลง ให้ธีมสี/ฟอนต์เข้ากับเว็บ 100% */
+.stats-card {
   display: flex;
-  justify-content: space-between;
-  gap: 30px;
-  margin-top: 40px;
+  flex-direction: column;
 }
 
-.btn-cancel,
-.btn-confirm {
+/* แผงสรุปผลย้ายมาไว้ใต้ปุ่มบันทึก/ยกเลิกแล้ว จัดกลางและจำกัดความกว้างให้เท่ากับ
+   ฟอร์มด้านบน (640px) แทนที่จะยืดเต็มความกว้างพาเนล */
+.stats-card-below {
+  max-width: 640px;
+  width: 100%;
+  margin: 40px auto 0;
+}
+
+.card-title-icon--green {
+  background: rgba(114, 213, 114, 0.14) !important;
+
+  svg { width: 24px; height: 24px; color: var(--accent-green-bright); }
+}
+
+/* ตัวเลือกคอกของแผงสรุปผล - ทริกเกอร์แบบกระทัดรัด (ไม่เต็มความกว้างเหมือน
+   .input-pill ปกติของฟอร์ม) วางไว้มุมขวาของหัวการ์ด แยกอิสระจากคอกของฟอร์ม
+   เพิ่มไข่ทางซ้ายโดยเจตนา */
+.stats-coop-select {
+  width: auto;
+  flex-shrink: 0;
+  padding: 9px 16px;
+  gap: 8px;
+
+  .input-pill-value {
+    flex: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent-green-bright);
+  }
+}
+
+.pill-dropdown-right {
+  left: auto;
+  right: 0;
+  min-width: 200px;
+  width: max-content;
+  max-width: 260px;
+}
+
+.pill-dropdown-item-icon--all {
+  background: rgba(114, 213, 114, 0.28) !important;
+}
+
+/* แท็บสลับมุมมองกราฟ รายวัน/รายเดือน/รายปี - ตามรูปแบบเดียวกับแอปมือถือ */
+.chart-mode-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+
+  button {
+    flex: 1;
+    padding: 9px 0;
+    border: 1.5px solid var(--border-subtle);
+    border-radius: 30px;
+    background: rgba(var(--fg-rgb), 0.05);
+    color: rgba(var(--fg-rgb), 0.6);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(114, 213, 114, 0.1);
+      color: var(--accent-green-bright);
+    }
+
+    &.active {
+      background: var(--accent-green-bright);
+      border-color: var(--accent-green-bright);
+      color: #0b1710;
+    }
+  }
+}
+
+.egg-summary {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.egg-summary-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.egg-summary-label {
+  color: rgba(var(--fg-rgb), 0.6);
+  font-size: 0.9rem;
+}
+
+.egg-summary-value {
+  color: var(--text-title);
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1;
+
+  small {
+    font-size: 1rem;
+    font-weight: 500;
+    color: rgba(var(--fg-rgb), 0.6);
+    margin-left: 6px;
+  }
+}
+
+.egg-trend-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: var(--bg-card-alt);
+  color: rgba(var(--fg-rgb), 0.6);
+  font-size: 0.8rem;
+  font-weight: 600;
+
+  svg { width: 14px; height: 14px; }
+
+  &.is-up {
+    background: rgba(114, 213, 114, 0.16);
+    color: var(--accent-green-bright);
+  }
+
+  &.is-down {
+    background: rgba(198, 40, 40, 0.14);
+    color: var(--danger-grad-end, #e53935);
+  }
+}
+
+.egg-summary-sub {
+  color: rgba(var(--fg-rgb), 0.5);
+  font-size: 0.85rem;
+  margin: 0 0 26px;
+}
+
+.egg-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 140px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+  margin-bottom: 26px;
+
+  // โหมดรายปีมีแท่งน้อย (5 แท่ง) - เว้นระยะห่างกว่าและไม่ยืดเต็มเพื่อไม่ให้ดูโล่งเกินไป
+  &.egg-chart-year {
+    gap: 18px;
+    justify-content: center;
+
+    .egg-chart-bar {
+      flex: 0 1 60px;
+    }
+  }
+}
+
+.egg-chart-bar {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  cursor: pointer;
+
+  .egg-chart-bar-track {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .egg-chart-bar-fill {
+    width: 60%;
+    min-width: 4px;
+    border-radius: 6px 6px 2px 2px;
+    background: rgba(114, 213, 114, 0.35);
+    transition: height 0.3s ease, background 0.2s ease;
+  }
+
+  .egg-chart-bar-label {
+    font-size: 0.7rem;
+    color: rgba(var(--fg-rgb), 0.45);
+  }
+
+  &:hover .egg-chart-bar-fill {
+    background: var(--accent-green-bright);
+  }
+
+  &.is-today {
+    .egg-chart-bar-fill {
+      background: var(--accent-green-bright);
+    }
+    .egg-chart-bar-label {
+      color: var(--accent-green-bright);
+      font-weight: 700;
+    }
+  }
+
+  // แท่งที่ถูกคลิกเลือกไว้ (โชว์รายละเอียดด้านล่าง) - ใส่ห่วงกรอบให้ต่างจาก
+  // แท่งวันนี้/เดือนนี้ (is-today) ที่แค่เข้มกว่าเฉยๆ
+  &.is-selected .egg-chart-bar-fill {
+    background: var(--accent-green-bright);
+    box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--accent-green-bright);
+  }
+
+  &.is-selected .egg-chart-bar-label {
+    color: var(--accent-green-bright);
+    font-weight: 700;
+  }
+}
+
+/* ป็อบอัพเล็กๆ ตอนเมาส์ชี้แท่งกราฟ - แสดงยอดรวม หรือแยกตามคอกถ้ากำลังดูโหมด
+   "ทุกคอก" (แทน title ของเบราว์เซอร์เดิมที่โชว์ได้แค่บรรทัดเดียว) */
+.egg-chart-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-strong);
+  border-radius: 12px;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.3);
+  padding: 8px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-title);
+  white-space: nowrap;
+  z-index: 30;
+  pointer-events: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--border-strong);
+  }
+}
+
+.egg-chart-tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  & + .egg-chart-tooltip-row {
+    margin-top: 4px;
+  }
+
+  span:first-child {
+    color: rgba(var(--fg-rgb), 0.6);
+    font-weight: 500;
+  }
+}
+
+/* แผงรายละเอียดของแท่งที่คลิกเลือกไว้ - โผล่ใต้กราฟก่อนรายการ "ประวัติล่าสุด" */
+.egg-bar-detail {
+  background: rgba(114, 213, 114, 0.06);
+  border: 1px solid rgba(114, 213, 114, 0.25);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 22px;
+}
+
+.egg-bar-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+
+  h3 {
+    color: var(--accent-green-bright);
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0;
+  }
+}
+
+.egg-bar-detail-close {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(var(--fg-rgb), 0.08);
+  color: rgba(var(--fg-rgb), 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 18px;
-  border: none;
-  border-radius: 50px;
-  font-size: 1.3rem;
-  font-weight: 700;
-  font-family: inherit;
-  color: var(--text-title);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 
-  svg {
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
-  }
+  svg { width: 13px; height: 13px; }
 
   &:hover {
-    transform: translateY(-3px);
+    background: rgba(198, 40, 40, 0.14);
+    color: var(--danger-grad-end);
   }
 }
 
-.btn-cancel {
-  background: linear-gradient(135deg, var(--danger-grad-start), var(--danger-grad-end));
-  box-shadow: 0 8px 15px rgba(198, 40, 40, 0.3);
+.egg-bar-detail .egg-history-row:last-child {
+  border-bottom: none;
+}
 
-  &:hover {
-    box-shadow: 0 12px 20px rgba(198, 40, 40, 0.4);
+.egg-history {
+  h3 {
+    color: var(--text-title);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 12px;
   }
 }
 
-.btn-confirm {
-  background: linear-gradient(135deg, var(--success-grad-start), var(--success-grad-end));
-  box-shadow: 0 8px 15px rgba(40, 167, 69, 0.3);
+.egg-history-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
 
-  &:hover {
-    box-shadow: 0 12px 20px rgba(40, 167, 69, 0.4);
+  &:last-child { border-bottom: none; }
+}
+
+.egg-history-amount {
+  flex-shrink: 0;
+  color: var(--text-title);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.egg-history-date {
+  min-width: 0;
+  color: rgba(var(--fg-rgb), 0.55);
+  font-size: 0.85rem;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.egg-history-empty {
+  color: rgba(var(--fg-rgb), 0.5);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 10px 0;
+}
+
+.toast-notification {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--bg-card);
+  border: 1px solid var(--accent-green-bright);
+  color: var(--text-primary, var(--text-title));
+  padding: 14px 26px;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  z-index: 2000;
+
+  &.is-error {
+    border-color: var(--danger-grad-end, #e53935);
   }
 }
+
+/* ปุ่ม .action-row/.btn-cancel/.btn-confirm ย้ายไปเป็นสไตล์กลางที่ styles.scss
+   แล้ว (ใช้ร่วมกันทุกหน้าที่มีแถวปุ่มบันทึก/ยกเลิก) ไม่ต้อง copy ซ้ำที่นี่อีก */
 
 @media (max-width: 900px) {
   .form-grid {
@@ -343,7 +726,7 @@
 }
 
 @media (max-width: 600px) {
-  .action-row {
-    flex-direction: column;
+  .content-area {
+    padding: 24px 18px;
   }
 }

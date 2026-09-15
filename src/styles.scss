@@ -183,3 +183,119 @@ select {
 [data-theme="light"] select {
   color-scheme: light;
 }
+
+/* ============================================================
+   ".loading-hint" ใช้ซ้ำเป็นข้อความ "กำลังโหลด..." ธรรมดาในหลายหน้า (Data_coop,
+   Edit_coop, Device_status, Device_summary, Give_vaccine, Notifications,
+   Health_appointments, Add_vaccine ฯลฯ) เดิมเป็นแค่ตัวหนังสือเรียบๆไม่มีอะนิเมชัน
+   เติมไอคอนหมุนเล็กๆไว้หน้าข้อความให้ทุกหน้าที่ใช้คลาสนี้พร้อมกันทีเดียว ไม่ต้อง
+   แก้ทีละหน้า (สไตล์ padding/สี ของแต่ละหน้าที่ประกาศไว้เองยังคงอยู่ตามเดิม
+   เพราะสไตล์ของ component มี specificity สูงกว่าตรงนี้) ============ */
+.loading-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  &::before {
+    content: '';
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 3px solid rgba(114, 213, 114, 0.25);
+    border-top-color: var(--accent-green-bright);
+    animation: ezSpin 0.8s linear infinite;
+  }
+}
+
+@keyframes ezSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   แถวปุ่ม "บันทึกข้อมูล/ยืนยัน" + "ยกเลิก" ท้ายฟอร์ม ใช้ร่วมกันทุกหน้าที่มีแถวปุ่มนี้
+   (Add_egg, Add_coop, Edit_coop, Add_vaccine ฯลฯ) - รวมจุดเดียวตรงนี้ แก้ที่เดียว
+   มีผลทุกหน้า ดีไซน์แบบเรียบ (flat) ไม่ใช้กราเดียนต์ ให้เข้ากับโทนสีเขียวเรียบๆ
+   ที่ใช้อยู่แล้วทั้งหน้า (แท็บกราฟ, ไอคอนหัวการ์ด, แท่งกราฟ) - "ยกเลิก" ตั้งใจ
+   ไม่ใช้สีแดงเลย เพราะแค่ "ไม่บันทึก/กลับไป" ไม่ใช่การลบข้อมูลแบบที่ป็อบอัพยืนยัน
+   การลบที่อื่นในเว็บ (Set_up_System ฯลฯ) ใช้สีแดงเตือนไว้อยู่แล้ว - ใช้สีแดงกับ
+   ปุ่มที่ไม่ได้ทำลายอะไรจะสื่อความหมายผิด ดูน่าตกใจเกินความจำเป็น ============ */
+.action-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 40px auto 0;
+  max-width: 640px;
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  .action-row {
+    flex-direction: column;
+  }
+}
+
+/* ตั้งใจใช้ bare .btn-cancel/.btn-confirm (ไม่ผูก .action-row ไว้ข้างหน้า) เพราะ
+   บางหน้า (เช่น Edit_coop) เอาปุ่มชื่อคลาสเดียวกันนี้ไปใช้ในป็อบอัพย่อยด้วย
+   (.modal-actions) ไม่ได้ครอบด้วย .action-row เสมอไป - ส่วนหน้าที่มีปุ่มยืนยัน/
+   ยกเลิกแบบทำลายข้อมูล (ลบ ฯลฯ) อยู่ในป็อบอัพของตัวเอง (Farm_layout,
+   Set_up_System) ใช้ selector ที่ specificity สูงกว่านี้ (ผูก .modal-actions +
+   ชนิด element) อยู่แล้ว จึงยังคง override สีแดง/เขียวเฉพาะทางของมันไว้ได้ตามปกติ
+   ไม่ชนกับสไตล์กลางนี้ */
+.btn-cancel,
+.btn-confirm {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 15px;
+  border-radius: 50px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+}
+
+.btn-cancel {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-strong);
+  color: var(--text-secondary, rgba(var(--fg-rgb), 0.65));
+
+  &:hover:not(:disabled) {
+    background: var(--bg-card-alt);
+    border-color: rgba(var(--fg-rgb), 0.3);
+  }
+}
+
+.btn-confirm {
+  background: var(--accent-green-bright);
+  border: 1.5px solid var(--accent-green-bright);
+  color: #fff;
+  // rgba(114, 213, 114, X) คือค่าคงที่ "โทนเขียวจาง" ที่ใช้ซ้ำทั้งเว็บ (ไอคอนหัว
+  // การ์ด, ดรอปดาวน์, แท็บกราฟ ฯลฯ) ไม่ผูกกับธีมปัจจุบันเหมือน --accent-green-bright
+  box-shadow: 0 6px 16px rgba(114, 213, 114, 0.4);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(114, 213, 114, 0.5);
+  }
+}

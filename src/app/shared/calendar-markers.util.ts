@@ -1,11 +1,17 @@
 import { forkJoin, map, Observable } from 'rxjs';
 import { ApiService } from '../services/api.service';
+import { getManualHealthAppointments } from './manual-health-appointment.util';
 
 export interface DayMarker {
   /** 'due' = at least one vaccine alert for that day is not yet completed (or overdue); 'done' = all completed */
   vaccineStatus?: 'done' | 'due';
   /** a health record exists on that day (informational only - no due/overdue concept exists for health checks) */
   hasHealth?: boolean;
+  /** วันเกิดไก่ หรือวันที่รับเข้าเลี้ยงของคอก - ข้อมูลทั่วไป ไม่มีสถานะเกินกำหนด/
+   *  ยังไม่ทำ เหมือนวัคซีน แค่บอกว่า "วันนี้เกี่ยวอะไรกับคอกนี้บ้าง" */
+  hasCoopInfo?: boolean;
+  /** มีนัดตรวจสุขภาพที่กำหนดวันเอง (โหมด "นัดตรวจสุขภาพเอง") ตกอยู่วันนี้ - ยังไม่ถึงวันตรวจจริง */
+  hasHealthAppointment?: boolean;
   /** human-readable lines shown in the day's tooltip */
   details: string[];
 }
@@ -26,6 +32,8 @@ interface HealthRow {
 interface CoopLite {
   coop_id: number;
   name_coop: string;
+  birthday?: string | null;
+  date_adopt_animals?: string | null;
 }
 
 export function formatDateKey(date: Date): string {
@@ -67,6 +75,41 @@ function buildMarkerMap(
     entry.hasHealth = true;
     entry.details.push(`ตรวจสุขภาพ – ${coopName(h.coop_id)}`);
     map.set(key, entry);
+  }
+
+  // วันเกิดไก่ + วันที่รับเข้าเลี้ยงของคอก - นับเป็น "วันที่เกี่ยวกับคอกนี้"
+  // ด้วยเหมือนกัน ไม่ใช่แค่วัคซีน/สุขภาพ
+  const relevantCoops = coopId ? coops.filter(c => c.coop_id === coopId) : coops;
+  for (const c of relevantCoops) {
+    if (c.birthday) {
+      const d = new Date(c.birthday);
+      if (!isNaN(d.getTime())) {
+        const key = formatDateKey(d);
+        const entry = map.get(key) || { details: [] };
+        entry.hasCoopInfo = true;
+        entry.details.push(`🎂 วันเกิดไก่ – ${coopName(c.coop_id)}`);
+        map.set(key, entry);
+      }
+    }
+    if (c.date_adopt_animals) {
+      const d = new Date(c.date_adopt_animals);
+      if (!isNaN(d.getTime())) {
+        const key = formatDateKey(d);
+        const entry = map.get(key) || { details: [] };
+        entry.hasCoopInfo = true;
+        entry.details.push(`🏠 วันที่รับเข้าเลี้ยง – ${coopName(c.coop_id)}`);
+        map.set(key, entry);
+      }
+    }
+  }
+
+  // นัดตรวจสุขภาพที่กำหนดวันเอง (เก็บไว้ใน localStorage - ไม่มีจาก backend)
+  const manualAppointments = getManualHealthAppointments(coopId ?? null);
+  for (const m of manualAppointments) {
+    const entry = map.get(m.date) || { details: [] };
+    entry.hasHealthAppointment = true;
+    entry.details.push(`🗓️ นัดตรวจสุขภาพ (กำหนดเอง) – ${coopName(m.coopId)}`);
+    map.set(m.date, entry);
   }
 
   return map;

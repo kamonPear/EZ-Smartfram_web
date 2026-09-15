@@ -23,15 +23,12 @@
       <div class="tracks-container">
         <div class="track-row">
           <div class="line"></div>
-          <span class="label">รางบน </span>
         </div>
         <div class="track-row">
           <div class="line"></div>
-          <span class="label">รางกลาง </span>
         </div>
         <div class="track-row">
           <div class="line"></div>
-          <span class="label">รางล่าง </span>
         </div>
       </div>
 
@@ -45,7 +42,7 @@
         (mouseleave)="setTooltipVisible(slot, false)">
 
         <div class="slot-icon">
-          <img [src]="slot.device!.icon">
+          <img [src]="deviceIconSrc(slot.device)">
         </div>
         <span class="slot-text">{{ slot.device!.name }}</span>
 
@@ -67,29 +64,21 @@
     <div class="sensor-table-panel">
       <h2 class="panel-title">ตารางเซ็นเซอร์</h2>
 
-      <div class="dropdown-container">
-        <select class="track-select" (change)="onTrackChange($event)">
-          <option *ngFor="let track of trackStatuses" [value]="track.id">
-            {{ track.name }}
-          </option>
-        </select>
-      </div>
-
       <div class="sensor-list-container">
-        <ng-container *ngIf="getSensorsForSelectedTrack().length > 0; else noDevice">
-          <div class="sensor-item" *ngFor="let device of getSensorsForSelectedTrack()">
+        <ng-container *ngIf="sortedDevices.length > 0; else noDevice">
+          <div class="sensor-item" *ngFor="let device of sortedDevices">
             <div class="sensor-info">
-              <img [src]="device.icon || 'assets/images/esp32.png'" [alt]="device.name">
+              <img [src]="deviceIconSrc(device)" [alt]="device.name">
               <span class="sensor-name">{{ device.name }}</span>
             </div>
-            <div class="track-status" [class.online]="device.current_status === 'Online'">
-              {{ device.current_status === 'Online' ? 'ออนไลน์ (กำลังทำงาน)' : 'ออฟไลน์ (ไม่ได้ทำงาน)' }}
+            <div class="sensor-status" [class.online]="device.current_status === 'Online'">
+              {{ device.current_status === 'Online' ? 'ออนไลน์' : 'ออฟไลน์' }}
             </div>
           </div>
         </ng-container>
 
         <ng-template #noDevice>
-          <div class="no-device-msg">ยังไม่ได้เพิ่มอุปกรณ์ในรางนี้</div>
+          <div class="no-device-msg">ยังไม่มีอุปกรณ์ในคอกนี้</div>
         </ng-template>
       </div>
     </div>

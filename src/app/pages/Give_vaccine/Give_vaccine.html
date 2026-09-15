@@ -1,0 +1,40 @@
+<div class="give-vaccine-container">
+  <header class="header-section">
+    <div class="header-content">
+      <div class="logo-container clickable-logo" routerLink="/">
+        <img src="assets/images/logo.png" alt="Farm Logo">
+      </div>
+      <div class="title-group">
+        <h1>ให้วัคซีน <span *ngIf="coopName" class="coop-name">({{ coopName }})</span></h1>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-area">
+    <p class="mode-hint">รายการวัคซีนที่ต้องให้คอกนี้ คำนวณจากตารางประเภทวัคซีนเทียบกับอายุไก่ - กดให้วัคซีนแล้วเพื่อบันทึกลงประวัติ</p>
+
+    <p class="loading-hint" *ngIf="isLoading">กำลังโหลดข้อมูลวัคซีน...</p>
+
+    <div class="alert-list" *ngIf="!isLoading">
+      <div class="alert-card" *ngFor="let a of alerts" [class]="statusClass(a)">
+        <span class="alert-icon" [class]="statusClass(a)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m18 2 4 4"/><path d="m17 7 3-3"/><path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5"/><path d="m9 11 4 4"/><path d="m5 19-3 3"/><path d="m14 4 6 6"/>
+          </svg>
+        </span>
+        <div class="alert-info">
+          <span class="alert-title">{{ a.vaccineName }}<ng-container *ngIf="a.method !== '-'"> · {{ a.method }}</ng-container></span>
+          <span class="alert-sub">กำหนดวันที่ {{ formatDate(a.date) }}</span>
+          <span class="alert-status" [class]="statusClass(a)">{{ statusLabel(a) }}</span>
+        </div>
+        <!-- ยังไม่ถึงวันนัดจริง (daysUntil > 0) ไม่ต้องมีปุ่มให้กด แค่โชว์ไว้ดูก่อน
+             ถึงจะกดยืนยันว่าให้แล้วได้ตรงกับวันจริง -->
+        <button type="button" class="alert-action-btn" *ngIf="!a.isCompleted && a.daysUntil <= 0" [disabled]="savingId === a.id" (click)="markGiven(a)">
+          {{ savingId === a.id ? 'กำลังบันทึก...' : 'ให้วัคซีนแล้ว' }}
+        </button>
+      </div>
+
+      <p class="empty-hint" *ngIf="alerts.length === 0">คอกนี้ไม่มีกำหนดให้วัคซีนในตอนนี้</p>
+    </div>
+  </main>
+</div>

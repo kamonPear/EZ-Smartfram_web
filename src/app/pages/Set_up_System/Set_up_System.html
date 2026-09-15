@@ -22,7 +22,7 @@
           draggable="true"
           (dragstart)="onPaletteDragStart($event, sensor)">
           <div class="palette-icon">
-            <img [src]="sensor.icon">
+            <img [src]="deviceIconSrc(sensor)">
           </div>
           <span>{{ sensor.name }}</span>
         </div>
@@ -38,15 +38,12 @@
       <div class="tracks-container">
         <div class="track-row">
           <div class="line"></div>
-          <span class="label">รางบน </span>
         </div>
         <div class="track-row">
           <div class="line"></div>
-          <span class="label">รางกลาง </span>
         </div>
         <div class="track-row">
           <div class="line"></div>
-          <span class="label">รางล่าง </span>
         </div>
       </div>
 
@@ -60,7 +57,7 @@
         (dragstart)="onDeviceDragStart($event, slot)"
         (click)="removeDevice(slot.id)">
         <div class="slot-icon">
-          <img [src]="slot.device.icon">
+          <img [src]="deviceIconSrc(slot.device)">
         </div>
         <span class="slot-text">{{ slot.device.name }}</span>
       </div>

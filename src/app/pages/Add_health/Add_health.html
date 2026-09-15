@@ -1,0 +1,286 @@
+<div class="add-health-container">
+  <header class="header-section">
+    <div class="header-content">
+      <div class="logo-container clickable-logo" routerLink="/">
+        <img src="assets/images/logo.png" alt="Farm Logo">
+      </div>
+      <div class="title-group">
+        <h1>ตรวจสุขภาพไก่</h1>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-area">
+    <div class="form-grid form-grid-single">
+
+      <div class="card info-card">
+        <div class="card-title-row">
+          <div class="card-title-left">
+            <div class="card-title-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/>
+                <path d="M8 12h2l1.5-2.5L13 14l1.5-3H16"/>
+              </svg>
+            </div>
+            <h2>บันทึกสุขภาพ</h2>
+          </div>
+        </div>
+
+        <div class="field-stack">
+          <div
+            class="input-pill input-pill-dropdown"
+            [class.input-pill-clickable]="!isCoopLocked"
+            [class.is-locked]="isCoopLocked"
+            [class.active]="isCoopDropdownOpen"
+            (click)="toggleCoopDropdown()"
+          >
+            <span class="input-pill-icon">
+              <img src="assets/images/coopchicken.png" alt="Coop Icon">
+            </span>
+            <span class="input-pill-value" [class.placeholder]="!coopId">{{ coopId ? selectedCoopName : 'เลือกคอก' }}</span>
+            <span class="input-pill-lock" *ngIf="isCoopLocked" title="ล็อกคอกตามที่เลือกมาจากหน้าข้อมูลคอกไก่">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="11" width="14" height="10" rx="2"/>
+                <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+              </svg>
+            </span>
+            <span class="input-pill-chevron" [class.open]="isCoopDropdownOpen" *ngIf="!isCoopLocked">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </span>
+
+            <div class="pill-dropdown" *ngIf="isCoopDropdownOpen && !isCoopLocked" (click)="$event.stopPropagation()">
+              <div class="pill-dropdown-item" *ngFor="let coop of coops" (click)="selectCoop(coop)">
+                <span class="pill-dropdown-item-icon">
+                  <img src="assets/images/coopchicken.png" alt="">
+                </span>
+                {{ coop.name_coop || ('คอกที่ ' + coop.coop_id) }}
+              </div>
+              <div class="pill-dropdown-empty" *ngIf="coops.length === 0">ยังไม่มีคอกไก่ในระบบ</div>
+            </div>
+          </div>
+
+          <p class="appointment-loading-hint" *ngIf="isLoadingAppointment">กำลังคำนวณวันนัดตรวจ...</p>
+
+          <p class="appointment-banner is-danger" *ngIf="hasNoAppointment && !isLoadingAppointment">
+            คอกนี้ยังไม่มีนัดตรวจสุขภาพในตอนนี้ บันทึกไม่ได้จนกว่าจะมีนัด
+          </p>
+
+          <p class="appointment-banner is-warning" *ngIf="!hasNoAppointment && isFutureCheckDate">
+            นัดตรวจวันที่ {{ formatDate(collectDate) }}<ng-container *ngIf="appointmentVaccineName"> (เตรียมให้{{ appointmentVaccineName }} วันที่ {{ formatDate(appointmentVaccineDate) }})</ng-container> - ยังไม่ถึงวันนัด บันทึกผลตรวจตอนนี้ไม่ได้
+          </p>
+
+          <p class="chicken-total-hint" *ngIf="totalChickens != null">
+            คอกนี้มีไก่ทั้งหมด <strong>{{ totalChickens }}</strong> ตัว (สุขภาพดี + ป่วย ต้องรวมได้เท่านี้)
+          </p>
+
+          <div class="input-pill">
+            <span class="input-pill-icon input-pill-icon--good">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            </span>
+            <input type="number" [(ngModel)]="healthyCount" placeholder="จำนวนไก่สุขภาพดี" min="0">
+            <span class="input-pill-suffix">ตัว</span>
+          </div>
+
+          <div class="input-pill">
+            <span class="input-pill-icon input-pill-icon--bad">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12" y2="17"/><circle cx="12" cy="12" r="10"/></svg>
+            </span>
+            <input type="number" [(ngModel)]="poorHealthCount" placeholder="จำนวนไก่ป่วย" min="0">
+            <span class="input-pill-suffix">ตัว</span>
+          </div>
+
+          <div
+            class="input-pill"
+            [class.input-pill-clickable]="!isDateLocked"
+            [class.is-locked]="isDateLocked"
+            [class.active]="isCalendarOpen"
+            (click)="openCalendar()"
+          >
+            <span class="input-pill-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="17" rx="2"/>
+                <line x1="3" y1="9" x2="21" y2="9"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+              </svg>
+            </span>
+            <span class="input-pill-value" [class.placeholder]="!collectDate">{{ collectDate ? formatDate(collectDate) : 'วันที่ตรวจ' }}</span>
+            <span class="input-pill-lock" *ngIf="isDateLocked" title="ล็อกวันที่ตามนัดตรวจอัตโนมัติ">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="11" width="14" height="10" rx="2"/>
+                <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+              </svg>
+            </span>
+            <span class="input-pill-action" *ngIf="!isDateLocked">เลือกวันที่</span>
+          </div>
+
+          <div class="input-pill">
+            <span class="input-pill-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/>
+                <path d="M14 3v5h5"/>
+                <line x1="8.5" y1="13" x2="15.5" y2="13"/>
+                <line x1="8.5" y1="17" x2="13" y2="17"/>
+              </svg>
+            </span>
+            <input type="text" [(ngModel)]="note" placeholder="หมายเหตุ (ถ้ามี)">
+          </div>
+        </div>
+      </div>
+
+      <div class="pill-dropdown-backdrop" *ngIf="isCoopDropdownOpen" (click)="closeDropdowns()"></div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-cancel" routerLink="/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="6" y1="6" x2="18" y2="18"/>
+          <line x1="18" y1="6" x2="6" y2="18"/>
+        </svg>
+        ยกเลิก
+      </button>
+      <button class="btn-confirm" [disabled]="isSaving || hasNoAppointment || isFutureCheckDate" (click)="saveHealth()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        {{ isSaving ? 'กำลังบันทึก...' : 'บันทึกข้อมูล' }}
+      </button>
+    </div>
+
+    <!-- สรุปผล + กราฟไก่ป่วย + ประวัติ - แยกอิสระจากคอกของฟอร์มบันทึกด้านบน -->
+    <div class="card stats-card stats-card-below">
+      <div class="card-title-row">
+        <div class="card-title-left">
+          <div class="card-title-icon card-title-icon--green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 3v18h18"/>
+              <path d="M18.7 8 13 13.7l-3-3L3.7 17"/>
+            </svg>
+          </div>
+          <h2>สรุปผลสุขภาพไก่</h2>
+        </div>
+
+        <div
+          class="input-pill input-pill-dropdown stats-coop-select"
+          [class.input-pill-clickable]="!isCoopLocked"
+          [class.is-locked]="isCoopLocked"
+          [class.active]="isStatsCoopDropdownOpen"
+          (click)="toggleStatsCoopDropdown()"
+        >
+          <span class="input-pill-value">{{ selectedStatsCoopName }}</span>
+          <span class="input-pill-lock" *ngIf="isCoopLocked" title="ล็อกคอกตามที่เลือกมาจากหน้าข้อมูลคอกไก่">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="11" width="14" height="10" rx="2"/>
+              <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+            </svg>
+          </span>
+          <span class="input-pill-chevron" [class.open]="isStatsCoopDropdownOpen" *ngIf="!isCoopLocked">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </span>
+
+          <div class="pill-dropdown pill-dropdown-right" *ngIf="isStatsCoopDropdownOpen && !isCoopLocked" (click)="$event.stopPropagation()">
+            <div class="pill-dropdown-item" (click)="selectStatsCoop(null)">
+              <span class="pill-dropdown-item-icon pill-dropdown-item-icon--all">
+                <img src="assets/images/coopchicken.png" alt="">
+              </span>
+              ทุกคอก
+            </div>
+            <div class="pill-dropdown-item" *ngFor="let coop of coops" (click)="selectStatsCoop(coop)">
+              <span class="pill-dropdown-item-icon">
+                <img src="assets/images/coopchicken.png" alt="">
+              </span>
+              {{ coop.name_coop || ('คอกที่ ' + coop.coop_id) }}
+            </div>
+            <div class="pill-dropdown-empty" *ngIf="coops.length === 0">ยังไม่มีคอกไก่ในระบบ</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="value-tiles">
+        <div class="value-tile value-tile--good">
+          <span class="value-tile-value">{{ todayHealthy }}<small>ตัว</small></span>
+          <span class="value-tile-label">สุขภาพดีวันนี้</span>
+        </div>
+        <div class="value-tile value-tile--bad">
+          <span class="value-tile-value">{{ todayPoor }}<small>ตัว</small></span>
+          <span class="value-tile-label">ป่วยวันนี้</span>
+        </div>
+      </div>
+
+      <p class="egg-summary-sub">กราฟด้านล่างติดตามจำนวน "ไก่ป่วย" ตามช่วงเวลาที่เลือก</p>
+
+      <div class="chart-mode-tabs">
+        <button type="button" [class.active]="chartMode === 'day'" (click)="setChartMode('day')">รายวัน</button>
+        <button type="button" [class.active]="chartMode === 'month'" (click)="setChartMode('month')">รายเดือน</button>
+        <button type="button" [class.active]="chartMode === 'year'" (click)="setChartMode('year')">รายปี</button>
+      </div>
+
+      <div class="egg-chart" [class.egg-chart-year]="chartMode === 'year'" *ngIf="!isLoadingHistory">
+        <div
+          class="egg-chart-bar"
+          *ngFor="let bar of chartBars; trackBy: trackByBarKey"
+          [class.is-today]="bar.isCurrent"
+          [class.is-selected]="selectedBarKey === bar.key"
+          (click)="selectBar(bar)"
+          (mouseenter)="onBarHoverStart(bar)"
+          (mouseleave)="onBarHoverEnd()"
+        >
+          <div class="egg-chart-bar-track">
+            <div class="egg-chart-tooltip" *ngIf="hoveredBarKey === bar.key">{{ bar.value }} ตัว</div>
+            <div class="egg-chart-bar-fill" [style.height.%]="barHeightPercent(bar.value)"></div>
+          </div>
+          <span class="egg-chart-bar-label">{{ bar.label }}</span>
+        </div>
+      </div>
+
+      <div class="egg-bar-detail" *ngIf="selectedBar">
+        <div class="egg-bar-detail-header">
+          <h3>{{ selectedBarHeading }}</h3>
+          <button type="button" class="egg-bar-detail-close" (click)="selectedBarKey = null" aria-label="ปิด">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="6" y1="6" x2="18" y2="18"/>
+              <line x1="18" y1="6" x2="6" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div class="egg-history-row" *ngFor="let r of selectedBarRecords">
+          <span class="egg-history-amount">สุขภาพดี {{ r.healthy }} / ป่วย {{ r.poor_health }} ตัว</span>
+          <span class="egg-history-date">
+            {{ formatRecordDate(r.record_date) }}<ng-container *ngIf="statsCoopId == null"> · {{ coopNameFor(r.coop_id) }}</ng-container><ng-container *ngIf="r.note"> · {{ r.note }}</ng-container>
+          </span>
+        </div>
+        <p class="egg-history-empty" *ngIf="selectedBarRecords.length === 0">ไม่มีข้อมูลสุขภาพในช่วงนี้</p>
+      </div>
+
+      <div class="egg-history">
+        <h3>ประวัติล่าสุด</h3>
+        <div class="egg-history-row" *ngFor="let r of recentRecords">
+          <span class="egg-history-amount">สุขภาพดี {{ r.healthy }} / ป่วย {{ r.poor_health }} ตัว</span>
+          <span class="egg-history-date">
+            {{ formatRecordDate(r.record_date) }}<ng-container *ngIf="statsCoopId == null"> · {{ coopNameFor(r.coop_id) }}</ng-container><ng-container *ngIf="r.note"> · {{ r.note }}</ng-container>
+          </span>
+        </div>
+        <p class="egg-history-empty" *ngIf="!isLoadingHistory && recentRecords.length === 0">ยังไม่มีประวัติสุขภาพ</p>
+      </div>
+
+      <div class="pill-dropdown-backdrop" *ngIf="isStatsCoopDropdownOpen" (click)="closeDropdowns()"></div>
+    </div>
+  </main>
+
+  <div class="toast-notification" [class.is-error]="toastType === 'error'" *ngIf="showToast">
+    <span>{{ toastMessage }}</span>
+  </div>
+
+  <app-date-picker-calendar
+    *ngIf="isCalendarOpen"
+    title="วันที่ตรวจสุขภาพ"
+    [selectedDate]="collectDate"
+    [markers]="dayMarkers"
+    (daySelected)="onDaySelected($event)"
+    (closed)="closeCalendar()">
+  </app-date-picker-calendar>
+</div>

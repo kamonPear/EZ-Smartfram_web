@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { Coop } from '../../shared/coop-summary.util';
+import { deviceIconSrc } from '../../shared/device-icon.util';
 
 @Component({
   selector: 'app-chicken-sensor-system',
@@ -13,6 +14,7 @@ import { Coop } from '../../shared/coop-summary.util';
 })
 export class ChickensensorSystemComponent implements OnInit {
 
+  deviceIconSrc = deviceIconSrc;
   coops: Coop[] = [];
   tooltipDeviceId: number | null = null;
 

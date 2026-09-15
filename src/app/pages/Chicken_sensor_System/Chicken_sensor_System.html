@@ -31,7 +31,7 @@
               *ngFor="let device of coop.devices"
               (mouseenter)="tooltipDeviceId = device.device_id"
               (mouseleave)="tooltipDeviceId = null">
-              <img [src]="device.icon || 'assets/images/esp32.png'" [alt]="device.name">
+              <img [src]="deviceIconSrc(device)" [alt]="device.name">
               <span class="device-status" [class.online]="device.current_status === 'Online'"></span>
               <div class="device-tooltip" *ngIf="tooltipDeviceId === device.device_id">
                 <span class="tooltip-name">{{ device.name }}</span>

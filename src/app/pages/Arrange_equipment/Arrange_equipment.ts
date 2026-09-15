@@ -15,6 +15,11 @@ import { Coop, deviceSummary } from '../../shared/coop-summary.util';
 export class ArrangeEquipmentComponent implements OnInit {
 
   coops: Coop[] = [];
+  // เดิมไม่มี isLoading เลย - ระหว่างรอโหลด coops ยังเป็น [] อยู่ ทำให้ข้อความ
+  // "ยังไม่มีคอกไก่ในระบบ" โผล่ขึ้นมาก่อนชั่วครู่ (ดูเหมือนไม่มีคอกทั้งที่มีจริง)
+  isLoading = true;
+  // การ์ดโครงร่างระหว่างโหลด ใช้แค่ให้ *ngFor วนสร้างจำนวนที่ต้องการ
+  skeletonPlaceholders = [0, 1, 2];
 
   constructor(
     private router: Router,
@@ -27,13 +32,17 @@ export class ArrangeEquipmentComponent implements OnInit {
   }
 
   loadCoopsFromDatabase() {
+    this.isLoading = true;
     this.api.get<Coop[]>(`/coops`).subscribe({
       next: (data) => {
         this.coops = data || [];
+        this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('ดึงข้อมูลล้มเหลว:', err);
+        this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }

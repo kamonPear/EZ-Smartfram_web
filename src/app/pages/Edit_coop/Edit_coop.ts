@@ -6,6 +6,7 @@ import { ApiService } from '../../services/api.service';
 import { Device, EggRecord, HealthRecord, VaccineRecord } from '../../shared/coop-summary.util';
 import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picker-calendar';
 import { DayMarker, loadCalendarMarkers } from '../../shared/calendar-markers.util';
+import { deviceIconSrc } from '../../shared/device-icon.util';
 
 type RecordKind = 'health' | 'vaccine' | 'egg';
 
@@ -20,6 +21,7 @@ const VACCINE_METHODS = ['พ่น', 'ฉีด', 'หยอดปาก', 'ผ
 })
 export class EditCoopComponent implements OnInit {
 
+  deviceIconSrc = deviceIconSrc;
   vaccineMethods = VACCINE_METHODS;
   dayMarkers: Map<string, DayMarker> | null = null;
 
@@ -80,9 +82,11 @@ export class EditCoopComponent implements OnInit {
         this.receivedDate = data?.date_adopt_animals ? new Date(data.date_adopt_animals) : null;
         this.note = data?.note || '';
         this.devices = data?.devices || [];
-        this.healthRecords = data?.health || [];
-        this.vaccineRecords = data?.vaccines || [];
-        this.eggRecords = data?.eggs || [];
+        // วันล่าสุดขึ้นก่อน วันเก่าไปอยู่ล่างสุด (เดิมไม่ได้เรียงเลย ใช้ลำดับดิบจาก
+        // backend ซึ่งไม่จำเป็นต้องเรียงตามวันที่)
+        this.healthRecords = [...(data?.health || [])].sort((a, b) => new Date(b.record_date).getTime() - new Date(a.record_date).getTime());
+        this.vaccineRecords = [...(data?.vaccines || [])].sort((a, b) => new Date(b.record_date).getTime() - new Date(a.record_date).getTime());
+        this.eggRecords = [...(data?.eggs || [])].sort((a, b) => new Date(b.date_collect_egg).getTime() - new Date(a.date_collect_egg).getTime());
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -100,14 +104,17 @@ export class EditCoopComponent implements OnInit {
 
   selectDateField(field: 'birth' | 'received') {
     this.activeField = field;
+    this.cdr.detectChanges();
   }
 
   openRecordCalendar() {
     this.activeField = 'record';
+    this.cdr.detectChanges();
   }
 
   closeCalendar() {
     this.activeField = null;
+    this.cdr.detectChanges();
   }
 
   get activeFieldDate(): Date | null {
@@ -125,6 +132,7 @@ export class EditCoopComponent implements OnInit {
       this.recordDate = day;
     }
     this.activeField = null;
+    this.cdr.detectChanges();
   }
 
   formatDate(date: Date | null): string {
@@ -169,15 +177,9 @@ export class EditCoopComponent implements OnInit {
   }
 
   // ---------- Health / Vaccine / Egg record modal ----------
-
-  openAddRecord(kind: RecordKind) {
-    this.openRecordModal = kind;
-    this.editingRecordId = null;
-    this.recordDate = new Date();
-    if (kind === 'health') this.healthForm = { healthy: null, poorHealth: null, note: '' };
-    if (kind === 'vaccine') this.vaccineForm = { name: '', method: '', recommendedAge: '', note: '' };
-    if (kind === 'egg') this.eggForm = { numberEgg: null, note: '' };
-  }
+  // หน้านี้คือ "แก้ไข" ข้อมูลคอกเท่านั้น - การเพิ่มบันทึกใหม่ย้ายไปอยู่ที่หน้า
+  // "ข้อมูลคอกไก่" (ปุ่มตรวจสุขภาพ/ให้วัคซีน/บันทึกไข่) แทนแล้ว โมดัลนี้จึงเปิด
+  // จาก openEditRecord() เท่านั้น ไม่มี openAddRecord() อีก
 
   openEditRecord(kind: RecordKind, record: HealthRecord | VaccineRecord | EggRecord) {
     this.openRecordModal = kind;
@@ -197,11 +199,13 @@ export class EditCoopComponent implements OnInit {
       this.recordDate = new Date(r.date_collect_egg);
       this.eggForm = { numberEgg: r.number_egg, note: r.note || '' };
     }
+    this.cdr.detectChanges();
   }
 
   closeRecordModal() {
     this.openRecordModal = null;
     this.editingRecordId = null;
+    this.cdr.detectChanges();
   }
 
   saveRecord() {
@@ -254,11 +258,7 @@ export class EditCoopComponent implements OnInit {
 
   private submitRecord(kind: RecordKind, basePath: string, payload: any) {
     this.isSavingRecord = true;
-    const req$ = this.editingRecordId != null
-      ? this.api.put(`${basePath}?id=${this.editingRecordId}`, payload)
-      : this.api.post(basePath, payload);
-
-    req$.subscribe({
+    this.api.put(`${basePath}?id=${this.editingRecordId}`, payload).subscribe({
       next: () => {
         this.isSavingRecord = false;
         this.closeRecordModal();

@@ -1,7 +1,8 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; 
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute, Router } from '@angular/router'; 
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { deviceIconSrc } from '../../shared/device-icon.util';
 @Component({
   selector: 'app-set-up-system',
   standalone: true,
@@ -10,7 +11,9 @@ import { ApiService } from '../../services/api.service';
   styleUrls: ['./Set_up_System.scss']
 })
 export class SetUpSystem implements OnInit {
-  
+
+  deviceIconSrc = deviceIconSrc;
+
   availableSensors = [
     { name: 'ESP 32', icon: 'assets/images/esp32.png' },
     { name: 'MQ-135', icon: 'assets/images/mq135.png' },

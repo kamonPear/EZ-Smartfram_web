@@ -24,19 +24,37 @@
         </div>
 
         <div class="field-stack">
-          <div class="input-pill input-pill-clickable input-pill-dropdown" [class.active]="isCoopDropdownOpen" (click)="toggleCoopDropdown()">
+          <div
+            class="input-pill input-pill-dropdown"
+            [class.input-pill-clickable]="!isCoopLocked"
+            [class.is-locked]="isCoopLocked"
+            [class.active]="isCoopDropdownOpen"
+            (click)="toggleCoopDropdown()"
+          >
             <span class="input-pill-icon">
               <img src="assets/images/coopchicken.png" alt=" Coop Icon">
             </span>
             <span class="input-pill-value" [class.placeholder]="!coopId">{{ coopId ? selectedCoopName : 'เลือกคอก' }}</span>
-            <span class="input-pill-chevron" [class.open]="isCoopDropdownOpen">
+            <span class="input-pill-lock" *ngIf="isCoopLocked" title="ล็อกคอกตามที่เลือกมาจากหน้าข้อมูลคอกไก่">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="11" width="14" height="10" rx="2"/>
+                <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+              </svg>
+            </span>
+            <span class="input-pill-chevron" [class.open]="isCoopDropdownOpen" *ngIf="!isCoopLocked">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="6 9 12 15 18 9"/>
               </svg>
             </span>
 
-            <div class="pill-dropdown" *ngIf="isCoopDropdownOpen" (click)="$event.stopPropagation()">
-              <div class="pill-dropdown-item" *ngFor="let coop of coops" (click)="selectCoop(coop)">{{ coop.name_coop }}</div>
+            <div class="pill-dropdown" *ngIf="isCoopDropdownOpen && !isCoopLocked" (click)="$event.stopPropagation()">
+              <div class="pill-dropdown-item" *ngFor="let coop of coops" (click)="selectCoop(coop)">
+                <span class="pill-dropdown-item-icon">
+                  <img src="assets/images/coopchicken.png" alt="">
+                </span>
+                {{ coop.name_coop || ('คอกที่ ' + coop.coop_id) }}
+              </div>
+              <div class="pill-dropdown-empty" *ngIf="coops.length === 0">ยังไม่มีคอกไก่ในระบบ</div>
             </div>
           </div>
 
@@ -86,14 +104,156 @@
         </svg>
         ยกเลิก
       </button>
-      <button class="btn-confirm" (click)="saveEgg()">
+      <button class="btn-confirm" [disabled]="isSaving" (click)="saveEgg()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="20 6 9 17 4 12"/>
         </svg>
-        บันทึกข้อมูล
+        {{ isSaving ? 'กำลังบันทึก...' : 'บันทึกข้อมูล' }}
       </button>
     </div>
+
+    <!-- สรุปยอด + กราฟ + ประวัติ - แยกอิสระจากคอกของฟอร์มเพิ่มไข่ด้านบน เลือกดู
+         ทุกคอกรวมกันหรือแยกดูรายคอกก็ได้ ไม่ผูกกับคอกที่กำลังจะกรอกไข่เข้า -
+         ย้ายมาไว้ใต้ปุ่มบันทึก/ยกเลิกตามที่ผู้ใช้ขอ -->
+    <div class="card stats-card stats-card-below">
+      <div class="card-title-row">
+        <div class="card-title-left">
+          <div class="card-title-icon card-title-icon--green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 3v18h18"/>
+              <path d="M18.7 8 13 13.7l-3-3L3.7 17"/>
+            </svg>
+          </div>
+          <h2>สรุปผลไข่ไก่</h2>
+        </div>
+
+        <div
+          class="input-pill input-pill-dropdown stats-coop-select"
+          [class.input-pill-clickable]="!isCoopLocked"
+          [class.is-locked]="isCoopLocked"
+          [class.active]="isStatsCoopDropdownOpen"
+          (click)="toggleStatsCoopDropdown()"
+        >
+          <span class="input-pill-value">{{ selectedStatsCoopName }}</span>
+          <span class="input-pill-lock" *ngIf="isCoopLocked" title="ล็อกคอกตามที่เลือกมาจากหน้าข้อมูลคอกไก่">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="11" width="14" height="10" rx="2"/>
+              <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+            </svg>
+          </span>
+          <span class="input-pill-chevron" [class.open]="isStatsCoopDropdownOpen" *ngIf="!isCoopLocked">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </span>
+
+          <div class="pill-dropdown pill-dropdown-right" *ngIf="isStatsCoopDropdownOpen && !isCoopLocked" (click)="$event.stopPropagation()">
+            <div class="pill-dropdown-item" (click)="selectStatsCoop(null)">
+              <span class="pill-dropdown-item-icon pill-dropdown-item-icon--all">
+                <img src="assets/images/coopchicken.png" alt="">
+              </span>
+              ทุกคอก
+            </div>
+            <div class="pill-dropdown-item" *ngFor="let coop of coops" (click)="selectStatsCoop(coop)">
+              <span class="pill-dropdown-item-icon">
+                <img src="assets/images/coopchicken.png" alt="">
+              </span>
+              {{ coop.name_coop || ('คอกที่ ' + coop.coop_id) }}
+            </div>
+            <div class="pill-dropdown-empty" *ngIf="coops.length === 0">ยังไม่มีคอกไก่ในระบบ</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="egg-summary">
+        <div class="egg-summary-main">
+          <span class="egg-summary-label">ไข่ที่เก็บวันนี้</span>
+          <span class="egg-summary-value">{{ todayTotal }}<small>ฟอง</small></span>
+        </div>
+        <div class="egg-trend-chip" [class.is-up]="trendDiff > 0" [class.is-down]="trendDiff < 0">
+          <svg *ngIf="trendDiff !== 0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline *ngIf="trendDiff > 0" points="18 15 12 9 6 15"/>
+            <polyline *ngIf="trendDiff < 0" points="6 9 12 15 18 9"/>
+          </svg>
+          <span>
+            {{ trendDiff === 0 ? 'เท่ากับเมื่อวาน' : (trendDiff > 0 ? 'เพิ่มขึ้น ' + trendDiff + ' ฟอง' : 'ลดลง ' + (-trendDiff) + ' ฟอง') }}
+          </span>
+        </div>
+      </div>
+      <p class="egg-summary-sub">เมื่อวานเก็บได้ {{ yesterdayTotal }} ฟอง</p>
+
+      <div class="chart-mode-tabs">
+        <button type="button" [class.active]="chartMode === 'day'" (click)="setChartMode('day')">รายวัน</button>
+        <button type="button" [class.active]="chartMode === 'month'" (click)="setChartMode('month')">รายเดือน</button>
+        <button type="button" [class.active]="chartMode === 'year'" (click)="setChartMode('year')">รายปี</button>
+      </div>
+
+      <!-- คลิกแท่งเพื่อดูรายละเอียดของช่วงนั้น (วัน/เดือน/ปี) - เมาส์ชี้เพื่อดูยอด
+           แยกตามคอกก่อนคลิก -->
+      <div class="egg-chart" [class.egg-chart-year]="chartMode === 'year'" *ngIf="!isLoadingHistory">
+        <div
+          class="egg-chart-bar"
+          *ngFor="let bar of chartBars; trackBy: trackByBarKey"
+          [class.is-today]="bar.isCurrent"
+          [class.is-selected]="selectedBarKey === bar.key"
+          (click)="selectBar(bar)"
+          (mouseenter)="onBarHoverStart(bar)"
+          (mouseleave)="onBarHoverEnd()"
+        >
+          <div class="egg-chart-bar-track">
+            <div class="egg-chart-tooltip" *ngIf="hoveredBarKey === bar.key">
+              <ng-container *ngIf="statsCoopId == null && coopBreakdownForBar(bar).length > 1; else singleBarTotal">
+                <div class="egg-chart-tooltip-row" *ngFor="let item of coopBreakdownForBar(bar)">
+                  <span>{{ item.name }}</span><span>{{ item.total }} ฟอง</span>
+                </div>
+              </ng-container>
+              <ng-template #singleBarTotal>{{ bar.value }} ฟอง</ng-template>
+            </div>
+            <div class="egg-chart-bar-fill" [style.height.%]="barHeightPercent(bar.value)"></div>
+          </div>
+          <span class="egg-chart-bar-label">{{ bar.label }}</span>
+        </div>
+      </div>
+
+      <!-- รายละเอียดของแท่งที่คลิกเลือกไว้ - บอกวันที่/เดือน/ปีเต็มๆ และรายการ
+           ไข่ดิบของช่วงนั้นทั้งหมด (ตอบ "คลิกดูว่าวันนั้นเก็บไข่ตอนไหนเท่าไหร่") -->
+      <div class="egg-bar-detail" *ngIf="selectedBar">
+        <div class="egg-bar-detail-header">
+          <h3>{{ selectedBarHeading }}</h3>
+          <button type="button" class="egg-bar-detail-close" (click)="selectedBarKey = null" aria-label="ปิด">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="6" y1="6" x2="18" y2="18"/>
+              <line x1="18" y1="6" x2="6" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div class="egg-history-row" *ngFor="let r of selectedBarRecords">
+          <span class="egg-history-amount">{{ r.number_egg }} ฟอง</span>
+          <span class="egg-history-date">
+            {{ formatRecordDate(r.date_collect_egg) }}<ng-container *ngIf="statsCoopId == null"> · {{ coopNameFor(r.coop_id) }}</ng-container><ng-container *ngIf="r.note"> · {{ r.note }}</ng-container>
+          </span>
+        </div>
+        <p class="egg-history-empty" *ngIf="selectedBarRecords.length === 0">ไม่มีข้อมูลไข่ในช่วงนี้</p>
+      </div>
+
+      <div class="egg-history">
+        <h3>ประวัติล่าสุด</h3>
+        <div class="egg-history-row" *ngFor="let r of recentRecords">
+          <span class="egg-history-amount">{{ r.number_egg }} ฟอง</span>
+          <span class="egg-history-date">
+            {{ formatRecordDate(r.date_collect_egg) }}<ng-container *ngIf="statsCoopId == null"> · {{ coopNameFor(r.coop_id) }}</ng-container><ng-container *ngIf="r.note"> · {{ r.note }}</ng-container>
+          </span>
+        </div>
+        <p class="egg-history-empty" *ngIf="!isLoadingHistory && recentRecords.length === 0">ยังไม่มีประวัติไข่ไก่</p>
+      </div>
+
+      <div class="pill-dropdown-backdrop" *ngIf="isStatsCoopDropdownOpen" (click)="closeDropdowns()"></div>
+    </div>
   </main>
+
+  <div class="toast-notification" [class.is-error]="toastType === 'error'" *ngIf="showToast">
+    <span>{{ toastMessage }}</span>
+  </div>
 
   <app-date-picker-calendar
     *ngIf="isCalendarOpen"

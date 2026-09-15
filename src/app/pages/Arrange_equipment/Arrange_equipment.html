@@ -7,14 +7,32 @@
       </div>
 
       <div class="title-group">
-        <h1>จัดวางระบบเซนเซอร์</h1>
+        <h1>เพิ่มอุปกรณ์</h1>
         <p>เลือกคอกไก่ที่ต้องการจัดวางระบบ</p>
       </div>
     </div>
   </header>
 
   <main class="content-area">
-    <div class="coop-grid" *ngIf="coops.length > 0">
+    <div class="coop-grid" *ngIf="isLoading">
+      <div class="coop-card coop-skeleton" *ngFor="let _ of skeletonPlaceholders">
+        <div class="coop-card-header">
+          <div class="skeleton-block skeleton-icon"></div>
+          <div class="coop-info">
+            <div class="skeleton-block skeleton-line skeleton-line--title"></div>
+            <div class="skeleton-block skeleton-line skeleton-line--amount"></div>
+          </div>
+        </div>
+        <div class="coop-device-summary">
+          <div class="skeleton-block skeleton-line skeleton-line--label"></div>
+        </div>
+        <div class="coop-cta">
+          <div class="skeleton-block skeleton-line skeleton-line--label"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="coop-grid" *ngIf="!isLoading && coops.length > 0">
       <div class="coop-card" *ngFor="let coop of coops" (click)="selectCoop(coop)">
 
         <div class="coop-card-header">
@@ -48,7 +66,7 @@
       </div>
     </div>
 
-    <div class="coop-empty" *ngIf="coops.length === 0">
+    <div class="coop-empty" *ngIf="!isLoading && coops.length === 0">
       <p>ยังไม่มีคอกไก่ในระบบ</p>
       <button class="empty-add-btn" routerLink="/add-coop">+ เพิ่มคอกไก่</button>
     </div>

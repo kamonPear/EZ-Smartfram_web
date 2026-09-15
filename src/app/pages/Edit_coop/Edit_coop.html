@@ -97,9 +97,9 @@
             <button class="section-action-btn" (click)="goToSetup()">จัดการอุปกรณ์</button>
           </div>
 
-          <div class="record-list" *ngIf="devices.length > 0">
+          <div class="record-list" [class.is-scrollable]="devices.length > 4" *ngIf="devices.length > 0">
             <div class="record-row" *ngFor="let device of devices">
-              <img class="device-row-icon" [src]="device.icon || 'assets/images/esp32.png'" [alt]="device.name">
+              <img class="device-row-icon" [src]="deviceIconSrc(device)" [alt]="device.name">
               <div class="record-row-main">
                 <span class="record-row-title">{{ device.name }}</span>
                 <span class="record-row-sub">{{ device.device_type || '-' }}</span>
@@ -121,10 +121,9 @@
               </svg>
             </div>
             <h2>ประวัติสุขภาพ</h2>
-            <button class="section-action-btn" (click)="openAddRecord('health')">+ เพิ่มบันทึก</button>
           </div>
 
-          <div class="record-list" *ngIf="healthRecords.length > 0">
+          <div class="record-list" [class.is-scrollable]="healthRecords.length > 4" *ngIf="healthRecords.length > 0">
             <div class="record-row" *ngFor="let record of healthRecords">
               <div class="record-row-main">
                 <span class="record-row-title">สุขภาพดี {{ record.healthy }} / ป่วย {{ record.poor_health }} ตัว</span>
@@ -156,10 +155,9 @@
               </svg>
             </div>
             <h2>ประวัติวัคซีน</h2>
-            <button class="section-action-btn" (click)="openAddRecord('vaccine')">+ เพิ่มบันทึก</button>
           </div>
 
-          <div class="record-list" *ngIf="vaccineRecords.length > 0">
+          <div class="record-list" [class.is-scrollable]="vaccineRecords.length > 4" *ngIf="vaccineRecords.length > 0">
             <div class="record-row" *ngFor="let record of vaccineRecords">
               <div class="record-row-main">
                 <span class="record-row-title">{{ record.name }}<ng-container *ngIf="record.method"> · {{ record.method }}</ng-container></span>
@@ -186,10 +184,9 @@
               <img src="assets/images/chicken.png" alt="Egg">
             </div>
             <h2>ประวัติไข่ไก่</h2>
-            <button class="section-action-btn" (click)="openAddRecord('egg')">+ เพิ่มบันทึก</button>
           </div>
 
-          <div class="record-list" *ngIf="eggRecords.length > 0">
+          <div class="record-list" [class.is-scrollable]="eggRecords.length > 4" *ngIf="eggRecords.length > 0">
             <div class="record-row" *ngFor="let record of eggRecords">
               <div class="record-row-main">
                 <span class="record-row-title">{{ record.number_egg }} ฟอง</span>
@@ -242,7 +239,7 @@
   <div class="custom-modal-overlay" *ngIf="openRecordModal">
     <div class="custom-modal">
       <h3>
-        {{ editingRecordId ? 'แก้ไข' : 'เพิ่ม' }}
+        แก้ไข
         {{ openRecordModal === 'health' ? 'บันทึกสุขภาพ' : openRecordModal === 'vaccine' ? 'บันทึกวัคซีน' : 'บันทึกไข่ไก่' }}
       </h3>
 

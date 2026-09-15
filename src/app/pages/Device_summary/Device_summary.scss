@@ -1,0 +1,228 @@
+.device-summary-container {
+  font-family: 'Kanit', sans-serif;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-app);
+}
+
+.content-area {
+  background-color: var(--bg-panel);
+  margin: 30px;
+  padding: 40px;
+  border-radius: 20px;
+  max-width: 640px;
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 600px) {
+  .content-area {
+    margin: 16px;
+    padding: 24px 18px;
+  }
+}
+
+.loading-hint {
+  text-align: center;
+  color: rgba(var(--fg-rgb), 0.55);
+  padding: 30px 0;
+}
+
+.summary-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+}
+
+.summary-bar-label {
+  color: rgba(var(--fg-rgb), 0.6);
+  font-size: 0.85rem;
+}
+
+.summary-bar-value {
+  color: var(--text-title);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.group-block {
+  // ครอบทั้งปุ่มหัวข้อ + แผงรายละเอียดที่กางลงมา ให้ .group-list เว้นระยะห่าง
+  // ระหว่างแต่ละชนิดอุปกรณ์เท่าเดิม แม้บางอันจะกางอยู่ก็ตาม
+}
+
+.group-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-radius 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 22px rgba(0, 0, 0, 0.22);
+    border-color: var(--accent-green-bright);
+  }
+
+  // แผงรายละเอียดกางลงมาต่อกันด้านล่าง - ทำมุมล่างของหัวข้อให้เหลี่ยม ดูเป็น
+  // ชิ้นเดียวกันกับแผงที่กางออกมา ไม่ใช่การ์ดลอยแยกกัน
+  &.is-open {
+    border-radius: 16px 16px 0 0;
+    border-color: var(--accent-green-bright);
+    transform: none;
+  }
+}
+
+.group-chevron {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: rgba(var(--fg-rgb), 0.4);
+  transition: transform 0.2s ease;
+
+  svg { width: 100%; height: 100%; }
+
+  &.open {
+    transform: rotate(180deg);
+    color: var(--accent-green-bright);
+  }
+}
+
+.group-detail {
+  background: rgba(var(--fg-rgb), 0.03);
+  border: 1px solid var(--accent-green-bright);
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+  padding: 10px 14px 14px;
+}
+
+.device-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--border-subtle);
+
+  &:last-child { border-bottom: none; }
+}
+
+.device-dot {
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--danger-grad-end, #e53935);
+
+  &.online {
+    background: var(--accent-green-bright);
+  }
+}
+
+.device-row-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.device-row-coop {
+  color: var(--text-title);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.device-row-slot {
+  color: rgba(var(--fg-rgb), 0.5);
+  font-size: 0.72rem;
+}
+
+.device-row-status {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(198, 40, 40, 0.14);
+  color: var(--danger-grad-end, #e53935);
+
+  &.online {
+    background: rgba(114, 213, 114, 0.16);
+    color: var(--accent-green-bright);
+  }
+}
+
+.group-icon {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: rgba(114, 213, 114, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img { width: 26px; height: 26px; object-fit: contain; }
+}
+
+.group-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.group-name {
+  color: var(--text-title);
+  font-size: 0.95rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.group-sub {
+  color: rgba(var(--fg-rgb), 0.55);
+  font-size: 0.78rem;
+}
+
+.group-total {
+  flex-shrink: 0;
+  color: var(--accent-green-bright);
+  font-size: 1.4rem;
+  font-weight: 700;
+
+  small {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(var(--fg-rgb), 0.5);
+    margin-left: 3px;
+  }
+}
+
+.empty-hint {
+  text-align: center;
+  color: rgba(var(--fg-rgb), 0.5);
+  padding: 30px 0;
+}

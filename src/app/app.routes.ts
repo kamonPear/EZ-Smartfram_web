@@ -12,6 +12,12 @@ import { AddVaccineComponent } from './pages/Add_vaccine/Add_vaccine';
 import { AddEggComponent } from './pages/Add_egg/Add_egg';
 import { FarmLayoutComponent } from './pages/Farm_layout/Farm_layout';
 import { DeviceStatusComponent } from './pages/Device_status/Device_status';
+import { FarmThresholdsComponent } from './pages/Farm_thresholds/Farm_thresholds';
+import { AddHealthComponent } from './pages/Add_health/Add_health';
+import { DeviceSummaryComponent } from './pages/Device_summary/Device_summary';
+import { NotificationsComponent } from './pages/Notifications/Notifications';
+import { HealthAppointmentsComponent } from './pages/Health_appointments/Health_appointments';
+import { GiveVaccineComponent } from './pages/Give_vaccine/Give_vaccine';
 
 export const routes: Routes = [
   // ถ้าเปิดหน้าเว็บมาครั้งแรก (Path ว่าง) ให้สั่ง Redirect ไปที่หน้า home
@@ -27,6 +33,8 @@ export const routes: Routes = [
 
   { path: 'add-egg', component: AddEggComponent },
 
+  { path: 'add-health', component: AddHealthComponent },
+
   // ถ้าคลิกมาที่ /arrange ให้ไปที่หน้าจัดวางอุปกรณ์
   { path: 'arrange', component: ArrangeEquipmentComponent },
 
@@ -34,7 +42,17 @@ export const routes: Routes = [
 
   { path: 'setup', component: SetUpSystem },
 
+  { path: 'farm-thresholds', component: FarmThresholdsComponent },
+
   { path: 'chicken-sensor', component: ChickensensorSystemComponent },
+
+  { path: 'device-summary', component: DeviceSummaryComponent },
+
+  { path: 'notifications', component: NotificationsComponent },
+
+  { path: 'health-appointments', component: HealthAppointmentsComponent },
+
+  { path: 'give-vaccine', component: GiveVaccineComponent },
 
   { path: 'data-coop', component: DataCoopComponent },
 

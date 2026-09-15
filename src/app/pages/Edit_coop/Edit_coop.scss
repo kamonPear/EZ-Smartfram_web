@@ -210,74 +210,14 @@
   }
 }
 
-/* Actions */
-.action-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 30px;
-  margin-top: 40px;
-}
-
-.btn-cancel,
-.btn-confirm {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 18px;
-  border: none;
-  border-radius: 50px;
-  font-size: 1.3rem;
-  font-weight: 700;
-  font-family: inherit;
-  color: var(--text-title);
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  svg {
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
-  }
-
-  &:hover:not(:disabled) {
-    transform: translateY(-3px);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-}
-
-.btn-cancel {
-  background: linear-gradient(135deg, var(--danger-grad-start), var(--danger-grad-end));
-  box-shadow: 0 8px 15px rgba(198, 40, 40, 0.3);
-
-  &:hover:not(:disabled) {
-    box-shadow: 0 12px 20px rgba(198, 40, 40, 0.4);
-  }
-}
-
-.btn-confirm {
-  background: linear-gradient(135deg, var(--success-grad-start), var(--success-grad-end));
-  box-shadow: 0 8px 15px rgba(40, 167, 69, 0.3);
-
-  &:hover:not(:disabled) {
-    box-shadow: 0 12px 20px rgba(40, 167, 69, 0.4);
-  }
-}
+/* ปุ่ม .action-row/.btn-cancel/.btn-confirm ย้ายไปเป็นสไตล์กลางที่ styles.scss
+   แล้ว (ใช้ร่วมกันทุกหน้าที่มีแถวปุ่มบันทึก/ยกเลิก) ไม่ต้อง copy ซ้ำที่นี่อีก -
+   ยกเว้น .modal-actions ด้านล่างที่ยังปรับขนาดปุ่มให้เล็กลงสำหรับป็อบอัพบันทึก
+   ประวัติ (ยังใช้คลาสเดียวกัน แต่ override ขนาดเฉพาะ) */
 
 @media (max-width: 900px) {
   .form-grid {
     grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 600px) {
-  .action-row {
-    flex-direction: column;
   }
 }
 
@@ -310,6 +250,18 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+
+  // รายการที่ยาวเกิน ~4 แถว เลื่อนดูในกรอบตัวเอง แทนที่จะดันความสูงของทั้งหน้า
+  // ยาวเรื่อยๆ ตามจำนวนประวัติที่สะสมไว้ (เหมือนที่ปรับไว้ในหน้าข้อมูลคอกไก่)
+  &.is-scrollable {
+    max-height: 260px;
+    overflow-y: auto;
+    padding-right: 4px;
+
+    &::-webkit-scrollbar { width: 6px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
+  }
 }
 
 .record-empty {

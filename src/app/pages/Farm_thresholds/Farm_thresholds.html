@@ -1,0 +1,106 @@
+<div class="thresholds-container">
+  <header class="header-section">
+    <div class="header-content">
+      <div class="logo-container clickable-logo" routerLink="/">
+        <img src="assets/images/logo.png" alt="Farm Logo">
+      </div>
+      <div class="title-group">
+        <h1>ตั้งค่ามาตรฐานของฟาร์ม</h1>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-area">
+
+    <div class="card summary-card">
+      <div class="card-title-row">
+        <div class="card-title-left">
+          <div class="card-title-icon card-title-icon--green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Z"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <div>
+            <h2>ค่าที่ใช้ร่วมกันทุกคอก</h2>
+            <p class="card-subtitle">มีผลกับทุกคอกไก่ทันทีหลังบันทึก</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="value-tiles">
+        <div class="value-tile">
+          <span class="value-tile-icon value-tile-icon--temp">
+            <img src="assets/images/temp.png" alt="Temperature">
+          </span>
+          <span class="value-tile-value">{{ temp }}<small>°C</small></span>
+          <span class="value-tile-label">อุณหภูมิที่คงที่</span>
+        </div>
+        <div class="value-tile">
+          <span class="value-tile-icon value-tile-icon--ammonia">
+            <img src="assets/images/mq135.png" alt="Ammonia">
+          </span>
+          <span class="value-tile-value">{{ ammonia }}<small>PPM</small></span>
+          <span class="value-tile-label">แอมโมเนียที่คงที่</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card form-card">
+      <div class="stepper-field">
+        <span class="stepper-label">อุณหภูมิมาตรฐาน</span>
+        <div class="stepper-row">
+          <button type="button" class="stepper-btn" [disabled]="temp <= tempMin" (click)="adjustTemp(-1)" aria-label="ลด">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <span class="stepper-value">{{ temp }}<small>°C</small></span>
+          <button type="button" class="stepper-btn" [disabled]="temp >= tempMax" (click)="adjustTemp(1)" aria-label="เพิ่ม">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="stepper-field">
+        <span class="stepper-label">ปริมาณแอมโมเนียมาตรฐาน</span>
+        <div class="stepper-row">
+          <button type="button" class="stepper-btn" [disabled]="ammonia <= ammoniaMin" (click)="adjustAmmonia(-1)" aria-label="ลด">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <span class="stepper-value">{{ ammonia }}<small>PPM</small></span>
+          <button type="button" class="stepper-btn" [disabled]="ammonia >= ammoniaMax" (click)="adjustAmmonia(1)" aria-label="เพิ่ม">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="info-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12" y2="8"/>
+        </svg>
+        <span>ค่านี้เป็นค่ากลาง ใช้เทียบกับทุกคอกในฟาร์ม ไม่ใช่ค่าเฉพาะคอกใดคอกหนึ่ง</span>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-cancel" routerLink="/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="6" y1="6" x2="18" y2="18"/>
+          <line x1="18" y1="6" x2="6" y2="18"/>
+        </svg>
+        ยกเลิก
+      </button>
+      <button class="btn-confirm" [disabled]="isSaving" (click)="save()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        {{ isSaving ? 'กำลังบันทึก...' : 'บันทึกค่ามาตรฐาน' }}
+      </button>
+    </div>
+  </main>
+
+  <div class="toast-notification" *ngIf="showToast">
+    <span>บันทึกค่ามาตรฐานสำเร็จ</span>
+  </div>
+</div>

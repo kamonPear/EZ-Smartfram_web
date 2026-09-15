@@ -24,6 +24,7 @@ export class FarmLayoutComponent implements OnInit {
   isSaving = false;
   showToast = false;
   toastMessage = '';
+  showConfirmModal = false;
 
   // จุดยอดสามเหลี่ยมในพื้นที่ % (0-100) ตรงกับ viewBox ของ SVG พอดี
   private readonly triangle = {
@@ -168,6 +169,20 @@ export class FarmLayoutComponent implements OnInit {
     const hasNeg = d1 < 0 || d2 < 0 || d3 < 0;
     const hasPos = d1 > 0 || d2 > 0 || d3 > 0;
     return !(hasNeg && hasPos);
+  }
+
+  // เปิดป็อบอัพถามยืนยันก่อนบันทึกจริง กันคนกดพลาดจนตำแหน่งที่จัดไว้หายไป
+  openConfirmModal() {
+    this.showConfirmModal = true;
+  }
+
+  cancelConfirm() {
+    this.showConfirmModal = false;
+  }
+
+  confirmSave() {
+    this.showConfirmModal = false;
+    this.saveLayout();
   }
 
   saveLayout() {

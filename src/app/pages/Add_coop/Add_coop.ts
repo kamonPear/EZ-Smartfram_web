@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -24,20 +24,49 @@ export class AddCoopComponent {
   activeField: 'birth' | 'received' | null = null;
   dayMarkers: Map<string, DayMarker> | null = null;
 
-  constructor(private router: Router, private api: ApiService) {
+  // ชื่อคอกที่มีอยู่แล้วในระบบ - เช็คซ้ำแบบเรียลไทม์ตอนพิมพ์ ก่อนจะยิงไปถามฝั่ง
+  // backend อีกรอบตอนกดบันทึก (backend เองก็เช็คซ้ำอยู่แล้ว แต่เดิมแจ้งผ่าน
+  // alert() ธรรมดา ไม่เห็นจนกว่าจะกดบันทึกไปก่อน)
+  existingCoopNames: string[] = [];
+
+  showToast = false;
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'success';
+  isSaving = false;
+
+  constructor(private router: Router, private api: ApiService, private cdr: ChangeDetectorRef) {
     // มาร์คนี้ไม่ผูกกับคอกใดคอกหนึ่ง (ยังไม่มีคอกนี้อยู่จริง) เลยโชว์ข้อมูลรวมทั้งฟาร์ม
     loadCalendarMarkers(this.api).subscribe({
       next: (markers) => this.dayMarkers = markers,
       error: (err) => console.error('โหลดข้อมูลมาร์คปฏิทินไม่สำเร็จ:', err)
     });
+
+    this.api.get<any[]>('/coops').subscribe({
+      next: (coops) => {
+        this.existingCoopNames = (coops || []).map(c => (c.name_coop || '').trim().toLowerCase()).filter(Boolean);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('โหลดรายชื่อคอกไม่สำเร็จ:', err);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  get isDuplicateName(): boolean {
+    const name = this.coopName.trim().toLowerCase();
+    if (!name) return false;
+    return this.existingCoopNames.includes(name);
   }
 
   selectDateField(field: 'birth' | 'received') {
     this.activeField = field;
+    this.cdr.detectChanges();
   }
 
   closeCalendar() {
     this.activeField = null;
+    this.cdr.detectChanges();
   }
 
   onDaySelected(day: Date) {
@@ -47,6 +76,7 @@ export class AddCoopComponent {
       this.receivedDate = day;
     }
     this.activeField = null;
+    this.cdr.detectChanges();
   }
 
   formatDate(date: Date | null): string {
@@ -54,12 +84,28 @@ export class AddCoopComponent {
     return date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' });
   }
 
+  private flashToast(message: string, type: 'success' | 'error' = 'success') {
+    this.toastMessage = message;
+    this.toastType = type;
+    this.showToast = true;
+    setTimeout(() => {
+      this.showToast = false;
+      this.cdr.detectChanges();
+    }, 2500);
+  }
+
   addCoop() {
     if (!this.coopName.trim() || !this.chickenCount || this.chickenCount < 1 || !this.birthDate || !this.receivedDate) {
-      alert('กรุณากรอกชื่อคอก จำนวนไก่ วันเกิดไก่ และวันที่รับเข้าเลี้ยงให้ครบถ้วน');
+      this.flashToast('กรุณากรอกชื่อคอก จำนวนไก่ วันเกิดไก่ และวันที่รับเข้าเลี้ยงให้ครบถ้วน', 'error');
       return;
     }
 
+    if (this.isDuplicateName) {
+      this.flashToast('ชื่อคอกนี้มีอยู่แล้ว กรุณาใช้ชื่ออื่น', 'error');
+      return;
+    }
+
+    this.isSaving = true;
     const payload = {
       name_coop: this.coopName.trim(),
       amount: this.chickenCount,
@@ -71,12 +117,14 @@ export class AddCoopComponent {
     this.api.post(`/coops`, payload).subscribe({
       next: () => this.router.navigate(['/']),
       error: (err: any) => {
+        this.isSaving = false;
         console.error('เพิ่มคอกไม่สำเร็จ:', err);
         if (err.status === 409) {
-          alert('ชื่อคอกนี้มีอยู่แล้ว กรุณาใช้ชื่ออื่น');
+          this.flashToast('ชื่อคอกนี้มีอยู่แล้ว กรุณาใช้ชื่ออื่น', 'error');
         } else {
-          alert('เพิ่มคอกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+          this.flashToast('เพิ่มคอกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
         }
+        this.cdr.detectChanges();
       }
     });
   }

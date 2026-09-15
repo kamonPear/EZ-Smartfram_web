@@ -1,0 +1,133 @@
+<div class="appointments-container">
+  <header class="header-section">
+    <div class="header-content">
+      <div class="logo-container clickable-logo" routerLink="/">
+        <img src="assets/images/logo.png" alt="Farm Logo">
+      </div>
+      <div class="title-group">
+        <h1>นัดตรวจสุขภาพ</h1>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-area">
+
+    <div class="mode-tabs">
+      <button type="button" [class.active]="mode === 'auto'" (click)="setMode('auto')">นัดให้อัตโนมัติ</button>
+      <button type="button" [class.active]="mode === 'manual'" (click)="setMode('manual')">นัดตรวจสุขภาพเอง</button>
+    </div>
+
+    <!-- โหมดอัตโนมัติ - คำนวณจากวันครบกำหนดวัคซีนของแต่ละคอก -->
+    <ng-container *ngIf="mode === 'auto'">
+      <p class="mode-hint">นัดคำนวณอัตโนมัติจากวันครบกำหนดให้วัคซีนของแต่ละคอก (ตรวจก่อนให้วัคซีน 1 วันเสมอ เพื่อคัดเฉพาะไก่แข็งแรง)</p>
+
+      <p class="loading-hint" *ngIf="isLoading">กำลังโหลดข้อมูลนัดตรวจ...</p>
+
+      <div class="appointment-list" *ngIf="!isLoading">
+        <button type="button" class="appointment-card" *ngFor="let a of appointments" (click)="openAppointment(a)">
+          <span class="appointment-icon" [class]="statusClass(a)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="17" rx="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+            </svg>
+          </span>
+          <span class="appointment-info">
+            <span class="appointment-title">นัดตรวจ – {{ a.coopName }}</span>
+            <span class="appointment-sub">วันที่ {{ formatDate(a.appointmentDate) }}</span>
+            <span class="appointment-sub">เตรียมให้{{ a.vaccineName }} วันที่ {{ formatDate(a.vaccineDate) }}</span>
+            <span class="appointment-status" [class]="statusClass(a)">{{ statusLabel(a) }}</span>
+          </span>
+          <svg class="appointment-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+
+        <p class="empty-hint" *ngIf="appointments.length === 0">ไม่มีนัดตรวจสุขภาพในตอนนี้</p>
+      </div>
+    </ng-container>
+
+    <!-- โหมดกำหนดเอง - เลือกคอก+วันที่ตรวจเองตรงๆ -->
+    <ng-container *ngIf="mode === 'manual'">
+      <p class="mode-hint">เลือกคอกและวันที่ต้องการตรวจสุขภาพเอง ไม่ต้องรอคำนวณจากวัคซีน</p>
+
+      <div class="manual-form">
+        <div class="input-pill input-pill-clickable input-pill-dropdown" [class.active]="isCoopDropdownOpen" (click)="toggleCoopDropdown()">
+          <span class="input-pill-icon">
+            <img src="assets/images/coopchicken.png" alt="Coop Icon">
+          </span>
+          <span class="input-pill-value" [class.placeholder]="!manualCoopId">{{ manualCoopId ? selectedManualCoopName : 'เลือกคอก' }}</span>
+          <span class="input-pill-chevron" [class.open]="isCoopDropdownOpen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </span>
+
+          <div class="pill-dropdown" *ngIf="isCoopDropdownOpen" (click)="$event.stopPropagation()">
+            <div class="pill-dropdown-item" *ngFor="let coop of coops" (click)="$event.stopPropagation(); selectManualCoop(coop)">
+              <span class="pill-dropdown-item-icon">
+                <img src="assets/images/coopchicken.png" alt="">
+              </span>
+              {{ coop.name_coop || ('คอกที่ ' + coop.coop_id) }}
+            </div>
+            <div class="pill-dropdown-empty" *ngIf="coops.length === 0">ยังไม่มีคอกไก่ในระบบ</div>
+          </div>
+        </div>
+
+        <div class="input-pill input-pill-clickable" [class.active]="isCalendarOpen" (click)="openCalendar()">
+          <span class="input-pill-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="17" rx="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+            </svg>
+          </span>
+          <span class="input-pill-value" [class.placeholder]="!manualDate">{{ manualDate ? formatDate(manualDate) : 'วันที่ตรวจ' }}</span>
+          <span class="input-pill-action">เลือกวันที่</span>
+        </div>
+
+        <p class="manual-edit-hint" *ngIf="editingManualAppointment">
+          กำลังแก้ไขนัดของ {{ coopNameFor(editingManualAppointment.coopId) }} (เดิมวันที่ {{ formatDate(editingManualOriginalDate) }})
+          <button type="button" class="manual-edit-cancel-btn" (click)="cancelManualEdit()">ยกเลิกแก้ไข</button>
+        </p>
+
+        <button type="button" class="manual-submit-btn" [disabled]="!canGoManual" (click)="goToManualRecord()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+          {{ isManualDateFuture ? (editingManualAppointment ? 'บันทึกนัดที่แก้ไข' : 'บันทึกนัดลงปฏิทิน') : 'ไปบันทึกผลตรวจ' }}
+        </button>
+      </div>
+
+      <div class="manual-appointment-list" *ngIf="manualAppointmentsList.length > 0">
+        <p class="manual-appointment-list-title">นัดที่กำหนดเอง (แก้ไข/ลบได้ก่อนถึงวันนัด)</p>
+        <div class="manual-appointment-row" *ngFor="let m of manualAppointmentsList">
+          <span class="manual-appointment-info">
+            <span class="manual-appointment-coop">{{ coopNameFor(m.coopId) }}</span>
+            <span class="manual-appointment-date">นัดวันที่ {{ formatDate(m.dateObj) }}</span>
+          </span>
+          <span class="manual-appointment-actions">
+            <button type="button" class="manual-appointment-edit-btn" (click)="editManualAppointment(m)">แก้ไข</button>
+            <button type="button" class="manual-appointment-remove-btn" (click)="removeManualAppointment(m)">ลบ</button>
+          </span>
+        </div>
+      </div>
+
+      <div class="pill-dropdown-backdrop" *ngIf="isCoopDropdownOpen" (click)="closeDropdowns()"></div>
+    </ng-container>
+  </main>
+
+  <app-date-picker-calendar
+    *ngIf="isCalendarOpen"
+    title="วันที่ตรวจสุขภาพ"
+    [selectedDate]="manualDate"
+    (daySelected)="onDaySelected($event)"
+    (closed)="closeCalendar()">
+  </app-date-picker-calendar>
+
+  <div class="toast-notification" [class.is-error]="toastType === 'error'" *ngIf="showToast">
+    <span>{{ toastMessage }}</span>
+  </div>
+</div>

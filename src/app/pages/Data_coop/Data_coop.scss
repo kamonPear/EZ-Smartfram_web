@@ -25,23 +25,23 @@
   justify-content: center;
 }
 
-.status-panel {
+/* แต่ละหัวข้อ (ข้อมูลไก่/อุปกรณ์/สุขภาพ/วัคซีน/ไข่ไก่) แยกเป็นการ์ดของตัวเอง
+   ชัดเจน แทนการยัดรวมไว้ในกล่องเดียวแล้วขีดเส้นแบ่งบางๆเหมือนเดิม */
+.section-stack {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.panel-card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: 20px;
-  padding: 30px 40px;
-  width: 100%;
-  max-width: 720px;
+  padding: 26px 30px;
   font-family: 'Kanit', sans-serif;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-}
-
-.panel-section + .panel-section {
-  padding-top: 18px;
-  border-top: 1px solid var(--border-subtle);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 
 .section-title {
@@ -55,17 +55,117 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  // เดิมมีแค่ margin-bottom เล็กๆติดอยู่กับหัวข้อเท่านั้น (4px) ทำให้ปุ่มดูเบียด
+  // ติดกับรายการข้อมูลด้านล่างทันที เพิ่ม margin ให้แถวนี้ทั้งแถวแทน
+  margin-bottom: 18px;
 
   .section-title {
-    margin: 0 0 4px;
+    margin: 0;
   }
 }
 
 .device-summary-text {
+  display: block;
   color: var(--text-secondary);
   font-size: 0.85rem;
   font-weight: 600;
+  margin-top: 4px;
+}
+
+/* พรีวิวผังตำแหน่งอุปกรณ์แบบย่อ (ช่อง 7x3) - แค่ดูอย่างเดียว ไม่มีลากวาง */
+.mini-canvas {
+  position: relative;
+  width: 100%;
+  height: 150px;
+  margin-top: 16px;
+  background-color: var(--bg-panel);
+  background-image: radial-gradient(var(--border-strong) 1.2px, transparent 1.2px);
+  background-size: 18px 18px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 14px;
+}
+
+.mini-zone {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  width: 26px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  writing-mode: vertical-rl;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: rgba(0, 0, 0, 0.65);
+  pointer-events: none;
+
+  &--feeder {
+    left: 6px;
+    background: linear-gradient(180deg, #E8ED6B, #C9CE3E);
+    transform: rotate(180deg);
+  }
+
+  &--door {
+    right: 6px;
+    background: linear-gradient(180deg, #FFA584, #F4713F);
+  }
+}
+
+/* จุดที่ยังไม่มีอุปกรณ์แสดงเป็นจุดจางๆเล็กๆ (ไม่ใช่วงกลมเส้นประเด่นชัดแบบ "ช่อง"
+   ตายตัว) เพราะที่จริงวางอุปกรณ์ได้อิสระตรงไหนก็ได้ ไม่ได้ผูกกับช่องที่กำหนดไว้
+   ล่วงหน้า - เด่นชัดเฉพาะจุดที่มีอุปกรณ์วางอยู่แล้วเท่านั้น */
+.mini-slot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+
+  &::after {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(var(--fg-rgb), 0.18);
+  }
+
+  img { width: 14px; height: 14px; object-fit: contain; display: none; }
+
+  &.is-filled {
+    background-color: #9E9E9E;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+
+    &::after { display: none; }
+    img { display: block; }
+
+    &.online { background-color: #3F9043; }
+  }
+}
+
+.mini-slot-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  color: var(--text-title);
+  padding: 5px 10px;
+  border-radius: 8px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
 }
 
 .section-action-btn {
@@ -74,9 +174,9 @@
   border: 1px solid rgba(114, 213, 114, 0.4);
   color: var(--accent-green-bright);
   font-family: inherit;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  padding: 8px 16px;
+  padding: 10px 20px;
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -84,6 +184,7 @@
 
   &:hover {
     background: rgba(114, 213, 114, 0.24);
+    transform: translateY(-1px);
   }
 }
 
@@ -117,6 +218,18 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+
+  // รายการที่ยาวเกิน ~4 แถว เลื่อนดูในกรอบตัวเอง แทนที่จะดันความสูงของทั้งหน้า
+  // ยาวเรื่อยๆ ตามจำนวนประวัติที่สะสมไว้
+  &.is-scrollable {
+    max-height: 260px;
+    overflow-y: auto;
+    padding-right: 4px;
+
+    &::-webkit-scrollbar { width: 6px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
+  }
 }
 
 .record-empty {
@@ -162,12 +275,301 @@
   white-space: nowrap;
 }
 
+/* กราฟเก็บไข่แบบย่อ (14 วัน) */
+.mini-egg-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 90px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.mini-egg-bar {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  cursor: pointer;
+
+  .mini-egg-bar-track {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .mini-egg-bar-fill {
+    width: 55%;
+    min-width: 3px;
+    border-radius: 4px 4px 1px 1px;
+    background: rgba(114, 213, 114, 0.35);
+    transition: background 0.15s ease;
+  }
+
+  .mini-egg-bar-label {
+    font-size: 0.6rem;
+    color: rgba(var(--fg-rgb), 0.4);
+  }
+
+  &:hover .mini-egg-bar-fill { background: var(--accent-green-bright); }
+
+  &.is-today {
+    .mini-egg-bar-fill { background: var(--accent-green-bright); }
+    .mini-egg-bar-label { color: var(--accent-green-bright); font-weight: 700; }
+  }
+
+  &.is-selected .mini-egg-bar-fill {
+    background: var(--accent-green-bright);
+    box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--accent-green-bright);
+  }
+
+  &.is-selected .mini-egg-bar-label {
+    color: var(--accent-green-bright);
+    font-weight: 700;
+  }
+}
+
+.mini-egg-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  color: var(--text-title);
+  padding: 5px 10px;
+  border-radius: 8px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.egg-bar-detail {
+  background: rgba(114, 213, 114, 0.06);
+  border: 1px solid rgba(114, 213, 114, 0.25);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-top: 16px;
+}
+
+.egg-bar-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+
+  h4 {
+    color: var(--accent-green-bright);
+    font-size: 0.88rem;
+    font-weight: 700;
+    margin: 0;
+  }
+}
+
+/* แดชบอร์ดสุขภาพล่าสุด - เลขสองช่องเทียบกัน (สุขภาพดี/ป่วย) */
+.latest-stat-row {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.latest-stat-tile {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 14px 10px;
+  border-radius: 14px;
+  background: rgba(var(--fg-rgb), 0.05);
+  border: 1px solid var(--border-subtle);
+
+  &--good { background: rgba(114, 213, 114, 0.1); border-color: rgba(114, 213, 114, 0.25); }
+  &--bad { background: rgba(198, 40, 40, 0.08); border-color: rgba(198, 40, 40, 0.2); }
+}
+
+.latest-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-title);
+
+  small { font-size: 0.75rem; font-weight: 500; color: rgba(var(--fg-rgb), 0.5); margin-left: 3px; }
+}
+
+.latest-stat-tile--good .latest-stat-value { color: var(--accent-green-bright); }
+.latest-stat-tile--bad .latest-stat-value { color: var(--danger-grad-end, #e53935); }
+
+.latest-stat-label {
+  color: rgba(var(--fg-rgb), 0.6);
+  font-size: 0.78rem;
+}
+
+.latest-stat-date {
+  color: rgba(var(--fg-rgb), 0.5);
+  font-size: 0.8rem;
+  margin: 0 0 12px;
+}
+
+.health-appointment-hint {
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  color: var(--accent-green-bright);
+  background: rgba(114, 213, 114, 0.14);
+  border: 1px solid rgba(114, 213, 114, 0.35);
+
+  &.is-due {
+    color: var(--danger-grad-end, #e53935);
+    background: rgba(198, 40, 40, 0.12);
+    border-color: rgba(198, 40, 40, 0.3);
+  }
+
+  &.is-none {
+    color: var(--text-muted);
+    background: rgba(var(--fg-rgb), 0.05);
+    border-color: rgba(var(--fg-rgb), 0.12);
+    font-weight: 500;
+  }
+}
+
+.history-link-btn {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--accent-green-bright);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 0 0;
+  text-align: center;
+
+  &:hover { text-decoration: underline; }
+}
+
+/* วัคซีนที่ยังไม่ได้ให้ */
+// มีน้อยเรียงเป็นคอลัมเดียว พอมีหลายรายการค่อยขยายเป็นหลายคอลัม/แถวเองอัตโนมัติ
+// ตามความกว้างที่มี (ไม่ต้องนับเองว่าเมื่อไหร่ควรขึ้นแถวใหม่)
+.pending-vaccine-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+// เรียงชื่อวัคซีนกับป้ายสถานะเป็นคอลัม (บน-ล่าง) แทนแถวเดียวกัน (ซ้าย-ขวา)
+.pending-vaccine-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  background: rgba(var(--fg-rgb), 0.05);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.pending-vaccine-name {
+  color: var(--text-title);
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.pending-vaccine-status {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+
+  &.is-ok { background: rgba(114, 213, 114, 0.15); color: var(--accent-green-bright); }
+  &.is-warning { background: rgba(255, 167, 38, 0.15); color: #FFA726; }
+  &.is-danger { background: rgba(198, 40, 40, 0.15); color: var(--danger-grad-end, #e53935); }
+}
+
+/* ป็อบอัพประวัติ (สุขภาพ/วัคซีน) */
+.custom-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.custom-modal.history-modal {
+  width: 100%;
+  max-width: 480px;
+  max-height: 80vh;
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+}
+
+.history-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  h3 {
+    color: var(--text-title);
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+  }
+}
+
+.modal-close-btn {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(var(--fg-rgb), 0.08);
+  color: rgba(var(--fg-rgb), 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  svg { width: 15px; height: 15px; }
+
+  &:hover {
+    background: rgba(198, 40, 40, 0.14);
+    color: var(--danger-grad-end, #e53935);
+  }
+}
+
+.history-modal .record-list.is-scrollable {
+  max-height: 60vh;
+}
+
 @media (max-width: 600px) {
   .content-area {
     padding: 0 20px 30px;
   }
 
-  .status-panel {
-    padding: 24px;
+  .panel-card {
+    padding: 20px;
   }
 }

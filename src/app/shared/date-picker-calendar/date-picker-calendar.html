@@ -42,6 +42,8 @@
         <span class="day-markers" *ngIf="markerFor(day) as marker">
           <span class="marker-dot" [class.due]="marker.vaccineStatus === 'due'" [class.done]="marker.vaccineStatus === 'done'" *ngIf="marker.vaccineStatus"></span>
           <span class="marker-dot health" *ngIf="marker.hasHealth"></span>
+          <span class="marker-dot coop-info" *ngIf="marker.hasCoopInfo"></span>
+          <span class="marker-dot appointment" *ngIf="marker.hasHealthAppointment"></span>
         </span>
       </button>
     </div>
@@ -50,6 +52,20 @@
       <span><i class="legend-dot due"></i> วัคซีนถึง/เกินกำหนด</span>
       <span><i class="legend-dot done"></i> วัคซีนให้แล้ว</span>
       <span><i class="legend-dot health"></i> มีตรวจสุขภาพ</span>
+      <span><i class="legend-dot coop-info"></i> วันเกิด/วันรับเข้าเลี้ยง</span>
+      <span><i class="legend-dot appointment"></i> นัดตรวจสุขภาพ (กำหนดเอง)</span>
+    </div>
+
+    <!-- โหมดดูอย่างเดียว: คลิกวันที่แล้วกางรายละเอียดของวันนั้นลงมาตรงนี้ อ่านง่าย
+         กว่า title tooltip เดิม -->
+    <div class="day-detail-panel" *ngIf="viewOnly && selectedDetailDay">
+      <h3 class="day-detail-heading">{{ formatDetailDate(selectedDetailDay) }}</h3>
+      <ng-container *ngIf="selectedDetailMarker as marker; else noDetail">
+        <p class="day-detail-item" *ngFor="let line of marker.details">{{ line }}</p>
+      </ng-container>
+      <ng-template #noDetail>
+        <p class="day-detail-empty">ไม่มีข้อมูลของวันนี้</p>
+      </ng-template>
     </div>
   </div>
 </div>

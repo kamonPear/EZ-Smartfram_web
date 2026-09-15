@@ -170,3 +170,69 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* การ์ดโครงร่างระหว่างโหลด (shimmer) - กันไม่ให้ "ยังไม่มีคอกไก่ในระบบ" โผล่
+   ขึ้นมาก่อนชั่วครู่ขณะข้อมูลยังมาไม่ถึง เหมือนที่ทำไว้ในหน้าแรก */
+.coop-skeleton {
+  cursor: default;
+  pointer-events: none;
+
+  &:hover {
+    transform: none;
+    border-color: var(--border-subtle);
+    box-shadow: none;
+  }
+}
+
+.skeleton-block {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-card-alt, rgba(255, 255, 255, 0.06));
+  border-radius: 8px;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 30%,
+      rgba(114, 213, 114, 0.18) 50%,
+      transparent 70%
+    );
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.4s ease-in-out infinite;
+  }
+}
+
+.skeleton-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+
+.skeleton-line {
+  height: 14px;
+  margin-top: 6px;
+
+  &--title {
+    width: 70%;
+    height: 16px;
+    margin-top: 0;
+  }
+
+  &--amount {
+    width: 45%;
+  }
+
+  &--label {
+    width: 70%;
+    height: 12px;
+  }
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: 150% 0; }
+  100% { background-position: -50% 0; }
+}

@@ -308,6 +308,97 @@
   z-index: 2000;
 }
 
+/* ป็อบอัพยืนยันก่อนบันทึกผังฟาร์ม - ดีไซน์เดียวกับโมดัลยืนยันอื่นๆ ในแอป
+   (เช่นหน้าแก้ไขคอก) แต่ปุ่มยืนยันเป็นสีเขียวเพราะเป็นแอ็กชันบันทึก ไม่ใช่ลบ */
+.custom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.custom-modal {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  padding: 30px 40px;
+  border-radius: 20px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+  text-align: center;
+  width: 400px;
+  max-width: 90vw;
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  h3 {
+    margin-top: 0;
+    color: var(--text-primary);
+    font-size: 1.4rem;
+    font-weight: bold;
+  }
+
+  p {
+    color: var(--text-secondary);
+    margin-bottom: 26px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+
+    button {
+      padding: 12px 28px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-family: 'Kanit', sans-serif;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.1s, background-color 0.2s;
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      &.btn-cancel {
+        background-color: var(--bg-card-alt);
+        color: var(--text-primary);
+        &:hover:not(:disabled) { background-color: var(--border-strong); }
+      }
+
+      &.btn-confirm-save {
+        background-color: #a5d6a7;
+        color: #000;
+        &:hover:not(:disabled) { background-color: #81c784; }
+      }
+
+      &:active:not(:disabled) {
+        transform: scale(0.95);
+      }
+    }
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* จอเล็ก: เดิมไม่มี breakpoint เลย พาเลตอุปกรณ์ (250px) + แคนวาสฟาร์ม (สูงสุด 520px)
    เรียงข้างกันจะล้นจอมือถือ จึงให้วางซ้อนกันแทน และลด padding ด้านข้างที่ตายตัวไว้ที่ 50px */
 @media (max-width: 900px) {

@@ -131,6 +131,11 @@
     box-shadow: 0 0 0 3px rgba(114, 213, 114, 0.18);
   }
 
+  &.has-error {
+    border-color: var(--danger-grad-end, #e53935);
+    box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.15);
+  }
+
   .input-pill-icon {
     display: flex;
     align-items: center;
@@ -203,68 +208,38 @@
   }
 }
 
-/* Actions */
-.action-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 30px;
-  margin-top: 40px;
+/* ปุ่ม .action-row/.btn-cancel/.btn-confirm ย้ายไปเป็นสไตล์กลางที่ styles.scss
+   แล้ว (ใช้ร่วมกันทุกหน้าที่มีแถวปุ่มบันทึก/ยกเลิก) ไม่ต้อง copy ซ้ำที่นี่อีก */
+
+.field-warning {
+  color: var(--danger-grad-end, #e53935);
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: -6px 0 0 4px;
 }
 
-.btn-cancel,
-.btn-confirm {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 18px;
-  border: none;
-  border-radius: 50px;
-  font-size: 1.3rem;
-  font-weight: 700;
-  font-family: inherit;
-  color: var(--text-title);
-  cursor: pointer;
-  transition: all 0.3s ease;
+.toast-notification {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--bg-card);
+  border: 1px solid var(--accent-green-bright);
+  color: var(--text-primary, var(--text-title));
+  padding: 14px 26px;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  z-index: 2000;
 
-  svg {
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
-  }
-
-  &:hover {
-    transform: translateY(-3px);
-  }
-}
-
-.btn-cancel {
-  background: linear-gradient(135deg, var(--danger-grad-start), var(--danger-grad-end));
-  box-shadow: 0 8px 15px rgba(198, 40, 40, 0.3);
-
-  &:hover {
-    box-shadow: 0 12px 20px rgba(198, 40, 40, 0.4);
-  }
-}
-
-.btn-confirm {
-  background: linear-gradient(135deg, var(--success-grad-start), var(--success-grad-end));
-  box-shadow: 0 8px 15px rgba(40, 167, 69, 0.3);
-
-  &:hover {
-    box-shadow: 0 12px 20px rgba(40, 167, 69, 0.4);
+  &.is-error {
+    border-color: var(--danger-grad-end, #e53935);
   }
 }
 
 @media (max-width: 900px) {
   .form-grid {
     grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 600px) {
-  .action-row {
-    flex-direction: column;
   }
 }

@@ -163,17 +163,27 @@
   .sidebar-title {
     display: flex;
     flex-direction: column;
+    gap: 2px;
+    min-width: 0;
 
+    // ชื่อฟาร์ม - สีเขียว accent เดียวกับปุ่ม/แท็บที่ใช้ทั่วทั้งเว็บ
     .title-main {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      letter-spacing: 0.5px;
+      font-family: 'Kanit', sans-serif;
+      font-size: 1.22rem;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      line-height: 1.15;
+      color: var(--accent-green-bright);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .title-sub {
-      font-size: 0.8rem;
-      color: var(--accent-green-bright);
+      font-family: 'Kanit', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-secondary);
       letter-spacing: 1px;
     }
   }
@@ -247,13 +257,35 @@
       object-fit: contain;
       transition: filter 0.2s;
     }
+
+    svg {
+      width: 20px;
+      height: 20px;
+      transition: color 0.2s;
+    }
   }
 
   .nav-label {
+    flex: 1;
     font-size: 0.95rem;
     font-weight: 500;
     font-family: 'Kanit', sans-serif;
   }
+}
+
+.nav-badge {
+  flex-shrink: 0;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--danger-grad-end, #e53935);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ====================================================

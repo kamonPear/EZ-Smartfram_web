@@ -14,11 +14,92 @@
   <p class="loading-hint" *ngIf="isLoading">กำลังโหลดข้อมูลคอก...</p>
 
   <main class="content-area" *ngIf="!isLoading">
+    <div class="section-stack">
 
-    <div class="status-panel">
+      <!-- 1. สถานะอุปกรณ์ - โชว์ก่อนเลยว่าตรงมุมไหนของคอกมีอุปกรณ์แล้ว มุมไหนยังว่างอยู่ -->
+      <div class="card panel-card">
+        <div class="device-link-row">
+          <div>
+            <h3 class="section-title">อุปกรณ์ / เซนเซอร์</h3>
+            <span class="device-summary-text">ออนไลน์ {{ deviceOnlineCount }} / {{ devicesList.length }} ตัว</span>
+          </div>
+          <button class="section-action-btn" (click)="goToDeviceStatus()">ดูสถานะอุปกรณ์</button>
+        </div>
 
-      <div class="panel-section">
-        <h3 class="section-title">ข้อมูลไก่</h3>
+        <div class="mini-canvas">
+          <span class="mini-zone mini-zone--feeder">รางอาหาร</span>
+          <div
+            class="mini-slot"
+            *ngFor="let slot of slots; trackBy: trackBySlotId"
+            [class.is-filled]="slot.device"
+            [class.online]="slot.device?.current_status === 'Online'"
+            [style.left.%]="slot.x"
+            [style.top.%]="slot.y"
+            (mouseenter)="onSlotHoverStart(slot.id)"
+            (mouseleave)="onSlotHoverEnd()"
+          >
+            <img *ngIf="slot.device" [src]="deviceIconSrc(slot.device)" [alt]="slot.device.name">
+            <span class="mini-slot-tooltip" *ngIf="hoveredSlotId === slot.id">
+              {{ slot.device ? (slot.device.name + (slot.device.current_status === 'Online' ? ' · ออนไลน์' : ' · ออฟไลน์')) : 'วางอุปกรณ์เพิ่มได้ตรงนี้' }}
+            </span>
+          </div>
+          <span class="mini-zone mini-zone--door">ประตู</span>
+        </div>
+      </div>
+
+      <!-- 2. กราฟเก็บไข่ของคอกนี้ -->
+      <div class="card panel-card">
+        <div class="device-link-row">
+          <div>
+            <h3 class="section-title">กราฟเก็บไข่</h3>
+            <span class="device-summary-text">วันนี้เก็บได้ {{ todayEggTotal }} ฟอง</span>
+          </div>
+          <button class="section-action-btn" (click)="goToAddEgg()">บันทึกไข่</button>
+        </div>
+
+        <div class="mini-egg-chart">
+          <div
+            class="mini-egg-bar"
+            *ngFor="let bar of eggBars; trackBy: trackByEggBarKey"
+            [class.is-today]="bar.isToday"
+            [class.is-selected]="selectedEggBarKey === bar.key"
+            (click)="selectEggBar(bar)"
+            (mouseenter)="onEggBarHoverStart(bar)"
+            (mouseleave)="onEggBarHoverEnd()"
+          >
+            <div class="mini-egg-bar-track">
+              <div class="mini-egg-tooltip" *ngIf="hoveredEggBarKey === bar.key">{{ bar.value }} ฟอง</div>
+              <div class="mini-egg-bar-fill" [style.height.%]="eggBarHeightPercent(bar.value)"></div>
+            </div>
+            <span class="mini-egg-bar-label">{{ bar.label }}</span>
+          </div>
+        </div>
+
+        <div class="egg-bar-detail" *ngIf="selectedEggBar">
+          <div class="egg-bar-detail-header">
+            <h4>{{ selectedEggBarHeading }}</h4>
+            <button type="button" class="modal-close-btn" (click)="selectedEggBarKey = null" aria-label="ปิด">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>
+              </svg>
+            </button>
+          </div>
+          <div class="record-row" *ngFor="let r of selectedEggBarRecords">
+            <div class="record-row-main">
+              <span class="record-row-title">{{ r.number_egg }} ฟอง</span>
+              <span class="record-row-sub" *ngIf="r.note">{{ r.note }}</span>
+            </div>
+          </div>
+          <p class="record-empty" *ngIf="selectedEggBarRecords.length === 0">ไม่มีข้อมูลไข่ในวันนี้</p>
+        </div>
+      </div>
+
+      <!-- 3. ข้อมูลไก่ที่กรอกเข้ามา (รวมปุ่มปฏิทินของคอกนี้ไว้ในนี้ด้วย) -->
+      <div class="card panel-card">
+        <div class="device-link-row">
+          <h3 class="section-title">ข้อมูลไก่</h3>
+          <button class="section-action-btn" (click)="openCalendar()">ปฏิทินข้อมูลเกี่ยวกับคอกนี้</button>
+        </div>
         <div class="info-row">
           <span class="info-label">ชื่อคอก</span>
           <span class="info-value">{{ selectedCoopName || ('คอกที่ ' + selectedCoop) }}</span>
@@ -41,57 +122,118 @@
         </div>
       </div>
 
-      <div class="panel-section">
+      <!-- 4. แดชบอร์ดสุขภาพ - โชว์แค่ล่าสุด กดดูประวัติทั้งหมดค่อยเด้งป็อบอัพ -->
+      <div class="card panel-card">
         <div class="device-link-row">
-          <div>
-            <h3 class="section-title">อุปกรณ์ / เซนเซอร์</h3>
-            <span class="device-summary-text">ออนไลน์ {{ deviceOnlineCount }} / {{ devicesList.length }}</span>
-          </div>
-          <button class="section-action-btn" (click)="goToDeviceStatus()">ดูสถานะอุปกรณ์</button>
+          <h3 class="section-title">สุขภาพล่าสุด</h3>
+          <button class="section-action-btn" (click)="goToHealthCheck()">ตรวจสุขภาพ</button>
         </div>
-      </div>
 
-      <div class="panel-section">
-        <h3 class="section-title">ประวัติสุขภาพ</h3>
-        <div class="record-list" *ngIf="healthRecords.length > 0">
-          <div class="record-row" *ngFor="let record of healthRecords">
-            <div class="record-row-main">
-              <span class="record-row-title">สุขภาพดี {{ record.healthy }} / ป่วย {{ record.poor_health }} ตัว</span>
-              <span class="record-row-sub">{{ formatThaiDate(record.record_date) }}<ng-container *ngIf="record.note"> · {{ record.note }}</ng-container></span>
+        <p class="health-appointment-hint" [class.is-due]="!appt.isFuture" *ngIf="healthAppointment as appt; else noAppt">
+          <ng-container *ngIf="appt.isFuture">
+            นัดตรวจถัดไปวันที่ {{ formatDateObj(appt.appointmentDate) }}<ng-container *ngIf="appt.vaccineName"> (เตรียมให้{{ appt.vaccineName }} วันที่ {{ formatDateObj(appt.vaccineDate!) }})</ng-container>
+          </ng-container>
+          <ng-container *ngIf="!appt.isFuture">
+            ถึงกำหนดตรวจสุขภาพแล้ว<ng-container *ngIf="appt.vaccineName"> (เตรียมให้{{ appt.vaccineName }} วันที่ {{ formatDateObj(appt.vaccineDate!) }})</ng-container>
+          </ng-container>
+        </p>
+        <ng-template #noAppt>
+          <p class="health-appointment-hint is-none">ตอนนี้ยังไม่มีนัดตรวจสุขภาพ</p>
+        </ng-template>
+
+        <ng-container *ngIf="latestHealthRecord as latest; else noHealth">
+          <div class="latest-stat-row">
+            <div class="latest-stat-tile latest-stat-tile--good">
+              <span class="latest-stat-value">{{ latest.healthy }}<small>ตัว</small></span>
+              <span class="latest-stat-label">สุขภาพดี</span>
+            </div>
+            <div class="latest-stat-tile latest-stat-tile--bad">
+              <span class="latest-stat-value">{{ latest.poor_health }}<small>ตัว</small></span>
+              <span class="latest-stat-label">ป่วย</span>
             </div>
           </div>
-        </div>
-        <p class="record-empty" *ngIf="healthRecords.length === 0">ยังไม่มีประวัติสุขภาพ</p>
+          <p class="latest-stat-date">
+            ตรวจล่าสุดวันที่ {{ formatThaiDate(latest.record_date) }}<ng-container *ngIf="latest.note"> · {{ latest.note }}</ng-container>
+          </p>
+          <button type="button" class="history-link-btn" (click)="showHealthHistory = true">ดูประวัติทั้งหมด ({{ healthRecords.length }})</button>
+        </ng-container>
+        <ng-template #noHealth>
+          <p class="record-empty">ยังไม่มีประวัติสุขภาพ</p>
+        </ng-template>
       </div>
 
-      <div class="panel-section">
-        <h3 class="section-title">ประวัติวัคซีน</h3>
-        <div class="record-list" *ngIf="vaccineRecords.length > 0">
-          <div class="record-row" *ngFor="let record of vaccineRecords">
-            <div class="record-row-main">
-              <span class="record-row-title">{{ record.name }}<ng-container *ngIf="record.method"> · {{ record.method }}</ng-container></span>
-              <span class="record-row-sub">{{ formatThaiDate(record.record_date) }}<ng-container *ngIf="record.note"> · {{ record.note }}</ng-container></span>
-            </div>
-          </div>
+      <!-- 5. วัคซีนที่ยังไม่ได้ให้ - ไม่เอาประวัติทั้งหมดมาแสดง กดดูค่อยเด้งป็อบอัพ -->
+      <div class="card panel-card">
+        <div class="device-link-row">
+          <h3 class="section-title">วัคซีนที่ยังไม่ได้ให้</h3>
+          <button class="section-action-btn" (click)="goToGiveVaccine()">ให้วัคซีน</button>
         </div>
-        <p class="record-empty" *ngIf="vaccineRecords.length === 0">ยังไม่มีประวัติวัคซีน</p>
-      </div>
 
-      <div class="panel-section">
-        <h3 class="section-title">ประวัติไข่ไก่</h3>
-        <div class="record-list" *ngIf="eggRecords.length > 0">
-          <div class="record-row" *ngFor="let record of eggRecords">
-            <div class="record-row-main">
-              <span class="record-row-title">{{ record.number_egg }} ฟอง</span>
-              <span class="record-row-sub">{{ formatThaiDate(record.date_collect_egg) }}<ng-container *ngIf="record.note"> · {{ record.note }}</ng-container></span>
-            </div>
+        <div class="pending-vaccine-list" *ngIf="pendingVaccines.length > 0">
+          <div class="pending-vaccine-row" *ngFor="let v of pendingVaccines">
+            <span class="pending-vaccine-name">{{ v.vaccineName }}<ng-container *ngIf="v.method !== '-'"> · {{ v.method }}</ng-container></span>
+            <span class="pending-vaccine-status" [class]="vaccineStatusClass(v)">{{ vaccineStatusLabel(v) }}</span>
           </div>
         </div>
-        <p class="record-empty" *ngIf="eggRecords.length === 0">ยังไม่มีประวัติไข่ไก่</p>
+        <p class="record-empty" *ngIf="pendingVaccines.length === 0">ไม่มีวัคซีนที่ต้องให้ในตอนนี้</p>
+
+        <button type="button" class="history-link-btn" *ngIf="vaccineRecords.length > 0" (click)="showVaccineHistory = true">ดูประวัติที่ให้แล้ว ({{ vaccineRecords.length }})</button>
       </div>
 
     </div>
-
   </main>
+
+  <!-- ป็อบอัพประวัติสุขภาพทั้งหมด -->
+  <div class="custom-modal-overlay" *ngIf="showHealthHistory" (click)="showHealthHistory = false">
+    <div class="custom-modal history-modal" (click)="$event.stopPropagation()">
+      <div class="history-modal-header">
+        <h3>ประวัติสุขภาพ</h3>
+        <button type="button" class="modal-close-btn" (click)="showHealthHistory = false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="record-list is-scrollable">
+        <div class="record-row" *ngFor="let record of healthHistorySorted">
+          <div class="record-row-main">
+            <span class="record-row-title">สุขภาพดี {{ record.healthy }} / ป่วย {{ record.poor_health }} ตัว</span>
+            <span class="record-row-sub">{{ formatThaiDate(record.record_date) }}<ng-container *ngIf="record.note"> · {{ record.note }}</ng-container></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ป็อบอัพประวัติวัคซีนที่ให้แล้ว -->
+  <div class="custom-modal-overlay" *ngIf="showVaccineHistory" (click)="showVaccineHistory = false">
+    <div class="custom-modal history-modal" (click)="$event.stopPropagation()">
+      <div class="history-modal-header">
+        <h3>ประวัติวัคซีนที่ให้แล้ว</h3>
+        <button type="button" class="modal-close-btn" (click)="showVaccineHistory = false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="record-list is-scrollable">
+        <div class="record-row" *ngFor="let record of vaccineHistorySorted">
+          <div class="record-row-main">
+            <span class="record-row-title">{{ record.name }}<ng-container *ngIf="record.method"> · {{ record.method }}</ng-container></span>
+            <span class="record-row-sub">{{ formatThaiDate(record.record_date) }}<ng-container *ngIf="record.note"> · {{ record.note }}</ng-container></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <app-date-picker-calendar
+    *ngIf="isCalendarOpen"
+    [title]="'ปฏิทิน – ' + (selectedCoopName || ('คอกที่ ' + selectedCoop))"
+    [selectedDate]="null"
+    [markers]="dayMarkers"
+    [viewOnly]="true"
+    (closed)="closeCalendar()">
+  </app-date-picker-calendar>
 
 </div>

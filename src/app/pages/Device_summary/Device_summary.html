@@ -1,0 +1,56 @@
+<div class="device-summary-container">
+  <header class="header-section">
+    <div class="header-content">
+      <div class="logo-container clickable-logo" routerLink="/">
+        <img src="assets/images/logo.png" alt="Farm Logo">
+      </div>
+      <div class="title-group">
+        <h1>สถานะการทำงานของอุปกรณ์</h1>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-area">
+
+    <div class="summary-bar" *ngIf="!isLoading">
+      <span class="summary-bar-label">อุปกรณ์ทั้งหมดในฟาร์ม</span>
+      <span class="summary-bar-value">{{ totalOnline }} / {{ totalDevices }} ออนไลน์</span>
+    </div>
+
+    <p class="loading-hint" *ngIf="isLoading">กำลังโหลดข้อมูลอุปกรณ์...</p>
+
+    <div class="group-list" *ngIf="!isLoading">
+      <div class="group-block" *ngFor="let g of groups">
+        <button type="button" class="group-card" [class.is-open]="expandedGroupName === g.name" (click)="toggleGroup(g)">
+          <span class="group-icon">
+            <img [src]="g.icon" [alt]="g.name">
+          </span>
+          <span class="group-info">
+            <span class="group-name">{{ g.name }}</span>
+            <span class="group-sub">ออนไลน์ {{ g.online }} / {{ g.total }} ตัว</span>
+          </span>
+          <span class="group-total">{{ g.total }}<small>ตัว</small></span>
+          <span class="group-chevron" [class.open]="expandedGroupName === g.name">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </span>
+        </button>
+
+        <!-- กางรายละเอียดลงมาข้างล่างชื่อที่กดตรงนี้เลย ไม่เปิดหน้าใหม่ -->
+        <div class="group-detail" *ngIf="expandedGroupName === g.name">
+          <div class="device-row" *ngFor="let d of g.devices">
+            <span class="device-dot" [class.online]="isOnline(d)"></span>
+            <div class="device-row-info">
+              <span class="device-row-coop">{{ d.name_coop }}</span>
+              <span class="device-row-slot" *ngIf="d.slot_index != null">ช่องที่ {{ d.slot_index }}</span>
+            </div>
+            <span class="device-row-status" [class.online]="isOnline(d)">{{ isOnline(d) ? 'ทำงานอยู่' : 'ออฟไลน์' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="empty-hint" *ngIf="groups.length === 0">ยังไม่มีอุปกรณ์ในระบบ</p>
+    </div>
+  </main>
+</div>

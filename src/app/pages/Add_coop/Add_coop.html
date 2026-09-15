@@ -22,7 +22,7 @@
         </div>
 
         <div class="field-stack">
-          <div class="input-pill">
+          <div class="input-pill" [class.has-error]="isDuplicateName">
             <span class="input-pill-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20.6 12.3 12.7 20.2a2 2 0 0 1-2.8 0l-6.1-6.1a2 2 0 0 1 0-2.8L11.7 3.4a2 2 0 0 1 1.4-.6H19a2 2 0 0 1 2 2v5.9a2 2 0 0 1-.4 1.6Z"/>
@@ -31,6 +31,7 @@
             </span>
             <input type="text" [(ngModel)]="coopName" placeholder="ระบุชื่อคอก">
           </div>
+          <p class="field-warning" *ngIf="isDuplicateName">ชื่อคอกนี้มีอยู่แล้ว กรุณาใช้ชื่ออื่น</p>
 
           <div class="input-pill">
             <span class="input-pill-icon">
@@ -90,14 +91,18 @@
         </svg>
         ยกเลิก
       </button>
-      <button class="btn-confirm" (click)="addCoop()">
+      <button class="btn-confirm" [disabled]="isSaving || isDuplicateName" (click)="addCoop()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="20 6 9 17 4 12"/>
         </svg>
-        เพิ่มคอก
+        {{ isSaving ? 'กำลังบันทึก...' : 'เพิ่มคอก' }}
       </button>
     </div>
   </main>
+
+  <div class="toast-notification" [class.is-error]="toastType === 'error'" *ngIf="showToast">
+    <span>{{ toastMessage }}</span>
+  </div>
 
   <app-date-picker-calendar
     *ngIf="activeField"

@@ -15,6 +15,7 @@ export interface Device {
 export interface EggRecord {
   egg_id: number;
   coop_id?: number;
+  name_coop?: string;
   date_collect_egg: string;
   number_egg: number;
   note?: string;

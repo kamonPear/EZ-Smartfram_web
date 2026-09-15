@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription, interval } from 'rxjs';
 import { ApiService } from '../../services/api.service';
 import { Device } from '../../shared/coop-summary.util';
+import { deviceIconSrc } from '../../shared/device-icon.util';
 
 interface SlotData {
   id: number;
@@ -23,18 +24,13 @@ interface SlotData {
 })
 export class DeviceStatusComponent implements OnInit, OnDestroy {
 
+  deviceIconSrc = deviceIconSrc;
+
   coopId: string | null = null;
   coopName: string | null = null;
   isLoading = true;
   devices: Device[] = [];
   slots: SlotData[] = [];
-
-  trackStatuses = [
-    { id: 'top', name: 'รางบน' },
-    { id: 'middle', name: 'รางกลาง' },
-    { id: 'bottom', name: 'รางล่าง' }
-  ];
-  selectedTrack = this.trackStatuses[0];
 
   private refreshSubscription!: Subscription;
 
@@ -119,23 +115,10 @@ export class DeviceStatusComponent implements OnInit, OnDestroy {
     return status === 'normal' ? 'ออนไลน์ (กำลังทำงาน)' : 'ออฟไลน์ (ไม่ได้ทำงาน)';
   }
 
-  onTrackChange(event: any) {
-    const trackId = event.target.value;
-    this.selectedTrack = this.trackStatuses.find(t => t.id === trackId) || this.trackStatuses[0];
-  }
-
-  getSensorsForSelectedTrack(): Device[] {
-    let startIndex = 0;
-    let endIndex = 7;
-
-    if (this.selectedTrack.id === 'middle') {
-      startIndex = 7; endIndex = 14;
-    } else if (this.selectedTrack.id === 'bottom') {
-      startIndex = 14; endIndex = 21;
-    }
-
-    return this.devices
-      .filter(d => d.slot_index !== undefined && d.slot_index !== null && d.slot_index >= startIndex && d.slot_index < endIndex)
-      .sort((a, b) => (a.slot_index ?? 0) - (b.slot_index ?? 0));
+  // เดิมแยกตาม "ราง" (บน/กลาง/ล่าง) ให้เลือกกรองดู - ตัดคอนเซปตำแหน่งแบบตายตัว
+  // นี้ออกแล้ว (วางอุปกรณ์ได้อิสระ ไม่ผูกกับรางไหน) เปลี่ยนเป็นโชว์รายการ
+  // อุปกรณ์ทั้งหมดของคอกนี้เรียงตามลำดับที่วางไว้แทน
+  get sortedDevices(): Device[] {
+    return [...this.devices].sort((a, b) => (a.slot_index ?? 0) - (b.slot_index ?? 0));
   }
 }
