@@ -3,9 +3,10 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
-import { Coop } from '../../shared/coop-summary.util';
+import { Coop, deviceSummary } from '../../shared/coop-summary.util';
 import { CoopHoverCard } from '../../shared/coop-hover-card/coop-hover-card';
 import { deviceIconSrc } from '../../shared/device-icon.util';
+import { FarmNotification, NotificationsService } from '../../services/notifications.service';
 
 type FarmShape = 'circle' | 'triangle' | 'square';
 
@@ -34,15 +35,55 @@ export class HomePages1 implements OnInit {
   // บันทึกไว้เงียบๆ ผู้ใช้ถึงจะเห็นผลว่าจัดวางไปแล้วจริง
   farmShape: FarmShape = 'circle';
 
+  // แถบภาพรวมฟาร์ม + พรีวิวแจ้งเตือนล่าสุด (เพิ่มเข้ามาให้หน้าแรกดูเป็น
+  // แดชบอร์ดจริงๆ ไม่ใช่แค่ลิสต์การ์ดคอกไก่โล่งๆ) - ใช้ NotificationsService
+  // ตัวเดียวกับที่ไซด์บาร์ใช้ขึ้นตัวเลข ไม่ต้องมี logic แยก
+  notifications: FarmNotification[] = [];
+  isLoadingNotifications = true;
+
   constructor(
     private router: Router,
     private api: ApiService,
+    private notificationsService: NotificationsService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.loadCoops();
     this.loadShape();
+    this.loadNotifications();
+  }
+
+  loadNotifications() {
+    this.isLoadingNotifications = true;
+    this.notificationsService.load().subscribe({
+      next: (list) => {
+        this.notifications = list;
+        this.isLoadingNotifications = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        // แจ้งเตือนดึงไม่ได้ก็ไม่ต้องบล็อกหน้าแรก แค่ซ่อนพรีวิวไป
+        this.isLoadingNotifications = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  get totalChickens(): number {
+    return this.coops.reduce((sum, c) => sum + (c.amount || 0), 0);
+  }
+
+  get deviceOnlineCount(): number {
+    return this.coops.reduce((sum, c) => sum + deviceSummary(c).online, 0);
+  }
+
+  get deviceTotalCount(): number {
+    return this.coops.reduce((sum, c) => sum + deviceSummary(c).total, 0);
+  }
+
+  get latestNotifications(): FarmNotification[] {
+    return this.notifications.slice(0, 3);
   }
 
   loadCoops() {
