@@ -11,8 +11,37 @@
   </header>
 
   <main class="content-area">
-    <div class="form-grid form-grid-single">
+    <div class="form-grid">
 
+      <!-- รายการยา/วัคซีนที่มีอยู่แล้ว - ย้ายมาไว้คอลัมน์ซ้าย ให้ดูก่อนกรอก
+           กันพลาดกรอกซ้ำ โดยไม่ต้องเลื่อนจอลงไปดูข้างล่างฟอร์ม -->
+      <div class="card existing-card">
+        <div class="card-title-row">
+          <div class="card-title-left">
+            <div class="card-title-icon card-title-icon--green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>
+              </svg>
+            </div>
+            <h2>ยา/วัคซีนที่มีอยู่แล้ว</h2>
+          </div>
+        </div>
+
+        <p class="loading-hint" *ngIf="isLoadingSchedules">กำลังโหลดรายการ...</p>
+
+        <div class="existing-list" [class.is-scrollable]="schedules.length > 5" *ngIf="!isLoadingSchedules && schedules.length > 0">
+          <div class="existing-row" *ngFor="let s of schedules">
+            <div class="existing-row-main">
+              <span class="existing-row-title">{{ s.name }}<ng-container *ngIf="s.method"> · {{ s.method }}</ng-container></span>
+              <span class="existing-row-sub">อายุ {{ s.min_age_days }}–{{ s.max_age_days }} วัน<ng-container *ngIf="s.description"> · {{ s.description }}</ng-container></span>
+            </div>
+          </div>
+        </div>
+        <p class="record-empty" *ngIf="!isLoadingSchedules && schedules.length === 0">ยังไม่มียา/วัคซีนในระบบ</p>
+      </div>
+
+      <div class="form-column">
       <div class="card info-card">
         <div class="card-title-row">
           <div class="card-title-left">
@@ -110,49 +139,23 @@
       </div>
 
       <div class="pill-dropdown-backdrop" *ngIf="isMethodDropdownOpen" (click)="closeDropdowns()"></div>
-    </div>
 
-    <div class="action-row">
-      <button class="btn-cancel" routerLink="/home">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="6" y1="6" x2="18" y2="18"/>
-          <line x1="18" y1="6" x2="6" y2="18"/>
-        </svg>
-        ยกเลิก
-      </button>
-      <button class="btn-confirm" [disabled]="isSaving || isDuplicateName" (click)="saveVaccine()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-        {{ isSaving ? 'กำลังบันทึก...' : 'บันทึกยา/วัคซีน' }}
-      </button>
-    </div>
-
-    <!-- รายการยา/วัคซีนที่มีอยู่แล้ว - ให้ดูก่อนกรอก กันพลาดกรอกซ้ำ -->
-    <div class="card existing-card">
-      <div class="card-title-row">
-        <div class="card-title-left">
-          <div class="card-title-icon card-title-icon--green">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>
-            </svg>
-          </div>
-          <h2>ยา/วัคซีนที่มีอยู่แล้ว</h2>
-        </div>
+      <div class="action-row">
+        <button class="btn-cancel" routerLink="/home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="6" x2="18" y2="18"/>
+            <line x1="18" y1="6" x2="6" y2="18"/>
+          </svg>
+          ยกเลิก
+        </button>
+        <button class="btn-confirm" [disabled]="isSaving || isDuplicateName" (click)="saveVaccine()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          {{ isSaving ? 'กำลังบันทึก...' : 'บันทึกยา/วัคซีน' }}
+        </button>
       </div>
-
-      <p class="loading-hint" *ngIf="isLoadingSchedules">กำลังโหลดรายการ...</p>
-
-      <div class="existing-list" [class.is-scrollable]="schedules.length > 5" *ngIf="!isLoadingSchedules && schedules.length > 0">
-        <div class="existing-row" *ngFor="let s of schedules">
-          <div class="existing-row-main">
-            <span class="existing-row-title">{{ s.name }}<ng-container *ngIf="s.method"> · {{ s.method }}</ng-container></span>
-            <span class="existing-row-sub">อายุ {{ s.min_age_days }}–{{ s.max_age_days }} วัน<ng-container *ngIf="s.description"> · {{ s.description }}</ng-container></span>
-          </div>
-        </div>
       </div>
-      <p class="record-empty" *ngIf="!isLoadingSchedules && schedules.length === 0">ยังไม่มียา/วัคซีนในระบบ</p>
     </div>
   </main>
 

@@ -11,7 +11,10 @@
 
 .content-area {
   background-color: var(--bg-panel);
-  margin: 30px;
+  width: 100%;
+  max-width: 1300px;
+  box-sizing: border-box;
+  margin: 30px auto;
   padding: 50px;
   border-radius: 20px;
 }

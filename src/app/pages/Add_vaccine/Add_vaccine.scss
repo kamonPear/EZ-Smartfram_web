@@ -11,23 +11,28 @@
 
 .content-area {
   background-color: var(--bg-panel);
-  margin: 30px;
+  width: 100%;
+  max-width: 1200px;
+  box-sizing: border-box;
+  margin: 30px auto;
   padding: 40px;
   border-radius: 20px;
 }
 
 .form-grid {
   display: grid;
-  /* minmax(0, ...) แทน 1fr เฉยๆ เพราะ grid item ปกติไม่ยอมหดต่ำกว่าความกว้าง
-     ขั้นต่ำของเนื้อหาข้างใน (input ฯลฯ) ทำให้การ์ดล้นจอมือถือแม้จะมีแค่คอลัมน์เดียว */
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  /* คอลัมน์ซ้าย (รายการยา/วัคซีนที่มีอยู่แล้ว) ตั้งใจให้แคบกว่าคอลัมน์ฟอร์มมาก
+     เพราะเป็นแค่รายการให้เช็คก่อนกรอก ไม่ใช่เนื้อหาหลักของหน้า - minmax(0, ...)
+     กันไม่ให้ grid item ล้นจอมือถือแม้จะมีแค่คอลัมน์เดียว (breakpoint 900px) */
+  grid-template-columns: minmax(0, 330px) minmax(0, 1fr);
   gap: 30px;
+  align-items: start;
 }
 
-.form-grid-single {
-  grid-template-columns: minmax(0, 1fr);
-  max-width: 640px;
-  margin: 0 auto;
+.form-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .card {
@@ -39,12 +44,13 @@
   min-width: 0;
 }
 
-/* การ์ดรายการยา/วัคซีนที่มีอยู่แล้ว - อยู่ใต้ปุ่มบันทึก/ยกเลิก จัดกลางและกว้าง
-   เท่ากับฟอร์มด้านบน (640px) เหมือนแผงสรุปผลของหน้าไข่ไก่/สุขภาพ */
+/* การ์ดรายการยา/วัคซีนที่มีอยู่แล้ว - อยู่คอลัมน์ซ้ายของฟอร์ม (แคบกว่าฟอร์มหลัก
+   ตาม grid-template-columns ของ .form-grid) ให้เห็นก่อนกรอกกันพลาดกรอกซ้ำ
+   ปักไว้ (sticky) ระหว่างเลื่อนจอกรอกฟอร์มยาวๆ ทางขวา */
 .existing-card {
-  max-width: 640px;
   width: 100%;
-  margin: 40px auto 0;
+  position: sticky;
+  top: 30px;
 }
 
 .card-title-icon--green {
@@ -407,5 +413,16 @@
 @media (max-width: 900px) {
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* จอแคบ: วางกันแบบคอลัมน์เดียว ให้ฟอร์มขึ้นก่อน รายการที่มีอยู่แล้วไว้ล่างสุด
+     เหมือนเดิม (สลับจากเดสก์ท็อปที่วางรายการไว้ซ้าย ฟอร์มไว้ขวา) */
+  .form-column {
+    order: 1;
+  }
+
+  .existing-card {
+    order: 2;
+    position: static;
   }
 }

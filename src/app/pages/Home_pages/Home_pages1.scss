@@ -14,8 +14,9 @@
 
 .main-content {
   background-color: var(--bg-panel);
-  width: 98%; /* ขยายความกว้างให้เกือบเต็มจอ */
-  flex: 1; /* พระเอกของงาน: สั่งให้กล่องนี้ยืดความสูงเต็มพื้นที่ที่เหลือด้านล่าง */
+  width: 98%; /* เต็มจอบนหน้าจอเล็ก */
+  max-width: 1300px; /* จำกัดไม่ให้กว้างเกินเนื้อหาบนจอใหญ่ (ล้อกับ .coop-section 1220px + padding) */
+  flex: 0 1 auto; /* สูงตามเนื้อหาจริง ไม่ยืดเต็มพื้นที่ที่เหลือจนเกิดช่องว่างใต้เนื้อหา */
   border-radius: 10px;
   padding: 40px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.2);
@@ -85,6 +86,8 @@
 
 .coop-section {
   width: 100%;
+  max-width: 1220px;
+  margin: 0 auto;
 }
 
 .section-title {
