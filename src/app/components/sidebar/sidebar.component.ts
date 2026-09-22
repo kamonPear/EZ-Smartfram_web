@@ -1,8 +1,9 @@
 import { Component, OnInit, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ThemeService } from '../../services/theme.service';
 import { NotificationsService } from '../../services/notifications.service';
+import { AuthService } from '../../services/auth.service';
 
 interface MenuItem {
   label: string;
@@ -29,6 +30,8 @@ export class SidebarComponent implements OnInit {
     private location: Location,
     private themeService: ThemeService,
     private notificationsService: NotificationsService,
+    private authService: AuthService,
+    private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -82,6 +85,16 @@ export class SidebarComponent implements OnInit {
     // ชื่อเมนูก็เปลี่ยนให้ตรงกับหัวข้อของหน้าจริง ("ตั้งค่ามาตรฐานของฟาร์ม")
     { label: 'ตั้งค่ามาตรฐานของฟาร์ม',     icon: 'assets/images/temp.png',    route: '/farm-thresholds' },
   ];
+
+  currentUsername(): string | null {
+    return this.authService.currentUser()?.username ?? null;
+  }
+
+  logout() {
+    this.close();
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
 
   toggle() {
     this.isOpen.update(v => !v);

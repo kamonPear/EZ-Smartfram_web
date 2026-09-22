@@ -18,43 +18,57 @@ import { DeviceSummaryComponent } from './pages/Device_summary/Device_summary';
 import { NotificationsComponent } from './pages/Notifications/Notifications';
 import { HealthAppointmentsComponent } from './pages/Health_appointments/Health_appointments';
 import { GiveVaccineComponent } from './pages/Give_vaccine/Give_vaccine';
+import { LoginComponent } from './pages/Login/Login';
+import { authGuard } from './services/auth.guard';
 
 export const routes: Routes = [
-  // ถ้าเปิดหน้าเว็บมาครั้งแรก (Path ว่าง) ให้สั่ง Redirect ไปที่หน้า home
-  { path: '', redirectTo: 'home', pathMatch: 'full' },
+  // หน้าล็อกอิน - จุดเดียวที่ไม่ต้องผ่าน authGuard (ต้องเข้าได้ก่อนล็อกอินเสมอ)
+  { path: 'login', component: LoginComponent },
 
-  { path: 'home', component: HomePages1 },
+  // ทุกหน้าที่เหลือ ต้องล็อกอินก่อนถึงเข้าได้ - ครอบด้วย parent path ว่างที่ผูก
+  // authGuard ไว้ (ถ้ายังไม่ล็อกอิน guard จะเด้งไป /login เอง) แทนที่จะแปะ
+  // canActivate ซ้ำทุก route ด้านล่าง
+  {
+    path: '',
+    canActivate: [authGuard],
+    children: [
+      // ถ้าเปิดหน้าเว็บมาครั้งแรก (Path ว่าง) ให้สั่ง Redirect ไปที่หน้า home
+      { path: '', redirectTo: 'home', pathMatch: 'full' },
 
-  { path: 'add-coop', component: AddCoopComponent },
+      { path: 'home', component: HomePages1 },
 
-  { path: 'edit-coop', component: EditCoopComponent },
+      { path: 'add-coop', component: AddCoopComponent },
 
-  { path: 'add-vaccine', component: AddVaccineComponent },
+      { path: 'edit-coop', component: EditCoopComponent },
 
-  { path: 'add-egg', component: AddEggComponent },
+      { path: 'add-vaccine', component: AddVaccineComponent },
 
-  { path: 'add-health', component: AddHealthComponent },
+      { path: 'add-egg', component: AddEggComponent },
 
-  // ถ้าคลิกมาที่ /arrange ให้ไปที่หน้าจัดวางอุปกรณ์
-  { path: 'arrange', component: ArrangeEquipmentComponent },
+      { path: 'add-health', component: AddHealthComponent },
 
-  { path: 'farm-layout', component: FarmLayoutComponent },
+      // ถ้าคลิกมาที่ /arrange ให้ไปที่หน้าจัดวางอุปกรณ์
+      { path: 'arrange', component: ArrangeEquipmentComponent },
 
-  { path: 'setup', component: SetUpSystem },
+      { path: 'farm-layout', component: FarmLayoutComponent },
 
-  { path: 'farm-thresholds', component: FarmThresholdsComponent },
+      { path: 'setup', component: SetUpSystem },
 
-  { path: 'chicken-sensor', component: ChickensensorSystemComponent },
+      { path: 'farm-thresholds', component: FarmThresholdsComponent },
 
-  { path: 'device-summary', component: DeviceSummaryComponent },
+      { path: 'chicken-sensor', component: ChickensensorSystemComponent },
 
-  { path: 'notifications', component: NotificationsComponent },
+      { path: 'device-summary', component: DeviceSummaryComponent },
 
-  { path: 'health-appointments', component: HealthAppointmentsComponent },
+      { path: 'notifications', component: NotificationsComponent },
 
-  { path: 'give-vaccine', component: GiveVaccineComponent },
+      { path: 'health-appointments', component: HealthAppointmentsComponent },
 
-  { path: 'data-coop', component: DataCoopComponent },
+      { path: 'give-vaccine', component: GiveVaccineComponent },
 
-  { path: 'device-status', component: DeviceStatusComponent }
+      { path: 'data-coop', component: DataCoopComponent },
+
+      { path: 'device-status', component: DeviceStatusComponent }
+    ]
+  }
 ];
