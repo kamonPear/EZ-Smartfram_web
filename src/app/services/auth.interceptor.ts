@@ -21,9 +21,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((err: unknown) => {
       if (err instanceof HttpErrorResponse && err.status === 401) {
         authService.logout();
-        const redirect = router.routerState.snapshot.url;
+        const current = router.routerState.snapshot.url;
+        // เทียบเฉพาะ path (ตัด query ทิ้ง) ไม่ใช่ทั้ง url - ถ้าเทียบทั้ง url
+        // ตอนอยู่ที่ /login?redirect=/home มันจะไม่ถือว่าเป็นหน้า login แล้ว
+        // เอา url เดิมทั้งก้อนมายัดเป็น redirect ซ้อนเข้าไปอีกชั้นทุกครั้งที่เจอ 401
+        const onLoginPage = current.split('?')[0] === '/login';
         router.navigate(['/login'], {
-          queryParams: redirect && redirect !== '/login' ? { redirect } : {}
+          queryParams: current && !onLoginPage ? { redirect: current } : {}
         });
       }
       return throwError(() => err);

@@ -49,7 +49,10 @@ export class LoginComponent {
     this.auth.login(username, password).subscribe({
       next: () => {
         const redirect = this.route.snapshot.queryParamMap.get('redirect');
-        this.router.navigateByUrl(redirect || '/home');
+        // กัน redirect ที่ชี้กลับมาหน้า login เอง (เช่นจาก 401 ที่ยิงตอนยังไม่ล็อกอิน)
+        // ไม่งั้นล็อกอินผ่านแล้วแต่ยังค้างอยู่หน้าเดิม
+        const target = redirect && !redirect.startsWith('/login') ? redirect : '/home';
+        this.router.navigateByUrl(target);
       },
       error: (err: HttpErrorResponse) => {
         this.isSubmitting = false;
