@@ -76,6 +76,11 @@
   position: sticky;
   top: 20px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  // "position: sticky" สร้าง stacking context ใหม่ของตัวเอง ทำให้ z-index สูงๆ ที่
+  // ตั้งไว้กับการ์ดที่กำลังลาก (.cdk-drag-dragging) ข้างในนี้ ไปสู้กับ .farm-canvas
+  // (ซึ่งเป็นพี่น้องกันคนละ context) ไม่ได้เลยไม่ว่าจะตั้งค่าสูงแค่ไหน - ต้องยกระดับ
+  // ทั้ง context นี้ให้อยู่เหนือ .farm-canvas ตั้งแต่ต้นแทน ถึงจะลากทับแคนวาสได้จริง
+  z-index: 2;
 }
 
 .palette-title {
@@ -114,7 +119,10 @@
   color: var(--text-primary);
   font-size: 0.85rem;
   font-weight: 600;
-  transition: all 0.2s ease;
+  // ⚠️ ห้ามใช้ "transition: all" - ตอนลากคลาส CDK จะอัปเดต transform รัว
+  // หลายรอบต่อวินาที ถ้า transition ครอบคลุม transform ด้วย มันจะมี easing หน่วง
+  // ตามหลังเมาส์แทนที่จะขยับตามจริงทันที ลากแล้วเลยรู้สึกไม่สมูท/หน่วงเป็นยาง
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 
   .palette-icon {
     width: 42px;
@@ -141,6 +149,35 @@
   &:active {
     cursor: grabbing;
   }
+
+  // ระหว่างลาก (CDK เติมคลาสนี้ให้เอง) ต้องยกให้อยู่เหนือแคนวาสด้วย ไม่งั้นพอลาก
+  // เมาส์ข้ามเข้าไปในแคนวาส การ์ดที่กำลังลากจะโดนแคนวาส (มาทีหลังใน DOM) บังไว้
+  &.cdk-drag-dragging {
+    z-index: 1000;
+    cursor: grabbing;
+  }
+}
+
+// ตัวลากที่โชว์ระหว่างลากจริง (แทนที่การ์ด/หมุดตัวเต็ม) - CDK ย้ายอิลิเมนต์นี้ไปแปะ
+// ไว้นอก DOM เดิม (overlay ระดับ body) ตอนเริ่มลาก จึงต้องเขียนเป็น selector แยก
+// ไม่ซ้อนอยู่ใต้ .palette-item/.coop-marker เหมือนตอนไม่ได้ลาก
+.drag-preview-circle {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2px solid var(--accent-green-bright);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  cursor: grabbing;
+
+  img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+  }
 }
 
 .farm-canvas {
@@ -155,6 +192,7 @@
   border-radius: 20px;
   box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.3);
   position: relative;
+  z-index: 1;
   overflow: hidden;
 
   .shape-boundary {
@@ -243,6 +281,11 @@
     &:active {
       cursor: grabbing;
     }
+
+    &.cdk-drag-dragging {
+      z-index: 1000;
+      cursor: grabbing;
+    }
   }
 
   .canvas-empty-hint {
@@ -268,6 +311,9 @@
   transform: translateX(-50%);
   margin-bottom: 10px;
   z-index: 5;
+  // อ่านอย่างเดียว ไม่มีอะไรให้กด - pointer-events: none กันไม่ให้ป็อบอัพแย่ง
+  // hover จากหมุด/การ์ดด้านล่างเวลาป็อบอัพเกยตัวทริกเกอร์ (ทำให้กระพริบรัวๆ)
+  pointer-events: none;
 }
 
 /* --- แถบเครื่องมือด้านล่าง --- */
@@ -277,8 +323,15 @@
   margin: 0 auto;
   box-sizing: border-box;
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 14px;
   padding: 20px 50px 40px;
+
+  .save-hint {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
 
   .save-btn {
     background-color: #a5d6a7;

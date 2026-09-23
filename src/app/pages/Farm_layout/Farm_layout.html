@@ -43,8 +43,9 @@
         <div
           class="palette-item"
           *ngFor="let coop of unplacedCoops"
-          draggable="true"
-          (dragstart)="onDragStart($event, coop)"
+          cdkDrag
+          (cdkDragStarted)="onDragStarted()"
+          (cdkDragEnded)="onPaletteDragEnded($event, coop)"
           (mouseenter)="hoveredCoopId = coop.coop_id"
           (mouseleave)="hoveredCoopId = null"
         >
@@ -56,6 +57,12 @@
           <div class="hover-anchor" *ngIf="hoveredCoopId === coop.coop_id">
             <app-coop-hover-card [coop]="coop"></app-coop-hover-card>
           </div>
+
+          <!-- ระหว่างลาก โชว์แค่วงกลมไอคอนง่ายๆ แทนการ์ดเต็มใบ - เล็งตำแหน่งวางง่ายกว่า
+               และไม่บังมุมมองแคนวาสด้านหลัง -->
+          <div class="drag-preview-circle" *cdkDragPreview>
+            <img src="assets/images/coopchicken.png" [alt]="coop.name_coop">
+          </div>
         </div>
 
         <p class="palette-empty" *ngIf="unplacedCoops.length === 0">
@@ -64,7 +71,7 @@
       </div>
     </aside>
 
-    <div class="farm-canvas" (dragover)="onCanvasDragOver($event)" (drop)="onCanvasDrop($event)">
+    <div class="farm-canvas" #canvasEl>
       <svg class="shape-boundary" viewBox="0 0 100 100" preserveAspectRatio="none">
         <circle *ngIf="shape === 'circle'" cx="50" cy="50" r="48" />
         <polygon *ngIf="shape === 'triangle'" points="50,4 4,96 96,96" />
@@ -76,8 +83,10 @@
         *ngFor="let coop of placedCoops"
         [style.left.%]="coop.pos_x"
         [style.top.%]="coop.pos_y"
-        draggable="true"
-        (dragstart)="onDragStart($event, coop)"
+        cdkDrag
+        [cdkDragBoundary]="canvasEl"
+        (cdkDragStarted)="onDragStarted()"
+        (cdkDragEnded)="onMarkerDragEnded($event, coop)"
         (mouseenter)="hoveredCoopId = coop.coop_id"
         (mouseleave)="hoveredCoopId = null"
       >
@@ -90,6 +99,10 @@
         <div class="hover-anchor" *ngIf="hoveredCoopId === coop.coop_id">
           <app-coop-hover-card [coop]="coop"></app-coop-hover-card>
         </div>
+
+        <div class="drag-preview-circle" *cdkDragPreview>
+          <img src="assets/images/coopchicken.png" [alt]="coop.name_coop">
+        </div>
       </div>
 
       <div class="canvas-empty-hint" *ngIf="placedCoops.length === 0">
@@ -99,7 +112,8 @@
   </main>
 
   <footer class="toolbar-section">
-    <button class="save-btn" [disabled]="isSaving" (click)="openConfirmModal()">
+    <span class="save-hint" *ngIf="!isSaving && placedCoops.length === 0">จัดวางคอกอย่างน้อย 1 คอกก่อนถึงจะบันทึกได้</span>
+    <button class="save-btn" [disabled]="isSaving || placedCoops.length === 0" (click)="openConfirmModal()">
       {{ isSaving ? 'กำลังบันทึก...' : 'บันทึกผังฟาร์ม' }}
     </button>
   </footer>
