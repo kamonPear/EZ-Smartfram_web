@@ -183,9 +183,13 @@
         </div>
       </div>
 
-      <div class="coop-empty" *ngIf="!isLoading && loadError">
-        <p>เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ ลองใหม่อีกครั้ง</p>
-        <button class="empty-add-btn" (click)="loadCoops()">🔄 โหลดใหม่</button>
+      <!-- เชื่อมต่อไม่สำเร็จ - แทนที่จะโชว์เออเรอร์ตายตัวรอให้กดเอง ให้ลองเชื่อมต่อ
+           ใหม่ให้อัตโนมัติเป็นลูปเบื้องหลัง พร้อมแอนิเมชันหมุนนุ่มๆ ให้รู้สึกว่ากำลัง
+           ทำงานอยู่ตลอด ไม่ใช่ค้างตาย -->
+      <div class="coop-reconnect" *ngIf="!isLoading && loadError">
+        <span class="reconnect-spinner"></span>
+        <p>เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ กำลังลองเชื่อมต่อใหม่...</p>
+        <button class="empty-add-btn" *ngIf="showRetryButton" (click)="loadCoops()">🔄 โหลดใหม่ตอนนี้</button>
       </div>
 
       <div class="coop-grid" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)" *ngIf="!isLoading && !loadError && coops.length > 0">

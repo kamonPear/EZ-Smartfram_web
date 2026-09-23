@@ -1,8 +1,9 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
+import { timeout } from 'rxjs';
 import { Coop, deviceSummary } from '../../shared/coop-summary.util';
 import { CoopHoverCard } from '../../shared/coop-hover-card/coop-hover-card';
 import { deviceIconSrc } from '../../shared/device-icon.util';
@@ -17,7 +18,7 @@ type FarmShape = 'circle' | 'triangle' | 'square';
   templateUrl: './Home_pages1.html',
   styleUrls: ['./Home_pages1.scss']
 })
-export class HomePages1 implements OnInit {
+export class HomePages1 implements OnInit, OnDestroy {
 
   deviceIconSrc = deviceIconSrc;
   coops: Coop[] = [];
@@ -30,6 +31,19 @@ export class HomePages1 implements OnInit {
   loadError = false;
   // การ์ดโครงร่างระหว่างโหลด ใช้แค่ให้ *ngFor วนสร้างจำนวนที่ต้องการ (ไม่ผูกข้อมูลจริง)
   skeletonPlaceholders = [0, 1, 2];
+  // เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ - ลองใหม่ให้เองเป็นลูปเบื้องหลัง ไม่ต้องรอผู้ใช้กดปุ่ม
+  private retryTimer: ReturnType<typeof setTimeout> | null = null;
+  // แต่ถ้าลองมานานเกิน 1 นาทีแล้วยังไม่สำเร็จ โชว์ปุ่มโหลดใหม่ให้กดเองได้ด้วย เผื่อ
+  // อยากลองทันทีไม่ต้องรอรอบถัดไป
+  private reconnectStartedAt: number | null = null;
+  private longRetryTimer: ReturnType<typeof setTimeout> | null = null;
+  showRetryButton = false;
+  // เลขรันนิ่งกันสองปัญหา: (1) รีเควสต์เก่าที่ค้างนาน (เช่นจังหวะแบ็คเอนด์กำลัง
+  // restart พอร์ตรับ connection ได้แต่ยังไม่ตอบ) ตอบกลับช้ากว่ารีเควสต์ใหม่ที่ยิงซ้ำ
+  // เข้ามา ทำให้ผลลัพธ์เก่ามาทับผลลัพธ์ใหม่ที่เพิ่งโหลดสำเร็จ (2) ถ้ารีเควสต์ค้างไม่
+  // ตอบกลับเลย ลูป retry จะหยุดเงียบๆ (เพราะ retryTimer ตั้งใน error callback ที่ไม่มี
+  // วันถูกเรียก) ทำให้ดูเหมือนหน้าค้างต้องรีเฟรชเองถึงจะกลับมาทำงาน
+  private requestSeq = 0;
 
   // ผังฟาร์ม (จากหน้า "จัดวางผังฟาร์ม") - โชว์พรีวิวไว้ที่หน้าแรกด้วยเลย ไม่ใช่แค่
   // บันทึกไว้เงียบๆ ผู้ใช้ถึงจะเห็นผลว่าจัดวางไปแล้วจริง
@@ -87,21 +101,50 @@ export class HomePages1 implements OnInit {
   }
 
   loadCoops() {
+    if (this.retryTimer) {
+      clearTimeout(this.retryTimer);
+      this.retryTimer = null;
+    }
     this.isLoading = true;
     this.loadError = false;
-    this.api.get<Coop[]>('/coops').subscribe({
+    const seq = ++this.requestSeq;
+    this.api.get<Coop[]>('/coops').pipe(timeout(8000)).subscribe({
       next: (data) => {
+        if (seq !== this.requestSeq) return; // มีรีเควสต์ใหม่กว่าแทนที่ไปแล้ว - ผลลัพธ์นี้เก่าเกินไป
         this.coops = data || [];
         this.isLoading = false;
+        this.reconnectStartedAt = null;
+        this.showRetryButton = false;
+        if (this.longRetryTimer) {
+          clearTimeout(this.longRetryTimer);
+          this.longRetryTimer = null;
+        }
         this.cdr.detectChanges();
       },
       error: (err: any) => {
+        if (seq !== this.requestSeq) return;
         console.error('ดึงข้อมูลคอกไก่ล้มเหลว:', err);
         this.isLoading = false;
         this.loadError = true;
+        if (this.reconnectStartedAt == null) {
+          this.reconnectStartedAt = Date.now();
+          this.longRetryTimer = setTimeout(() => {
+            this.showRetryButton = true;
+            this.cdr.detectChanges();
+          }, 60000);
+        }
         this.cdr.detectChanges();
+        this.retryTimer = setTimeout(() => {
+          this.retryTimer = null;
+          this.loadCoops();
+        }, 3000);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.retryTimer) clearTimeout(this.retryTimer);
+    if (this.longRetryTimer) clearTimeout(this.longRetryTimer);
   }
 
   loadShape() {

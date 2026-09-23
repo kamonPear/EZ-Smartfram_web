@@ -705,6 +705,36 @@
   }
 }
 
+.coop-reconnect {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 44px 0;
+  color: var(--text-secondary);
+  animation: reconnectFadeIn 0.3s ease;
+
+  p {
+    margin: 0;
+    font-size: 0.92rem;
+  }
+}
+
+.reconnect-spinner {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 3px solid rgba(114, 213, 114, 0.2);
+  border-top-color: var(--accent-green-bright);
+  animation: ezSpin 0.8s linear infinite;
+}
+
+@keyframes reconnectFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .custom-modal-overlay {
   position: fixed;
   top: 0;
