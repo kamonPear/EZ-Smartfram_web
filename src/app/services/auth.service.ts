@@ -6,7 +6,6 @@ import { API_BASE_URL } from '../app.config';
 export interface AuthUser {
   id: number;
   username: string;
-  role: 'admin' | 'user';
 }
 
 export interface LoginResponse {
@@ -17,9 +16,9 @@ export interface LoginResponse {
 const TOKEN_KEY = 'ez_auth_token';
 const USER_KEY = 'ez_auth_user';
 
-// ล็อกอินเข้าระบบ - ตาม AUTH_CONTRACT.md (endpoint อยู่ใต้ /api/auth/*, token เป็น
-// JWT ส่งแบบ Authorization: Bearer <token>) ไม่มีหน้าสมัครสมาชิกเอง เพราะแอดมิน
-// เป็นคนสร้างบัญชีให้เองนอกระบบ (ดู contract)
+// ล็อกอินเข้าระบบ (endpoint อยู่ใต้ /api/auth/*, token เป็น JWT ส่งแบบ
+// Authorization: Bearer <token>) ไม่มีหน้าสมัครสมาชิกเอง เพราะเจ้าของฟาร์มเป็นคน
+// สร้างบัญชีให้เองผ่าน API โดยใช้ ADMIN_API_KEY - ในระบบไม่มี role ทุกบัญชีเท่ากันหมด
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private base = API_BASE_URL;
