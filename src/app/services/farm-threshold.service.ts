@@ -1,38 +1,45 @@
 import { Injectable, signal } from '@angular/core';
+import { ApiService } from './api.service';
 
 // ค่ามาตรฐานอุณหภูมิ/แอมโมเนียของฟาร์ม - ใช้คู่กันกับหน้า Farm_thresholds
-// (ตอนนี้ยังเก็บแค่ในเบราว์เซอร์ผู้ใช้เอง ยังไม่ส่งขึ้น backend เหมือนแอปมือถือ
-// เดิม - อนาคตถ้าจะทำระบบเปิด/ปิดพัดลม-ไฟอัตโนมัติจริงต้องย้ายไปเก็บที่ backend
-// แทน เพราะต้องเทียบกับค่าเซนเซอร์แบบเรียลไทม์)
-const TEMP_KEY = 'ez_target_temp';
-const AMMONIA_KEY = 'ez_target_ammonia';
+// ย้ายจาก localStorage มาเก็บที่ backend แล้ว (เดิมเว็บ/แอปมือถือต่างคนต่างเก็บใน
+// เครื่องตัวเอง ปรับค่าฝั่งไหนก็ไม่ตรงกับอีกฝั่ง) ตอนนี้ทั้งสองแพลตฟอร์มอ่าน/เขียน
+// แถวเดียวกันใน DB ผ่าน GET/PUT /api/farm-threshold แล้ว
 const DEFAULT_TEMP = 25;
 const DEFAULT_AMMONIA = 35;
+
+interface FarmThresholdResponse {
+  temperature: number;
+  ammonia: number;
+}
 
 @Injectable({ providedIn: 'root' })
 export class FarmThresholdService {
   temperature = signal(DEFAULT_TEMP);
   ammonia = signal(DEFAULT_AMMONIA);
+  isLoaded = signal(false);
+
+  constructor(private api: ApiService) {}
 
   load() {
-    try {
-      const t = localStorage.getItem(TEMP_KEY);
-      const a = localStorage.getItem(AMMONIA_KEY);
-      if (t != null) this.temperature.set(Number(t));
-      if (a != null) this.ammonia.set(Number(a));
-    } catch {
-      // localStorage อาจใช้ไม่ได้ (เช่น private mode) - ใช้ค่าเริ่มต้นแทน
-    }
+    this.api.get<FarmThresholdResponse>('/farm-threshold').subscribe({
+      next: (data) => {
+        if (data?.temperature != null) this.temperature.set(data.temperature);
+        if (data?.ammonia != null) this.ammonia.set(data.ammonia);
+        this.isLoaded.set(true);
+      },
+      error: (err) => {
+        console.error('โหลดค่ามาตรฐานของฟาร์มไม่สำเร็จ:', err);
+        this.isLoaded.set(true);
+      }
+    });
   }
 
   save(temperature: number, ammonia: number) {
     this.temperature.set(temperature);
     this.ammonia.set(ammonia);
-    try {
-      localStorage.setItem(TEMP_KEY, String(temperature));
-      localStorage.setItem(AMMONIA_KEY, String(ammonia));
-    } catch {
-      // ไม่ต้องทำอะไรถ้าเซฟไม่ได้ - ค่ายังใช้ได้ในเซสชันนี้ แค่ไม่จำข้ามเซสชัน
-    }
+    this.api.put('/farm-threshold', { temperature, ammonia }).subscribe({
+      error: (err) => console.error('บันทึกค่ามาตรฐานของฟาร์มไม่สำเร็จ:', err)
+    });
   }
 }

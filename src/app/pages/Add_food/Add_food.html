@@ -1,0 +1,122 @@
+<div class="add-food-container">
+  <header class="header-section">
+    <div class="header-content">
+      <div class="logo-container clickable-logo" routerLink="/">
+        <img src="assets/images/logo.png" alt="Farm Logo">
+      </div>
+      <div class="title-group">
+        <h1>เพิ่มสต็อกอาหาร</h1>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-area">
+    <div class="card info-card">
+      <div class="card-title-row">
+        <div class="card-title-left">
+          <div class="card-title-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+              <path d="m3.3 7 8.7 5 8.7-5"/>
+              <path d="M12 22V12"/>
+            </svg>
+          </div>
+          <h2>เพิ่มข้อมูลคลังอาหาร</h2>
+        </div>
+      </div>
+      <p class="required-hint">ช่องที่มี * ต้องกรอกให้ครบก่อนบันทึก</p>
+
+      <p class="field-label">ประเภทอาหาร <span class="is-required">*</span></p>
+      <div class="food-type-choices">
+        <button
+          type="button"
+          class="food-type-choice"
+          *ngFor="let type of [FOOD_TYPE_SMALL, FOOD_TYPE_LARGE]"
+          [class.selected]="selectedFoodType === type"
+          (click)="selectFoodType(type)"
+        >
+          <div class="food-type-choice-top">
+            <span class="food-type-choice-icon">🌾</span>
+            <svg *ngIf="selectedFoodType === type" class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <svg *ngIf="selectedFoodType !== type" class="check-icon is-empty" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9"/>
+            </svg>
+          </div>
+          <span class="food-type-choice-name">{{ type }}</span>
+          <span class="food-type-choice-hint">{{ foodTypeAgeHint(type) }}</span>
+        </button>
+      </div>
+
+      <div class="field-stack">
+        <div class="input-pill input-pill-clickable" [class.active]="activeField === 'import'" (click)="selectDateField('import')">
+          <span class="input-pill-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="17" rx="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+            </svg>
+          </span>
+          <span class="input-pill-value" [class.placeholder]="!importDate">{{ importDate ? formatDate(importDate) : 'วันที่นำอาหารเข้า *' }}</span>
+          <span class="input-pill-action">เลือกวันที่</span>
+        </div>
+
+        <div class="input-pill">
+          <span class="input-pill-icon">🌾</span>
+          <input type="number" [(ngModel)]="amount" (ngModelChange)="onAmountChange()" placeholder="ปริมาณที่นำเข้า *" min="0">
+          <span class="input-pill-suffix">กก.</span>
+        </div>
+
+        <div class="input-pill">
+          <span class="input-pill-icon">⚠️</span>
+          <input type="number" [(ngModel)]="threshold" (ngModelChange)="onThresholdChange()" placeholder="กำหนดปริมาณใกล้หมด" min="0">
+          <span class="input-pill-suffix">กก.</span>
+        </div>
+
+        <div class="input-pill input-pill-clickable" [class.active]="activeField === 'expiry'" (click)="selectDateField('expiry')">
+          <span class="input-pill-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="17" rx="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+            </svg>
+          </span>
+          <span class="input-pill-value" [class.placeholder]="!expiryDate">{{ expiryDate ? formatDate(expiryDate) : 'วันที่อาหารใกล้หมด * (คำนวณอัตโนมัติ)' }}</span>
+          <span class="input-pill-action">เลือกวันที่</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-cancel" routerLink="/food">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="6" y1="6" x2="18" y2="18"/>
+          <line x1="18" y1="6" x2="6" y2="18"/>
+        </svg>
+        ยกเลิก
+      </button>
+      <button class="btn-confirm" [disabled]="isSaving" (click)="saveFoodData()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        {{ isSaving ? 'กำลังบันทึก...' : 'เข้าสต็อกอาหาร' }}
+      </button>
+    </div>
+  </main>
+
+  <app-date-picker-calendar
+    *ngIf="activeField"
+    [title]="activeField === 'import' ? 'วันที่นำอาหารเข้า' : 'วันที่อาหารใกล้หมด'"
+    [selectedDate]="activeFieldDate"
+    (daySelected)="onDaySelected($event)"
+    (closed)="closeCalendar()">
+  </app-date-picker-calendar>
+
+  <div class="toast-notification" [class.is-error]="toastType === 'error'" *ngIf="showToast">
+    <span>{{ toastMessage }}</span>
+  </div>
+</div>

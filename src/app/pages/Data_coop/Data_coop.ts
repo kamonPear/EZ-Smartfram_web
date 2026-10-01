@@ -6,7 +6,7 @@ import { Subscription, interval } from 'rxjs';
 import { Device, EggRecord, HealthRecord, VaccineRecord, formatThaiDate } from '../../shared/coop-summary.util';
 import { deviceIconSrc } from '../../shared/device-icon.util';
 import { DayMarker, loadCalendarMarkers, formatDateKey } from '../../shared/calendar-markers.util';
-import { getManualHealthAppointments } from '../../shared/manual-health-appointment.util';
+import { HealthAppointmentService, HealthAppointment } from '../../services/health-appointment.service';
 import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picker-calendar';
 
 interface SlotPreview {
@@ -78,6 +78,10 @@ export class DataCoopComponent implements OnInit, OnDestroy {
   // หน้า "ให้วัคซีน") - โชว์แค่ที่ยังไม่ให้ ไม่ใช่ทั้งหมด
   pendingVaccines: PendingVaccine[] = [];
 
+  // นัดตรวจสุขภาพที่กำหนดวันเองของคอกนี้ (จาก backend แล้ว - ไม่ใช่ localStorage
+  // อีกต่อไป) ใช้ร่วมกับ pendingVaccines ใน healthAppointment getter ด้านล่าง
+  manualAppointments: HealthAppointment[] = [];
+
   // ปฏิทินของคอกนี้โดยเฉพาะ (ไม่รวมคอกอื่น)
   isCalendarOpen = false;
   dayMarkers: Map<string, DayMarker> | null = null;
@@ -88,6 +92,7 @@ export class DataCoopComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private api: ApiService,
+    private healthAppointmentService: HealthAppointmentService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -105,6 +110,7 @@ export class DataCoopComponent implements OnInit, OnDestroy {
       if (this.selectedCoop) {
         this.fetchCoopDetails();
         this.fetchPendingVaccines();
+        this.fetchManualAppointments();
         this.loadMarkers();
         this.startAutoRefresh();
       } else {
@@ -225,6 +231,20 @@ export class DataCoopComponent implements OnInit, OnDestroy {
     });
   }
 
+  // นัดตรวจสุขภาพที่กำหนดวันเองของคอกนี้ - ใช้ร่วมกับ pendingVaccines ใน
+  // healthAppointment getter (ก่อนหน้านี้อ่านจาก localStorage ได้ทันทีแบบ sync แต่
+  // ตอนนี้ต้องยิง API ก่อน จึง cache ผลไว้ในฟิลด์แทนที่จะคำนวณในตัว getter เอง)
+  fetchManualAppointments(silent = false) {
+    if (!this.selectedCoop) return;
+    this.healthAppointmentService.list(Number(this.selectedCoop)).subscribe({
+      next: (appts) => {
+        this.manualAppointments = appts || [];
+        if (!silent) this.cdr.detectChanges();
+      },
+      error: (err) => console.error('โหลดนัดตรวจที่กำหนดเองไม่สำเร็จ:', err)
+    });
+  }
+
   loadMarkers() {
     // ปฏิทินของคอกนี้เท่านั้น (ส่ง coopId กรองไว้) ไม่รวมคอกอื่น
     loadCalendarMarkers(this.api, Number(this.selectedCoop)).subscribe({
@@ -251,6 +271,7 @@ export class DataCoopComponent implements OnInit, OnDestroy {
       this.refreshSubscription = interval(5000).subscribe(() => {
         this.fetchCoopDetails(true);
         this.fetchPendingVaccines(true);
+        this.fetchManualAppointments(true);
       });
     }
   }
@@ -352,15 +373,16 @@ export class DataCoopComponent implements OnInit, OnDestroy {
 
   // นัดตรวจสุขภาพถัดไปของคอกนี้ - มีได้ 2 แหล่ง: วันก่อนวัคซีนที่ใกล้ครบกำหนดที่สุด 1
   // วัน (คำนวณเดียวกับ Add_health, ใช้ pendingVaccines ที่โหลดไว้แล้วไม่ต้องยิง API ซ้ำ)
-  // หรือนัดที่กำหนดวันเองจากโหมด "นัดตรวจสุขภาพเอง" (เก็บใน localStorage) - เอาที่ใกล้สุด
+  // หรือนัดที่กำหนดวันเองจากโหมด "นัดตรวจสุขภาพเอง" (ใช้ manualAppointments ที่โหลด
+  // แคชไว้แล้วจาก backend - ตอนนี้เป็น async เลยอ่านสดในตัว getter ไม่ได้อีกต่อไป)
   get healthAppointment(): { appointmentDate: Date; vaccineName: string | null; vaccineDate: Date | null; isFuture: boolean } | null {
     const vaccineCandidates = this.pendingVaccines.map(v => {
       const appointmentDate = new Date(v.date);
       appointmentDate.setDate(appointmentDate.getDate() - 1);
       return { appointmentDate, vaccineName: v.vaccineName as string | null, vaccineDate: v.date as Date | null };
     });
-    const manualCandidates = getManualHealthAppointments(Number(this.selectedCoop)).map(m => ({
-      appointmentDate: new Date(m.date),
+    const manualCandidates = this.manualAppointments.map(m => ({
+      appointmentDate: new Date(m.appointment_date),
       vaccineName: null as string | null,
       vaccineDate: null as Date | null,
     }));

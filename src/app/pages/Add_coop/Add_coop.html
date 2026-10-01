@@ -78,6 +78,8 @@
             <span class="input-pill-value" [class.placeholder]="!receivedDate">{{ receivedDate ? formatDate(receivedDate) : 'วันที่รับเข้าเลี้ยง' }}</span>
             <span class="input-pill-action">เลือกวันที่</span>
           </div>
+
+          <p class="date-warning" *ngIf="isReceivedBeforeBirth">วันที่รับเข้าเลี้ยงต้องไม่ก่อนวันเกิดไก่</p>
         </div>
       </div>
 
@@ -91,7 +93,7 @@
         </svg>
         ยกเลิก
       </button>
-      <button class="btn-confirm" [disabled]="isSaving || isDuplicateName" (click)="addCoop()">
+      <button class="btn-confirm" [disabled]="isSaving || isDuplicateName || isReceivedBeforeBirth" (click)="addCoop()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="20 6 9 17 4 12"/>
         </svg>

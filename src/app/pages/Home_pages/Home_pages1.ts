@@ -8,13 +8,16 @@ import { Coop, deviceSummary } from '../../shared/coop-summary.util';
 import { CoopHoverCard } from '../../shared/coop-hover-card/coop-hover-card';
 import { deviceIconSrc } from '../../shared/device-icon.util';
 import { FarmNotification, NotificationsService } from '../../services/notifications.service';
+import { DayMarker, loadCalendarMarkers } from '../../shared/calendar-markers.util';
+import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picker-calendar';
+import { FarmThresholdService } from '../../services/farm-threshold.service';
 
 type FarmShape = 'circle' | 'triangle' | 'square';
 
 @Component({
   selector: 'app-home-pages1',
   standalone: true,
-  imports: [CommonModule, RouterModule, DragDropModule, CoopHoverCard],
+  imports: [CommonModule, RouterModule, DragDropModule, CoopHoverCard, DatePickerCalendar],
   templateUrl: './Home_pages1.html',
   styleUrls: ['./Home_pages1.scss']
 })
@@ -55,10 +58,15 @@ export class HomePages1 implements OnInit, OnDestroy {
   notifications: FarmNotification[] = [];
   isLoadingNotifications = true;
 
+  // ปฏิทินรวมทั้งฟาร์ม (ไม่กรองคอกเดียว) วางคู่กับผังฟาร์ม - ใช้ตัวมาร์คเดียวกับ
+  // ปฏิทินของ Data_coop แค่ไม่ส่ง coopId เลยได้มาร์คของทุกคอกรวมกัน
+  dayMarkers: Map<string, DayMarker> | null = null;
+
   constructor(
     private router: Router,
     private api: ApiService,
     private notificationsService: NotificationsService,
+    public thresholds: FarmThresholdService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -66,6 +74,26 @@ export class HomePages1 implements OnInit, OnDestroy {
     this.loadCoops();
     this.loadShape();
     this.loadNotifications();
+    this.loadMarkers();
+    this.thresholds.load();
+  }
+
+  // ลาก conic-gradient มาเป็นวงแหวนเปอร์เซ็นต์แบบเดียวกับ EzGaugeCard ของแอปมือถือ
+  // (ไม่ลากไลบรารี gauge ใหม่มาลงเว็บ แค่ CSS ธรรมดา)
+  gaugeBackground(value: number, max: number, color: string): string {
+    const percent = Math.min(1, Math.max(0, value / max));
+    const deg = percent * 360;
+    return `conic-gradient(${color} ${deg}deg, rgba(var(--fg-rgb), 0.15) ${deg}deg 360deg)`;
+  }
+
+  loadMarkers() {
+    loadCalendarMarkers(this.api).subscribe({
+      next: (markers) => {
+        this.dayMarkers = markers;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('โหลดข้อมูลมาร์คปฏิทินไม่สำเร็จ:', err),
+    });
   }
 
   loadNotifications() {

@@ -25,6 +25,106 @@
   flex-direction: column;
 }
 
+/* ค่ามาตรฐานของฟาร์ม (อุณหภูมิ/แอมโมเนีย) - วงแหวนเปอร์เซ็นต์แบบเดียวกับการ์ดบน
+   หน้าแรกของแอปมือถือ (EzGaugeCard) ทั้งใบคลิกได้ ไปหน้าตั้งค่า ใช้กรอบ/เงา/
+   หัวข้อแบบเดียวกับ .stat-tile + .section-title ด้านล่าง (ของเดิมมีแต่วงแหวนลอยๆ
+   ไม่มีหัวข้อ ดูโดดจากการ์ดใบอื่นที่มีหัวข้อ+กรอบเบาๆ แบบเดียวกันหมด) */
+.threshold-dashboard-card {
+  display: block;
+  width: 100%;
+  margin-bottom: 30px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .section-title-row {
+    margin-bottom: 16px;
+  }
+}
+
+.threshold-edit-hint {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.threshold-gauges-row {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.threshold-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.gauge-ring {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+}
+
+.gauge-center {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-value {
+  color: var(--text-title);
+  font-size: 1.4rem;
+  font-weight: 700;
+
+  small {
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-left: 1px;
+  }
+}
+
+.gauge-label {
+  color: var(--text-title);
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+}
+
+@media (max-width: 500px) {
+  .threshold-dashboard-card {
+    padding: 16px 12px;
+  }
+
+  .threshold-gauges-row { gap: 10px; }
+
+  .gauge-ring { width: 78px; height: 78px; }
+  .gauge-center { width: 60px; height: 60px; }
+  .gauge-label { font-size: 0.68rem; white-space: normal; }
+}
+
 .coop-section {
   width: 100%;
   max-width: 1220px;
@@ -99,16 +199,30 @@
   margin-bottom: 20px;
 }
 
+// เป็น <button> (กดไปหน้าที่เกี่ยวข้อง/เลื่อนไปดูรายการได้) - ต้อง reset สไตล์
+// ปุ่มเริ่มต้นของเบราว์เซอร์เองด้วย (text-align, font, cursor) ให้หน้าตาเหมือน
+// การ์ดเดิมทุกอย่าง แค่เพิ่ม hover ให้รู้ว่ากดได้
 .stat-tile {
   display: flex;
   align-items: center;
   gap: 14px;
+  width: 100%;
   background-color: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: 18px;
   padding: 20px;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
   min-width: 0;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    border-color: var(--accent-green);
+  }
 }
 
 .stat-icon {
@@ -262,14 +376,97 @@
 
 /* พรีวิวผังฟาร์มที่หน้าแรก - อ่านอย่างเดียว (ไม่ลากได้) ใช้ดีไซน์เดียวกับ
    หน้า "จัดวางผังฟาร์ม" เพื่อให้เห็นภาพเดียวกันทั้ง 2 หน้า */
-.farm-layout-section {
-  width: 100%;
+// แถวปฏิทิน (ซ้าย) + ผังฟาร์ม (กลาง) + รายการ (ขวา) 3 ช่องเท่าๆ กัน stretch ให้สูง
+// เท่ากันทั้งแถว - ปฏิทิน/รายการมาจาก <app-date-picker-calendar> ตัวเดียวกัน (ให้
+// display:contents กับตัว host เพื่อให้กล่องลูก 2 กล่องของมันกลายเป็น flex item
+// ตรงๆ ของแถวนี้เลย) แล้วใช้ order แทรกผังฟาร์มให้อยู่ตรงกลางระหว่างกล่องทั้งสอง
+// โดยไม่ต้องยุ่งกับลำดับ element ใน DOM ถ้าจอแคบ wrap ลงมาเรียงต่อกันแทน
+.farm-overview-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  // กล่องทั้ง 3 มี max-width จำกัดไว้ (ดูด้านล่าง) พอรวมกันแล้วแคบกว่าแถวที่มี
+  // ถ้าไม่ center จะค้างชิดซ้ายเหลือพื้นที่ว่างโล่งๆ ด้านขวา
+  justify-content: center;
+  gap: 24px;
   margin-bottom: 40px;
+
+  ::ng-deep app-date-picker-calendar {
+    display: contents;
+  }
+
+  // กล่องปฏิทิน (ตัวเลือกวัน+legend) - อยู่ซ้ายสุด
+  ::ng-deep .calendar-popup.calendar-inline:not(.upcoming-box) {
+    order: 1;
+  }
+
+  // กล่องรายการ - อยู่ขวาสุด
+  ::ng-deep .calendar-popup.calendar-inline.upcoming-box {
+    order: 3;
+  }
+
+  // ขนาดให้เท่ากับกล่องผังฟาร์มตรงกลาง (.farm-layout-section ด้านล่าง) - ต้อง
+  // ประกาศซ้อนอยู่ใต้ .farm-overview-row แบบนี้ (ไม่ใช่แยกเป็น rule ลอยๆ) เพื่อให้
+  // specificity สูงกว่ากฎ .calendar-popup.calendar-inline { max-width:none } ของ
+  // คอมโพเนนต์เอง ไม่งั้นแพ้/ชนะไม่แน่นอนแล้วแต่ลำดับ bundle (เจอมาแล้วกล่องรายการ
+  // กว้างกว่ากล่องปฏิทินเพราะกฎนี้แพ้)
+  ::ng-deep .calendar-popup.calendar-inline {
+    flex: 1 1 360px;
+    min-width: 0;
+    max-width: 420px;
+    box-sizing: border-box;
+    // กว้างขึ้น แต่เตี้ยลง - ลด padding ของการ์ดลงจากค่าเริ่มต้นของคอมโพเนนต์ (26px)
+    padding: 18px 22px;
+  }
+
+  // แถวแต่ละวันในกริดก็ลดความสูงลงนิดหน่อยด้วย (เฉพาะโหมด inline หน้านี้ ไม่กระทบ
+  // ป็อบอัพเลือกวันที่ของหน้าอื่นที่ยังใช้ขนาดเดิม)
+  ::ng-deep .calendar-inline .day-cell {
+    padding: 3px 0 4px;
+  }
+
+  ::ng-deep .calendar-inline .week-row {
+    margin-bottom: 2px;
+  }
+
+  // กล่องรายการ stretch สูงเท่าแถวอยู่แล้ว (align-items: stretch ด้านบน) แต่เนื้อหา
+  // ข้างในเดิมจำกัดความสูงตายตัวไว้ที่ 260px ทำให้เหลือพื้นที่ว่างด้านล่างเวลารายการ
+  // สั้นกว่ากล่องอื่นในแถว - เปลี่ยนให้ยืดเต็มพื้นที่ที่มีจริงแทน แล้วค่อยเลื่อนเอา
+  // เฉพาะตอนเนื้อหายาวเกินจริงๆ
+  ::ng-deep .calendar-inline.upcoming-box {
+    display: flex;
+    flex-direction: column;
+  }
+
+  ::ng-deep .calendar-inline.upcoming-box .upcoming-list {
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+  }
+}
+
+// ย่อให้เล็กลงกว่าเดิมและอยู่ตรงกลางระหว่างปฏิทินกับรายการ (order: 2) - กว้างเท่า
+// อีกสองกล่องเพื่อให้ทั้งแถวดูสมดุล และใส่กรอบการ์ดแบบเดียวกับกล่องปฏิทิน/รายการ
+// (เดิมไม่มีกรอบเลย ดูเปล่าเปลี่ยวกว่ากล่องข้างๆ ที่มีขอบ/พื้นหลังชัดเจน)
+.farm-layout-section {
+  order: 2;
+  flex: 1 1 360px;
+  min-width: 0;
+  max-width: 420px;
+  box-sizing: border-box;
+  background: var(--bg-card);
+  border: 1px solid var(--accent-green-bright);
+  border-radius: 24px;
+  padding: 18px 22px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
 }
 
 .farm-layout-preview {
   width: 100%;
-  max-width: 560px;
+  // เต็มความกว้างที่มีในกรอบการ์ด (การ์ด .farm-layout-section เองถูกจำกัด
+  // max-width ไว้แล้วด้านบน) ยังคง 1:1 ไว้เพื่อไม่ให้รูปทรงผังฟาร์มเพี้ยน แค่ไม่
+  // บีบแคบซ้ำอีกชั้นจนเหลือพื้นที่ว่างรอบๆ เยอะเกินไป
   aspect-ratio: 1 / 1;
   margin: 0 auto;
   background-color: var(--bg-panel);
@@ -359,8 +556,20 @@
 }
 
 @media (max-width: 900px) {
+  // จอแคบเกินกว่าจะวาง 3 กล่องคู่กันแนวนอนได้ - สลับเป็นซ้อนแนวตั้งทีละกล่องแทน
+  // (ยังคงลำดับ ปฏิทิน > ผังฟาร์ม > รายการ ไว้เหมือนเดิมด้วย order)
+  .farm-layout-section {
+    max-width: 100%;
+    flex-basis: 100%;
+  }
+
   .farm-layout-preview {
     max-width: 100%;
+  }
+
+  .farm-overview-row ::ng-deep .calendar-popup.calendar-inline {
+    max-width: 100%;
+    flex-basis: 100%;
   }
 }
 

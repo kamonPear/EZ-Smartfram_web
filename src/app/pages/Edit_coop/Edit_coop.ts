@@ -145,9 +145,23 @@ export class EditCoopComponent implements OnInit {
     return this.formatDate(new Date(iso));
   }
 
+  // วันที่รับเข้าเลี้ยงต้องไม่ก่อนวันเกิดไก่ (เอาไก่เข้าคอกก่อนไก่เกิดไม่ได้อยู่แล้ว)
+  // เทียบแค่ระดับวัน ไม่สนเวลา เผื่อ Date object มีเวลาปนมาจากไหนก็ตาม
+  get isReceivedBeforeBirth(): boolean {
+    if (!this.birthDate || !this.receivedDate) return false;
+    const birth = new Date(this.birthDate.getFullYear(), this.birthDate.getMonth(), this.birthDate.getDate());
+    const received = new Date(this.receivedDate.getFullYear(), this.receivedDate.getMonth(), this.receivedDate.getDate());
+    return received.getTime() < birth.getTime();
+  }
+
   saveCoop() {
     if (!this.coopName.trim() || !this.chickenCount || this.chickenCount < 1 || !this.birthDate || !this.receivedDate) {
       alert('กรุณากรอกชื่อคอก จำนวนไก่ วันเกิดไก่ และวันที่รับเข้าเลี้ยงให้ครบถ้วน');
+      return;
+    }
+
+    if (this.isReceivedBeforeBirth) {
+      alert('วันที่รับเข้าเลี้ยงต้องไม่ก่อนวันเกิดไก่ (เอาไก่เข้าคอกก่อนไก่เกิดไม่ได้)');
       return;
     }
 

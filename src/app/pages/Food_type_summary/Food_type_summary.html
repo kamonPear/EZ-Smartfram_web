@@ -1,0 +1,74 @@
+<div class="food-type-summary-container">
+  <header class="header-section">
+    <div class="header-content">
+      <div class="logo-container clickable-logo" routerLink="/">
+        <img src="assets/images/logo.png" alt="Farm Logo">
+      </div>
+      <div class="title-group">
+        <h1>สรุปผลอาหารแต่ละประเภท</h1>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-area">
+    <button type="button" class="back-link" routerLink="/food">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"/>
+        <polyline points="12 19 5 12 12 5"/>
+      </svg>
+      กลับไปคลังอาหาร
+    </button>
+
+    <div class="type-tabs">
+      <button
+        type="button"
+        class="type-tab"
+        *ngFor="let type of [FOOD_TYPE_SMALL, FOOD_TYPE_LARGE]"
+        [class.selected]="selectedFoodType === type"
+        (click)="selectFoodType(type)"
+      >
+        <span class="type-tab-name">{{ type }}</span>
+        <span class="type-tab-count">{{ coopCountForType(type) }} คอก</span>
+      </button>
+    </div>
+
+    <p class="loading-hint" *ngIf="isLoading">กำลังโหลดข้อมูล...</p>
+
+    <ng-container *ngIf="!isLoading">
+      <p class="section-label">แยกตามคอก</p>
+
+      <p class="empty-hint" *ngIf="coopsForSelectedType.length === 0">ยังไม่มีคอกที่กินอาหาร{{ selectedFoodType }}</p>
+
+      <div class="coop-row is-clickable" *ngFor="let coop of coopsForSelectedType; trackBy: trackByCoopId" (click)="openHistory(coop)">
+        <div class="coop-row-info">
+          <span class="coop-row-name">{{ coop.name_coop }}</span>
+          <span class="coop-row-sub">อายุ {{ coop.age_weeks }} สัปดาห์ • {{ coop.amount }} ตัว</span>
+        </div>
+
+        <span class="coop-row-actual" [class.has-value]="actualKgFor(coop.coop_id, selectedFoodType) !== null">
+          {{ actualKgFor(coop.coop_id, selectedFoodType) !== null ? (actualKgFor(coop.coop_id, selectedFoodType) ?? 0).toFixed(1) + ' กก.' : '-' }}
+        </span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </div>
+    </ng-container>
+  </main>
+
+  <!-- ป็อบอัพประวัติการตัดสต็อกจริงของคอกที่กดดู -->
+  <div class="custom-modal-overlay" *ngIf="historyCoopId !== null" (click)="closeHistory()">
+    <div class="custom-modal" (click)="$event.stopPropagation()">
+      <h3>ประวัติอาหาร{{ selectedFoodType }} – คอก{{ historyCoopName }}</h3>
+
+      <p class="history-empty" *ngIf="historyRows.length === 0">ยังไม่มีประวัติการแจกจ่ายของคอกนี้</p>
+      <div class="history-modal-list" *ngIf="historyRows.length > 0">
+        <div class="history-modal-row" *ngFor="let row of historyRows">
+          <span>{{ formatDateSimple(row.distributed_at) }}</span>
+          <span>{{ row.kg_given.toFixed(1) }} กก.</span>
+        </div>
+      </div>
+
+      <button type="button" class="btn-cancel modal-close-btn" (click)="closeHistory()">ปิด</button>
+    </div>
+  </div>
+</div>

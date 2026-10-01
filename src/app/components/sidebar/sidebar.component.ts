@@ -10,7 +10,7 @@ interface MenuItem {
   icon?: string;
   // ไม่มีรูป PNG ที่เหมาะกับเมนูนี้ในชุด assets ปัจจุบัน ใช้ไอคอน SVG ฝังตรงๆ
   // แทน (คล้ายไอคอนโหมดมืด/สว่างด้านล่าง) กันไม่ต้องเพิ่มไฟล์รูปใหม่
-  svgIcon?: 'health' | 'notification';
+  svgIcon?: 'health' | 'notification' | 'food';
   route?: string;
   action?: string;
 }
@@ -73,6 +73,8 @@ export class SidebarComponent implements OnInit {
     // ซ้ำอีกรอบ) เมนูนี้เปลี่ยนเป็น "นัดตรวจสุขภาพ" แทน - หน้ารวมทั้งฟาร์มที่
     // คำนวณ/เลือกวันนัดตรวจก่อนเข้าไปบันทึกผลจริง
     { label: 'นัดตรวจสุขภาพ',             svgIcon: 'health',                 route: '/health-appointments' },
+    // ✅ คลังอาหาร - ย้ายมาจากแอปมือถือ (เดิมมีแต่ในแอป ไม่มีในเว็บเลย)
+    { label: 'คลังอาหาร',                 svgIcon: 'food',                   route: '/food' },
     { label: 'เพิ่มคอกไก่',               icon: 'assets/images/chicken.png', route: '/add-coop' },
     { label: 'จัดวางผังฟาร์ม',            icon: 'assets/images/coopchicken.png', route: '/farm-layout' },
     { label: 'เพิ่มอุปกรณ์',              icon: 'assets/images/esp32.png',   route: '/arrange' },

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FarmThresholdService } from '../../services/farm-threshold.service';
@@ -18,14 +18,28 @@ export class FarmThresholdsComponent {
 
   temp: number;
   ammonia: number;
+  isLoading = true;
 
   showToast = false;
   isSaving = false;
 
-  constructor(private router: Router, private thresholds: FarmThresholdService) {
-    this.thresholds.load();
+  constructor(private router: Router, private thresholds: FarmThresholdService, private cdr: ChangeDetectorRef) {
     this.temp = this.thresholds.temperature();
     this.ammonia = this.thresholds.ammonia();
+
+    // ค่าตอนนี้มาจาก backend แล้ว (ไม่ใช่ localStorage) โหลดเป็น async เลยต้องรอ
+    // สัญญาณ isLoaded ก่อนค่อยซิงก์ค่าดราฟต์ของฟอร์มนี้ตาม แล้วยิง detectChanges()
+    // เองเพราะแอปนี้ไม่มี zone.js
+    effect(() => {
+      if (this.thresholds.isLoaded()) {
+        this.temp = this.thresholds.temperature();
+        this.ammonia = this.thresholds.ammonia();
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+
+    this.thresholds.load();
   }
 
   adjustTemp(delta: number) {

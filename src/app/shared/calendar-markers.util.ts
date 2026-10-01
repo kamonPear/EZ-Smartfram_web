@@ -1,6 +1,5 @@
-import { forkJoin, map, Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { ApiService } from '../services/api.service';
-import { getManualHealthAppointments } from './manual-health-appointment.util';
 
 export interface DayMarker {
   /** 'due' = at least one vaccine alert for that day is not yet completed (or overdue); 'done' = all completed */
@@ -16,24 +15,23 @@ export interface DayMarker {
   details: string[];
 }
 
-interface VaccineAlert {
-  date: string; // YYYY-MM-DD
-  coop_id: string;
-  vaccine_name: string;
-  is_completed: boolean;
-  is_overdue: boolean;
+// รูปร่างที่ backend ส่งมาจริง (snake_case ตามธรรมเนียม backend) - แปลงเป็น
+// camelCase ของ DayMarker ด้านบนตรงนี้ที่เดียว ไม่ต้องแก้ทุกหน้าที่ใช้ DayMarker อยู่แล้ว
+// details เป็น object โครงสร้าง (text/category/status/coop_id) เผื่อฝั่งแอป Flutter
+// เอาไปเรนเดอร์ไอคอน/สีต่อ item ได้ - ฝั่งเว็บแค่เอา .text ไปต่อกันเป็น string[] เหมือนเดิม
+interface BackendDayMarkerDetail {
+  text: string;
+  category: string;
+  status: string;
+  coop_id: number;
 }
 
-interface HealthRow {
-  coop_id: number;
-  record_date: string; // ISO
-}
-
-interface CoopLite {
-  coop_id: number;
-  name_coop: string;
-  birthday?: string | null;
-  date_adopt_animals?: string | null;
+interface BackendDayMarker {
+  vaccine_status?: 'done' | 'due';
+  has_health?: boolean;
+  has_coop_info?: boolean;
+  has_health_appointment?: boolean;
+  details: BackendDayMarkerDetail[];
 }
 
 export function formatDateKey(date: Date): string {
@@ -43,85 +41,28 @@ export function formatDateKey(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-function buildMarkerMap(
-  alerts: VaccineAlert[],
-  health: HealthRow[],
-  coops: CoopLite[],
-  coopId?: number | null
-): Map<string, DayMarker> {
-  const map = new Map<string, DayMarker>();
-  const coopName = (id: number | string) =>
-    coops.find(c => c.coop_id === Number(id))?.name_coop || `คอกที่ ${id}`;
-
-  const relevantAlerts = coopId ? alerts.filter(a => Number(a.coop_id) === coopId) : alerts;
-  for (const a of relevantAlerts) {
-    const entry = map.get(a.date) || { details: [] };
-    if (!a.is_completed) {
-      entry.vaccineStatus = 'due';
-    } else if (entry.vaccineStatus !== 'due') {
-      entry.vaccineStatus = 'done';
-    }
-    const label = a.is_completed ? 'ให้แล้ว' : (a.is_overdue ? 'เกินกำหนด' : 'ถึงกำหนด');
-    entry.details.push(`วัคซีน${a.vaccine_name} – ${coopName(a.coop_id)} (${label})`);
-    map.set(a.date, entry);
-  }
-
-  const relevantHealth = coopId ? health.filter(h => Number(h.coop_id) === coopId) : health;
-  for (const h of relevantHealth) {
-    const d = new Date(h.record_date);
-    if (isNaN(d.getTime())) continue;
-    const key = formatDateKey(d);
-    const entry = map.get(key) || { details: [] };
-    entry.hasHealth = true;
-    entry.details.push(`ตรวจสุขภาพ – ${coopName(h.coop_id)}`);
-    map.set(key, entry);
-  }
-
-  // วันเกิดไก่ + วันที่รับเข้าเลี้ยงของคอก - นับเป็น "วันที่เกี่ยวกับคอกนี้"
-  // ด้วยเหมือนกัน ไม่ใช่แค่วัคซีน/สุขภาพ
-  const relevantCoops = coopId ? coops.filter(c => c.coop_id === coopId) : coops;
-  for (const c of relevantCoops) {
-    if (c.birthday) {
-      const d = new Date(c.birthday);
-      if (!isNaN(d.getTime())) {
-        const key = formatDateKey(d);
-        const entry = map.get(key) || { details: [] };
-        entry.hasCoopInfo = true;
-        entry.details.push(`🎂 วันเกิดไก่ – ${coopName(c.coop_id)}`);
-        map.set(key, entry);
-      }
-    }
-    if (c.date_adopt_animals) {
-      const d = new Date(c.date_adopt_animals);
-      if (!isNaN(d.getTime())) {
-        const key = formatDateKey(d);
-        const entry = map.get(key) || { details: [] };
-        entry.hasCoopInfo = true;
-        entry.details.push(`🏠 วันที่รับเข้าเลี้ยง – ${coopName(c.coop_id)}`);
-        map.set(key, entry);
-      }
-    }
-  }
-
-  // นัดตรวจสุขภาพที่กำหนดวันเอง (เก็บไว้ใน localStorage - ไม่มีจาก backend)
-  const manualAppointments = getManualHealthAppointments(coopId ?? null);
-  for (const m of manualAppointments) {
-    const entry = map.get(m.date) || { details: [] };
-    entry.hasHealthAppointment = true;
-    entry.details.push(`🗓️ นัดตรวจสุขภาพ (กำหนดเอง) – ${coopName(m.coopId)}`);
-    map.set(m.date, entry);
-  }
-
-  return map;
-}
-
-/** Loads vaccine-alert + health-record data once and shapes it into a day marker map for the calendar. */
+/**
+ * ดึงปฏิทินรวม (วัคซีน/สุขภาพ/วันเกิด-วันรับเข้าเลี้ยง/นัดตรวจสุขภาพกำหนดเอง)
+ * จาก backend endpoint เดียว (/api/calendar/markers) - เดิมหน้านี้ต้องยิง 3 คำขอ
+ * แยก (vaccines/alerts, healths, coops) แล้วรวมเองฝั่ง frontend เอง ย้ายมาคำนวณที่
+ * backend จุดเดียวแทน เพื่อให้เว็บกับแอปมือถือเห็นผลลัพธ์ตรงกันเป๊ะ ไม่ต้องคง logic
+ * การรวมสองที่ให้ตรงกันเอง
+ */
 export function loadCalendarMarkers(api: ApiService, coopId?: number | null): Observable<Map<string, DayMarker>> {
-  return forkJoin({
-    alerts: api.get<VaccineAlert[]>('/vaccines/alerts'),
-    health: api.get<HealthRow[]>('/healths'),
-    coops: api.get<CoopLite[]>('/coops'),
-  }).pipe(
-    map(({ alerts, health, coops }) => buildMarkerMap(alerts || [], health || [], coops || [], coopId))
+  const query = coopId != null ? `?coop_id=${coopId}` : '';
+  return api.get<Record<string, BackendDayMarker>>(`/calendar/markers${query}`).pipe(
+    map(response => {
+      const result = new Map<string, DayMarker>();
+      for (const [key, m] of Object.entries(response || {})) {
+        result.set(key, {
+          vaccineStatus: m.vaccine_status,
+          hasHealth: m.has_health,
+          hasCoopInfo: m.has_coop_info,
+          hasHealthAppointment: m.has_health_appointment,
+          details: (m.details || []).map(d => d.text),
+        });
+      }
+      return result;
+    })
   );
 }

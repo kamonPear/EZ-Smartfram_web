@@ -1,0 +1,470 @@
+/* ดีไซน์ของ .header-section (การ์ดโลโก้+ชื่อหน้า) ย้ายไปรวมไว้ที่ styles.scss แล้ว
+   ใช้ร่วมกันทุกหน้า */
+
+.coop-list-container {
+  font-family: 'Kanit', sans-serif;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-app);
+}
+
+.content-area {
+  background-color: var(--bg-panel);
+  margin: 30px;
+  padding: 40px;
+  border-radius: 20px;
+  max-width: 1300px;
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// สรุปจำนวนคอก/ไก่ทั้งหมด - เดิมเป็นแค่ข้อความเล็กๆ "3 คอก • 301 ตัว" บรรทัดเดียว
+// ดูโดดเดี่ยวเกินไปเมื่อเทียบกับการ์ดคอกด้านล่างที่มีกรอบ/เงาชัดเจน เปลี่ยนเป็น
+// badge ทรงแคปซูลมีไอคอน ให้มีน้ำหนักสายตาใกล้เคียงกับส่วนอื่นของหน้า
+.list-summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.summary-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 30px;
+  padding: 10px 22px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+
+  .summary-icon {
+    align-self: center;
+    font-size: 1.1rem;
+    margin-right: 2px;
+  }
+
+  .summary-value {
+    color: var(--text-title);
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+
+  .summary-unit {
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+}
+
+// กริด 3 คอกต่อแถว วางกึ่งกลางหน้า (ของเดิมเป็น flex-wrap ชิดซ้าย พอมีแค่ 3 คอก
+// เหลือที่ว่างฝั่งขวาโล่งๆ ดูเอียงซ้าย) ใช้ grid คอลัมน์กว้างคงที่เท่าการ์ดแทน
+// flex เพื่อให้ justify-content: center ทำงานจริง (flex แถวเดียวที่เหลือ item
+// ไม่เต็มแถวสุดท้ายจะกึ่งกลางอัตโนมัติไปด้วยในตัว)
+// ตั้งใจให้คงที่ 3 คอลัมน์เสมอ (ไม่ใช้ auto-fit) เพราะ auto-fit จะยืดจำนวนคอลัมน์
+// ตามความกว้างที่มีจริง พอจอกว้างพอก็ขึ้นแถวละ 4+ ทันที ดูยาวเกินจนเหมือนจะหลุด
+// กรอบ - จำกัดไว้สูงสุด 3 ต่อแถวเสมอ แล้วค่อยลดคอลัมน์ลงตามจอแคบผ่าน media query
+.coop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 280px);
+  justify-content: center;
+  gap: 20px;
+}
+
+@media (max-width: 960px) {
+  .coop-grid {
+    grid-template-columns: repeat(2, 280px);
+  }
+}
+
+@media (max-width: 630px) {
+  .coop-grid {
+    grid-template-columns: minmax(0, 280px);
+  }
+}
+
+.coop-card {
+  position: relative;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  padding: 24px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  width: 100%;
+
+  &:hover {
+    position: relative;
+    z-index: 10;
+    transform: translateY(-5px);
+    background-color: var(--bg-card-alt);
+    border-color: var(--accent-green);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .coop-card-header {
+    display: flex;
+    align-items: center;
+    width: 100%;
+
+    .coop-icon {
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+
+      img {
+        width: 42px;
+        height: 42px;
+        object-fit: contain;
+      }
+    }
+
+    .coop-info {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+
+      .coop-name {
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+
+      .coop-amount {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+      }
+    }
+
+    .coop-edit-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: 32px;
+      padding: 0 14px;
+      border-radius: 20px;
+      border: 1px solid var(--accent-green);
+      background: rgba(114, 213, 114, 0.16);
+      color: var(--accent-green);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      margin-left: 10px;
+      white-space: nowrap;
+
+      svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+      &:hover {
+        background: var(--accent-green);
+        color: var(--text-title);
+      }
+    }
+  }
+
+  .device-list {
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 15px;
+    width: 100%;
+
+    h4 {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin: 0 0 10px 0;
+      font-weight: normal;
+    }
+
+    .device-icons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+
+      .device-item {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        background: rgba(var(--fg-rgb), 0.05);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px;
+        cursor: pointer;
+        transition: background-color 0.2s, box-shadow 0.2s;
+
+        &:hover {
+          background: var(--overlay-medium);
+        }
+
+        &.is-online {
+          box-shadow: 0 0 0 2px rgba(114, 213, 114, 0.5);
+        }
+
+        img {
+          width: 24px;
+          height: 24px;
+          object-fit: contain;
+        }
+
+        .device-status {
+          position: absolute;
+          bottom: 0;
+          right: 0;
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background-color: var(--accent-red, #e53e3e);
+          border: 2px solid var(--bg-card);
+
+          &.online {
+            background-color: var(--accent-green, #48bb78);
+          }
+        }
+
+        .device-tooltip {
+          position: absolute;
+          bottom: calc(100% + 10px);
+          left: 50%;
+          transform: translateX(-50%);
+          background-color: #1a2535;
+          border: 1px solid rgba(114, 213, 114, 0.3);
+          border-radius: 8px;
+          padding: 8px 12px;
+          white-space: nowrap;
+          z-index: 100;
+          pointer-events: none;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          animation: fadeTooltip 0.15s ease;
+
+          &::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: rgba(114, 213, 114, 0.3);
+          }
+
+          .tooltip-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #e2e8f0;
+          }
+
+          .tooltip-status {
+            font-size: 0.75rem;
+            color: #e53e3e;
+
+            &.online {
+              color: var(--accent-green-bright);
+            }
+          }
+        }
+      }
+    }
+
+    &.empty {
+      text-align: center;
+      span {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        font-style: italic;
+      }
+    }
+  }
+}
+
+.coop-hover-anchor {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  cursor: default;
+  pointer-events: none;
+}
+
+.coop-skeleton {
+  cursor: default;
+  pointer-events: none;
+
+  &:hover {
+    transform: none;
+    background-color: var(--bg-card);
+    border-color: var(--border-subtle);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.skeleton-block {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-card-alt, rgba(255, 255, 255, 0.06));
+  border-radius: 8px;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 30%,
+      rgba(114, 213, 114, 0.18) 50%,
+      transparent 70%
+    );
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.4s ease-in-out infinite;
+  }
+}
+
+.skeleton-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.skeleton-line {
+  height: 14px;
+  margin-top: 6px;
+
+  &--title {
+    width: 70%;
+    height: 16px;
+    margin-top: 0;
+  }
+
+  &--amount {
+    width: 45%;
+  }
+
+  &--label {
+    width: 55px;
+    height: 12px;
+    margin-bottom: 12px;
+  }
+}
+
+.skeleton-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.coop-skeleton .device-list {
+  display: flex;
+  flex-direction: column;
+
+  .device-icons {
+    display: flex;
+    gap: 10px;
+  }
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: 150% 0; }
+  100% { background-position: -50% 0; }
+}
+
+.coop-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 40px 0;
+  color: var(--text-secondary);
+
+  .empty-add-btn {
+    background-color: var(--accent-green);
+    color: var(--text-title);
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: var(--accent-green-dark);
+    }
+  }
+}
+
+.coop-reconnect {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 44px 0;
+  color: var(--text-secondary);
+  animation: reconnectFadeIn 0.3s ease;
+
+  p {
+    margin: 0;
+    font-size: 0.92rem;
+  }
+
+  .empty-add-btn {
+    background-color: var(--accent-green);
+    color: var(--text-title);
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: var(--accent-green-dark);
+    }
+  }
+}
+
+.reconnect-spinner {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 3px solid rgba(114, 213, 114, 0.2);
+  border-top-color: var(--accent-green-bright);
+  animation: ezSpin 0.8s linear infinite;
+}
+
+@keyframes reconnectFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeTooltip {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}

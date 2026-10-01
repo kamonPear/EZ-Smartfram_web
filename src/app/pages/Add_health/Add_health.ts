@@ -2,10 +2,11 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { ApiService } from '../../services/api.service';
 import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picker-calendar';
 import { DayMarker, loadCalendarMarkers, formatDateKey } from '../../shared/calendar-markers.util';
-import { getManualHealthAppointments } from '../../shared/manual-health-appointment.util';
+import { HealthAppointmentService } from '../../services/health-appointment.service';
 import { HealthRecord, formatThaiDate } from '../../shared/coop-summary.util';
 
 type ChartMode = 'day' | 'month' | 'year';
@@ -77,6 +78,7 @@ export class AddHealthComponent {
     private router: Router,
     private route: ActivatedRoute,
     private api: ApiService,
+    private healthAppointmentService: HealthAppointmentService,
     private cdr: ChangeDetectorRef
   ) {
     // เปิดมาจากหน้า "ข้อมูลคอกไก่" หรือ "นัดตรวจสุขภาพ" ได้ด้วย - รับ coop_id/date
@@ -108,43 +110,18 @@ export class AddHealthComponent {
 
   // คำนวณวันนัดตรวจสุขภาพถัดไปของคอกนี้ - มีได้ 2 แหล่ง: (1) ก่อนวันครบกำหนดวัคซีน
   // ที่ใกล้ที่สุด 1 วันเสมอ เหมือนหน้า "นัดตรวจสุขภาพ" โหมดอัตโนมัติ (2) นัดที่กำหนด
-  // วันเองจากโหมด "นัดตรวจสุขภาพเอง" (เก็บใน localStorage - ไม่ต้องรอวัคซีน) เอาที่ใกล้
-  // ที่สุดจากทั้งสองแหล่งมาล็อกวันที่ไว้เลย
+  // วันเองจากโหมด "นัดตรวจสุขภาพเอง" (บันทึกไว้ที่ backend แล้ว - ไม่ใช่ localStorage
+  // อีกต่อไป) เอาที่ใกล้ที่สุดจากทั้งสองแหล่งมาล็อกวันที่ไว้เลย
   private computeNearestAppointment() {
     if (!this.coopId) return;
     this.isLoadingAppointment = true;
     this.collectDate = null;
 
-    const manualCandidates = getManualHealthAppointments(this.coopId).map(m => ({
-      vaccineName: null as string | null,
-      vaccineDate: null as Date | null,
-      appointmentDate: new Date(m.date),
-    }));
-
-    const finish = (vaccineCandidates: { vaccineName: string | null; vaccineDate: Date | null; appointmentDate: Date }[]) => {
-      // นัดที่กำหนดเองอยู่ก่อนวัคซีนในลิสต์ตั้งใจ - ถ้าวันที่ตรงกันเป๊ะ (sort เสถียร)
-      // นัดที่กำหนดเองจะ "ชนะ" แสดงเป็นนัดที่เรากำหนดเอง ไม่ใช่นัดจากวัคซีนซ้ำวันเดียวกัน
-      const candidates = [...manualCandidates, ...vaccineCandidates]
-        .filter(c => !isNaN(c.appointmentDate.getTime()))
-        .sort((a, b) => a.appointmentDate.getTime() - b.appointmentDate.getTime());
-
-      if (candidates.length > 0) {
-        const nearest = candidates[0];
-        this.collectDate = nearest.appointmentDate;
-        this.appointmentVaccineName = nearest.vaccineName;
-        this.appointmentVaccineDate = nearest.vaccineDate;
-        this.hasNoAppointment = false;
-      } else {
-        this.collectDate = null;
-        this.hasNoAppointment = true;
-      }
-      this.isDateLocked = true;
-      this.isLoadingAppointment = false;
-      this.cdr.detectChanges();
-    };
-
-    this.api.get<any[]>('/vaccines/alerts').subscribe({
-      next: (alerts) => {
+    forkJoin({
+      alerts: this.api.get<any[]>('/vaccines/alerts'),
+      manual: this.healthAppointmentService.list(this.coopId),
+    }).subscribe({
+      next: ({ alerts, manual }) => {
         const vaccineCandidates = (alerts || [])
           .filter(a => String(a?.coop_id) === String(this.coopId) && a?.is_completed !== true && a?.date)
           .map(a => {
@@ -153,11 +130,40 @@ export class AddHealthComponent {
             appointmentDate.setDate(appointmentDate.getDate() - 1);
             return { vaccineName: (a.vaccine_name || 'วัคซีน') as string | null, vaccineDate: vaccineDate as Date | null, appointmentDate };
           });
-        finish(vaccineCandidates);
+
+        const manualCandidates = (manual || []).map(m => ({
+          vaccineName: null as string | null,
+          vaccineDate: null as Date | null,
+          appointmentDate: new Date(m.appointment_date),
+        }));
+
+        // นัดที่กำหนดเองอยู่ก่อนวัคซีนในลิสต์ตั้งใจ - ถ้าวันที่ตรงกันเป๊ะ (sort เสถียร)
+        // นัดที่กำหนดเองจะ "ชนะ" แสดงเป็นนัดที่เรากำหนดเอง ไม่ใช่นัดจากวัคซีนซ้ำวันเดียวกัน
+        const candidates = [...manualCandidates, ...vaccineCandidates]
+          .filter(c => !isNaN(c.appointmentDate.getTime()))
+          .sort((a, b) => a.appointmentDate.getTime() - b.appointmentDate.getTime());
+
+        if (candidates.length > 0) {
+          const nearest = candidates[0];
+          this.collectDate = nearest.appointmentDate;
+          this.appointmentVaccineName = nearest.vaccineName;
+          this.appointmentVaccineDate = nearest.vaccineDate;
+          this.hasNoAppointment = false;
+        } else {
+          this.collectDate = null;
+          this.hasNoAppointment = true;
+        }
+        this.isDateLocked = true;
+        this.isLoadingAppointment = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('คำนวณวันนัดตรวจสุขภาพไม่สำเร็จ:', err);
-        finish([]);
+        this.collectDate = null;
+        this.hasNoAppointment = true;
+        this.isDateLocked = true;
+        this.isLoadingAppointment = false;
+        this.cdr.detectChanges();
       }
     });
   }

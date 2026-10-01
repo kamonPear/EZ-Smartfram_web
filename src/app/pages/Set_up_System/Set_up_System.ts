@@ -222,7 +222,7 @@ export class SetUpSystem implements OnInit {
 
       // 2. ยิง API ไปลบในฐานข้อมูล (Backend)
       if (this.selectedCoop) {
-        this.api.delete<any>(`/api/devices?coop_id=${this.selectedCoop}&slot_index=${slotIdx}`).subscribe({
+        this.api.delete<any>(`/devices?coop_id=${this.selectedCoop}&slot_index=${slotIdx}`).subscribe({
           next: (res) => {
             console.log('✅ ลบข้อมูลใน Database สำเร็จ:', res);
           },

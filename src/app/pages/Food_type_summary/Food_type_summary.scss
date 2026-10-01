@@ -1,0 +1,219 @@
+.food-type-summary-container {
+  font-family: 'Kanit', sans-serif;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-app);
+}
+
+.content-area {
+  background-color: var(--bg-panel);
+  margin: 30px;
+  padding: 40px;
+  border-radius: 20px;
+  max-width: 700px;
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0 0 18px;
+
+  svg { width: 18px; height: 18px; }
+
+  &:hover { color: var(--text-title); }
+}
+
+.type-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.type-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--bg-card);
+  border: 1.3px solid var(--border-subtle);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+
+  &.selected {
+    background: rgba(245, 166, 35, 0.14);
+    border-color: #F5A623;
+  }
+
+  &-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-title);
+  }
+
+  &.selected &-name { color: #F5A623; }
+
+  &-count {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+}
+
+.section-label {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+
+.empty-hint {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.coop-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 10px;
+
+  &.is-clickable {
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+
+    &:hover { border-color: #F5A623; }
+  }
+
+  &-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &-name {
+    color: var(--text-title);
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+
+  &-sub {
+    color: var(--text-secondary);
+    font-size: 0.76rem;
+  }
+
+  &-actual {
+    flex-shrink: 0;
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 0.95rem;
+
+    &.has-value { color: #F5A623; }
+  }
+
+  .chevron {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    color: var(--text-secondary);
+  }
+}
+
+/* ป็อบอัพยืนยัน/ประวัติ - ดีไซน์เดียวกับโมดัลอื่นๆ ในแอป */
+.custom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.custom-modal {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  padding: 26px 28px;
+  border-radius: 20px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+  width: 380px;
+  max-width: 90vw;
+  animation: popIn 0.2s ease;
+
+  h3 {
+    margin: 0 0 16px;
+    color: var(--text-title);
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+}
+
+.history-empty {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 10px 0 16px;
+}
+
+.history-modal-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+}
+
+.history-modal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.85rem;
+
+  &:last-child { border-bottom: none; }
+
+  span:first-child { color: var(--text-secondary); }
+  span:last-child { color: var(--text-title); font-weight: 600; }
+}
+
+.modal-close-btn {
+  width: 100%;
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.94) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .content-area {
+    margin: 16px;
+    padding: 22px;
+  }
+}

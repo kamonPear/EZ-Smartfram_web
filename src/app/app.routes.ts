@@ -19,6 +19,10 @@ import { NotificationsComponent } from './pages/Notifications/Notifications';
 import { HealthAppointmentsComponent } from './pages/Health_appointments/Health_appointments';
 import { GiveVaccineComponent } from './pages/Give_vaccine/Give_vaccine';
 import { LoginComponent } from './pages/Login/Login';
+import { FoodComponent } from './pages/Food/Food';
+import { AddFoodComponent } from './pages/Add_food/Add_food';
+import { FoodTypeSummaryComponent } from './pages/Food_type_summary/Food_type_summary';
+import { CoopListComponent } from './pages/Coop_list/Coop_list';
 import { authGuard } from './services/auth.guard';
 
 export const routes: Routes = [
@@ -68,7 +72,17 @@ export const routes: Routes = [
 
       { path: 'data-coop', component: DataCoopComponent },
 
-      { path: 'device-status', component: DeviceStatusComponent }
+      // หน้ารวมคอกไก่ทั้งหมด - การ์ดสถิติ "คอกทั้งหมด"/"ไก่ทั้งหมด" ที่หน้าแรกกด
+      // มาที่นี่ เป็นลิสต์เต็มจอแทนที่จะแค่เลื่อนจอลงไปหาส่วนท้ายของหน้าแรก
+      { path: 'coop-list', component: CoopListComponent },
+
+      { path: 'device-status', component: DeviceStatusComponent },
+
+      // คลังอาหาร - ย้ายมาจากแอปมือถือ ให้เว็บมีฟีเจอร์นี้ด้วย (backend ชุดเดียวกัน
+      // อยู่แล้ว ข้อมูลจึงตรงกันทั้งเว็บและแอป)
+      { path: 'food', component: FoodComponent },
+      { path: 'add-food', component: AddFoodComponent },
+      { path: 'food-type-summary', component: FoodTypeSummaryComponent }
     ]
   }
 ];

@@ -17,6 +17,9 @@ export class DatePickerCalendar implements OnChanges {
   // รายละเอียดของวันนั้นลงมาด้านล่างในป็อบอัพเดียวกันเลย อ่านง่ายกว่า title
   // tooltip เดิมที่ต้องเอาเมาส์ไปชี้ค้าง (ใช้ไม่ได้บนมือถือ/แท็บเล็ตด้วย)
   @Input() viewOnly = false;
+  // โหมดฝังอยู่ในหน้าเลย (เช่น การ์ดปฏิทินข้างผังฟาร์มที่หน้าแรก) - ไม่ใช่ป็อบอัพ
+  // ลอยกลางจอแบบเดิม ไม่มีฉากหลังมืด/ปุ่มปิด อยู่ติดกับเนื้อหาข้างๆ ตลอดเวลา
+  @Input() inline = false;
 
   @Output() daySelected = new EventEmitter<Date>();
   @Output() closed = new EventEmitter<void>();
@@ -144,5 +147,29 @@ export class DatePickerCalendar implements OnChanges {
 
   tooltipFor(day: Date | null): string {
     return this.markerFor(day)?.details.join('\n') || '';
+  }
+
+  // รายการสรุป "ของเดือนที่กำลังดูอยู่เป็นต้นไป" - ใช้โชว์เป็นค่าเริ่มต้นตอนยังไม่ได้
+  // กดเลือกวันไหนในโหมด inline (การ์ดปฏิทินหน้าแรก) แทนที่จะปล่อยว่างเปล่า อิงตาม
+  // เดือนที่เลื่อนปฏิทินไปดูจริงๆ (currentDate) ไม่ใช่ "วันนี้" ตายตัว เพื่อให้เลื่อน
+  // ไปเดือนไหนก็เห็นรายการของเดือนนั้น เรียงจากใกล้สุดก่อน พอกดเลือกวันจริงๆ ค่อย
+  // สลับไปกางรายละเอียดของวันนั้นแทน (day-detail-panel ด้านบน)
+  get upcomingEntries(): { date: Date; marker: DayMarker }[] {
+    if (!this.markers) return [];
+    const monthStartKey = formatDateKey(new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1));
+    const entries: { date: Date; marker: DayMarker }[] = [];
+    for (const [key, marker] of this.markers.entries()) {
+      if (key < monthStartKey || marker.details.length === 0) continue;
+      const date = new Date(key);
+      if (isNaN(date.getTime())) continue;
+      entries.push({ date, marker });
+    }
+    entries.sort((a, b) => a.date.getTime() - b.date.getTime());
+    return entries;
+  }
+
+  get upcomingHeading(): string {
+    const month = this.currentDate.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' });
+    return `รายการเดือน${month}เป็นต้นไป`;
   }
 }
