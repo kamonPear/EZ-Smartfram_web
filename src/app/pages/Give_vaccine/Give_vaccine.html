@@ -11,7 +11,16 @@
   </header>
 
   <main class="content-area">
-    <p class="mode-hint">รายการวัคซีนที่ต้องให้คอกนี้ คำนวณจากตารางประเภทวัคซีนเทียบกับอายุไก่ - กดให้วัคซีนแล้วเพื่อบันทึกลงประวัติ</p>
+    <div class="mode-hint-row">
+      <p class="mode-hint">รายการวัคซีนที่ต้องให้คอกนี้ คำนวณจากตารางประเภทวัคซีนเทียบกับอายุไก่ - กดให้วัคซีนแล้วเพื่อบันทึกลงประวัติ</p>
+      <button type="button" class="history-btn" (click)="openHistory()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <polyline points="12 7 12 12 15.5 14"/>
+        </svg>
+        ดูประวัติ
+      </button>
+    </div>
 
     <p class="loading-hint" *ngIf="isLoading">กำลังโหลดข้อมูลวัคซีน...</p>
 
@@ -37,4 +46,38 @@
       <p class="empty-hint" *ngIf="alerts.length === 0">คอกนี้ไม่มีกำหนดให้วัคซีนในตอนนี้</p>
     </div>
   </main>
+
+  <div class="custom-modal-overlay" *ngIf="showHistory" (click)="closeHistory()">
+    <div class="custom-modal history-modal" (click)="$event.stopPropagation()">
+      <div class="history-modal-header">
+        <h3>ประวัติการให้วัคซีน <span *ngIf="coopName" class="coop-name">({{ coopName }})</span></h3>
+        <button type="button" class="history-modal-close" (click)="closeHistory()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="6" x2="18" y2="18"/>
+            <line x1="18" y1="6" x2="6" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <p class="loading-hint" *ngIf="isLoadingHistory">กำลังโหลดประวัติ...</p>
+
+      <div class="history-list" *ngIf="!isLoadingHistory">
+        <div class="history-row" *ngFor="let h of historyRows">
+          <div class="history-row-main">
+            <span class="history-row-title">{{ h.name }}<ng-container *ngIf="h.method !== '-'"> · {{ h.method }}</ng-container></span>
+            <span class="history-row-sub">
+              ให้เมื่อ {{ formatHistoryDate(h.recordDate) }}
+              <ng-container *ngIf="h.recommendedAge">· อายุไก่ตอนให้ {{ h.recommendedAge }} วัน</ng-container>
+            </span>
+            <span class="history-row-note" *ngIf="h.note">{{ h.note }}</span>
+          </div>
+        </div>
+        <p class="empty-hint" *ngIf="historyRows.length === 0">คอกนี้ยังไม่เคยได้รับวัคซีนเลย</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-notification" [class.is-error]="toastType === 'error'" *ngIf="showToast">
+    <span>{{ toastMessage }}</span>
+  </div>
 </div>

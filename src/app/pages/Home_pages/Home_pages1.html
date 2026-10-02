@@ -237,7 +237,7 @@
       <div class="coop-reconnect" *ngIf="!isLoading && loadError">
         <span class="reconnect-spinner"></span>
         <p>เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ กำลังลองเชื่อมต่อใหม่...</p>
-        <button class="empty-add-btn" *ngIf="showRetryButton" (click)="loadCoops()">🔄 โหลดใหม่ตอนนี้</button>
+        <button class="retry-btn" *ngIf="showRetryButton" (click)="loadCoops()">🔄 โหลดใหม่ตอนนี้</button>
       </div>
 
       <div class="coop-grid" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)" *ngIf="!isLoading && !loadError && coops.length > 0">

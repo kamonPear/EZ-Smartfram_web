@@ -425,20 +425,22 @@
     font-size: 0.92rem;
   }
 
-  .empty-add-btn {
-    background-color: var(--accent-green);
-    color: var(--text-title);
-    border: none;
-    border-radius: 12px;
-    padding: 12px 24px;
-    font-size: 1rem;
+  .retry-btn {
+    background-color: transparent;
+    color: var(--accent-green);
+    border: 1.5px solid var(--accent-green);
+    border-radius: 30px;
+    padding: 10px 22px;
+    font-size: 0.92rem;
     font-weight: 600;
     cursor: pointer;
     font-family: inherit;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
 
     &:hover {
-      background-color: var(--accent-green-dark);
+      background-color: rgba(var(--fg-rgb), 0.06);
+      border-color: var(--accent-green-dark);
+      color: var(--accent-green-dark);
     }
   }
 }

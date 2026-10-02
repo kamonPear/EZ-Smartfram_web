@@ -41,4 +41,8 @@
       <p class="empty-hint" *ngIf="notifications.length === 0">ไม่มีการแจ้งเตือน</p>
     </div>
   </main>
+
+  <div class="toast-notification" [class.is-error]="toastType === 'error'" *ngIf="showToast">
+    <span>{{ toastMessage }}</span>
+  </div>
 </div>

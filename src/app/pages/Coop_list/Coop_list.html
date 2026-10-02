@@ -47,7 +47,7 @@
     <div class="coop-reconnect" *ngIf="!isLoading && loadError">
       <span class="reconnect-spinner"></span>
       <p>เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ กำลังลองเชื่อมต่อใหม่...</p>
-      <button class="empty-add-btn" (click)="loadCoops()">🔄 โหลดใหม่ตอนนี้</button>
+      <button class="retry-btn" (click)="loadCoops()">🔄 โหลดใหม่ตอนนี้</button>
     </div>
 
     <div class="coop-grid" *ngIf="!isLoading && !loadError && coops.length > 0">

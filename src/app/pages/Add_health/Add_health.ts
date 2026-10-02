@@ -1,5 +1,5 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -79,6 +79,7 @@ export class AddHealthComponent {
     private route: ActivatedRoute,
     private api: ApiService,
     private healthAppointmentService: HealthAppointmentService,
+    private location: Location,
     private cdr: ChangeDetectorRef
   ) {
     // เปิดมาจากหน้า "ข้อมูลคอกไก่" หรือ "นัดตรวจสุขภาพ" ได้ด้วย - รับ coop_id/date
@@ -513,6 +514,12 @@ export class AddHealthComponent {
         this.flashToast('บันทึกข้อมูลสุขภาพสำเร็จ!', 'success');
         this.loadHealthHistory();
         this.cdr.detectChanges();
+        // โชว์ toast สั้นๆ ก่อนเด้งกลับไปหน้าที่มาจาก (เดิมไม่เด้งกลับเลย ค้างอยู่
+        // หน้าเดิมจนผู้ใช้กดบันทึกซ้ำหลายรอบเพราะคิดว่ายังไม่สำเร็จ - เช็คจาก DB
+        // แล้วพบว่าจริงๆ บันทึกสำเร็จทุกครั้ง แค่ไม่มีอะไรบอกผู้ใช้ว่าเสร็จแล้ว)
+        setTimeout(() => {
+          this.location.back();
+        }, 900);
       },
       error: (err: any) => {
         this.isSaving = false;

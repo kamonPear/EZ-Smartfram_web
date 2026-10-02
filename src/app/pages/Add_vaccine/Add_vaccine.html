@@ -31,10 +31,29 @@
         <p class="loading-hint" *ngIf="isLoadingSchedules">กำลังโหลดรายการ...</p>
 
         <div class="existing-list" [class.is-scrollable]="schedules.length > 5" *ngIf="!isLoadingSchedules && schedules.length > 0">
-          <div class="existing-row" *ngFor="let s of schedules">
-            <div class="existing-row-main">
-              <span class="existing-row-title">{{ s.name }}<ng-container *ngIf="s.method"> · {{ s.method }}</ng-container></span>
-              <span class="existing-row-sub">อายุ {{ s.min_age_days }}–{{ s.max_age_days }} วัน<ng-container *ngIf="s.description"> · {{ s.description }}</ng-container></span>
+          <div class="existing-row-wrap" *ngFor="let s of schedules">
+            <div class="existing-row existing-row-clickable" (click)="toggleMatchingCoops(s)">
+              <div class="existing-row-main">
+                <span class="existing-row-title">{{ s.name }}<ng-container *ngIf="s.method"> · {{ s.method }}</ng-container></span>
+                <span class="existing-row-sub">อายุ {{ s.min_age_days }}–{{ s.max_age_days }} วัน<ng-container *ngIf="s.description"> · {{ s.description }}</ng-container></span>
+              </div>
+              <span class="existing-row-chevron" [class.open]="expandedScheduleId === s.id">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </span>
+            </div>
+
+            <div class="matching-coops-panel" *ngIf="expandedScheduleId === s.id">
+              <p class="matching-coops-loading" *ngIf="isLoadingMatchingCoops && !matchingCoopsByScheduleId.has(s.id)">กำลังตรวจอายุคอกไก่...</p>
+              <ng-container *ngIf="matchingCoopsByScheduleId.has(s.id)">
+                <p class="matching-coops-empty" *ngIf="matchingCoopsFor(s).length === 0">ตอนนี้ยังไม่มีคอกไหนถึงเกณฑ์อายุนี้</p>
+                <div class="matching-coop-chip" [class.is-overdue]="mc.status === 'overdue'" *ngFor="let mc of matchingCoopsFor(s)">
+                  <span class="matching-coop-name">{{ mc.name_coop }}</span>
+                  <span class="matching-coop-age">อายุ {{ mc.current_age_days }} วัน</span>
+                  <span class="matching-coop-status">{{ mc.status === 'overdue' ? 'เกินกำหนดแล้ว' : 'ถึงกำหนดให้' }}</span>
+                </div>
+              </ng-container>
             </div>
           </div>
         </div>

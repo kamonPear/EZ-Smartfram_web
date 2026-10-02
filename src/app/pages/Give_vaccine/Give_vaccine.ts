@@ -13,6 +13,14 @@ interface VaccineAlertRow {
   daysUntil: number;
 }
 
+interface VaccineHistoryRow {
+  name: string;
+  method: string;
+  recordDate: Date | null;
+  recommendedAge: string;
+  note: string;
+}
+
 // หน้า "ให้วัคซีน" ของคอกเดียว - ตามกำหนดที่คำนวณจาก medicine_schedules (ประเภท
 // วัคซีนที่ตั้งไว้ใน "เพิ่มประเภทวัคซีน/ยา") เทียบกับอายุไก่ของคอกนี้ กดให้วัคซีน
 // แล้วเพื่อบันทึกลงประวัติวัคซีนของคอก - คล้ายปุ่ม "ตรวจสุขภาพ" แต่วัคซีนอิงตาม
@@ -30,6 +38,17 @@ export class GiveVaccineComponent {
   isLoading = true;
   alerts: VaccineAlertRow[] = [];
   savingId: string | null = null;
+
+  // แจ้งเตือนผลลัพธ์กดให้วัคซีน - ของเดิมกดแล้วเงียบ รู้แค่การ์ดอัปเดตเฉยๆ
+  showToast = false;
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'success';
+
+  // ประวัติการให้วัคซีนของคอกนี้ (ย้อนหลังทั้งหมด ไม่ใช่แค่ที่ยังค้างอยู่) - โหลดตอน
+  // กดเปิดป็อบอัพเท่านั้น ไม่ต้องโหลดพร้อมหน้าแรกตั้งแต่ต้น
+  showHistory = false;
+  isLoadingHistory = false;
+  historyRows: VaccineHistoryRow[] = [];
 
   constructor(private route: ActivatedRoute, private api: ApiService, private cdr: ChangeDetectorRef) {
     this.coopId = this.route.snapshot.queryParamMap.get('coop_id');
@@ -108,13 +127,62 @@ export class GiveVaccineComponent {
     this.api.put(`/vaccines/alerts?id=${a.id}`, { is_completed: true }).subscribe({
       next: () => {
         this.savingId = null;
+        this.flashToast(`บันทึกแล้ว - ${this.coopName || 'คอกนี้'}ได้รับวัคซีน ${a.vaccineName} แล้ว`, 'success');
         this.fetchAlerts();
       },
       error: (err) => {
         console.error('บันทึกการให้วัคซีนไม่สำเร็จ:', err);
         this.savingId = null;
+        this.flashToast('บันทึกการให้วัคซีนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private flashToast(message: string, type: 'success' | 'error' = 'success') {
+    this.toastMessage = message;
+    this.toastType = type;
+    this.showToast = true;
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.showToast = false;
+      this.cdr.detectChanges();
+    }, 2800);
+  }
+
+  openHistory() {
+    this.showHistory = true;
+    this.isLoadingHistory = true;
+    this.cdr.detectChanges();
+    this.api.get<any[]>(`/vaccines?coop_id=${this.coopId}`).subscribe({
+      next: (data) => {
+        const rows: VaccineHistoryRow[] = (data || []).map((v) => ({
+          name: v.name || 'วัคซีน',
+          method: v.method || '-',
+          recordDate: v.record_date ? new Date(v.record_date) : null,
+          recommendedAge: v.recommended_age || '',
+          note: v.note || '',
+        }));
+        rows.sort((x, y) => (y.recordDate?.getTime() || 0) - (x.recordDate?.getTime() || 0));
+        this.historyRows = rows;
+        this.isLoadingHistory = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('โหลดประวัติการให้วัคซีนไม่สำเร็จ:', err);
+        this.historyRows = [];
+        this.isLoadingHistory = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  closeHistory() {
+    this.showHistory = false;
+  }
+
+  formatHistoryDate(d: Date | null): string {
+    if (!d) return '-';
+    return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 }

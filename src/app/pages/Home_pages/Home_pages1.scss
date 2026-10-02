@@ -901,22 +901,25 @@
   gap: 14px;
   padding: 40px 0;
   color: var(--text-secondary);
+}
 
-  .empty-add-btn {
-    background-color: var(--accent-green);
-    color: var(--text-title);
-    border: none;
-    border-radius: 12px;
-    padding: 12px 24px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    transition: background-color 0.2s ease;
+// ปุ่มนี้ใช้ทั้งใน .coop-empty (ยังไม่มีคอกเลย) และ .coop-reconnect (เชื่อมต่อไม่สำเร็จ)
+// เลยแยกออกมาเป็น class กลาง ไม่ซ้อนใต้ .coop-empty อย่างเดียวเหมือนเดิม - ไม่งั้นปุ่มใน
+// .coop-reconnect จะไม่ได้สไตล์นี้เลย กลายเป็นปุ่มเปล่าของเบราว์เซอร์
+.empty-add-btn {
+  background-color: var(--accent-green);
+  color: var(--text-title);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.2s ease;
 
-    &:hover {
-      background-color: var(--accent-green-dark);
-    }
+  &:hover {
+    background-color: var(--accent-green-dark);
   }
 }
 
@@ -932,6 +935,28 @@
   p {
     margin: 0;
     font-size: 0.92rem;
+  }
+}
+
+// ปุ่มลองโหลดใหม่ - ขอสีใสๆ ไม่เอาเขียวทึบแบบปุ่มหลัก เลยแยกสไตล์มาเป็นแบบโปร่ง/ขอบบาง
+// (หน้าตาคล้าย .arrange-farm-btn ของปุ่ม "จัดวางผังฟาร์ม" ด้านบน ให้ดูเบาเข้ากับบริบท
+// สถานะเชื่อมต่อไม่สำเร็จ ไม่ใช่ปุ่มแอ็กชันหลักของหน้า)
+.retry-btn {
+  background-color: transparent;
+  color: var(--accent-green);
+  border: 1.5px solid var(--accent-green);
+  border-radius: 30px;
+  padding: 10px 22px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: rgba(var(--fg-rgb), 0.06);
+    border-color: var(--accent-green-dark);
+    color: var(--accent-green-dark);
   }
 }
 

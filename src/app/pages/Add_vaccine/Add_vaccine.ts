@@ -13,6 +13,21 @@ interface MedicineSchedule {
   description: string;
 }
 
+interface MatchingCoop {
+  coop_id: number;
+  name_coop: string;
+  current_age_days: number;
+  status: 'due' | 'overdue';
+}
+
+interface MatchingCoopsResponse {
+  vaccine_id: number;
+  vaccine_name: string;
+  min_age_days: number;
+  max_age_days: number;
+  matching_coops: MatchingCoop[];
+}
+
 // เพิ่ม "ประเภท" วัคซีน/ยาใหม่เข้าตาราง medicine_schedules (ไม่ใช่การบันทึกว่า
 // ให้วัคซีนคอกใดคอกหนึ่งไปแล้ว - นั่นทำที่ปุ่ม "ให้วัคซีน" ในหน้าข้อมูลคอกไก่
 // แทน) ตรงกับคอนเซปของแอปมือถือ (Add_VaccineType.dart -> POST /vaccines/schedule)
@@ -39,6 +54,12 @@ export class AddVaccineComponent {
   schedules: MedicineSchedule[] = [];
   isLoadingSchedules = true;
 
+  // คอกที่ตอนนี้อายุเข้าเกณฑ์ของวัคซีนแต่ละประเภทแล้ว (เปิดดูทีละตัวตอนคลิกแถว ไม่ต้อง
+  // โหลดของทุกแถวพร้อมกันตั้งแต่แรก) - key เป็น schedule.id
+  expandedScheduleId: number | null = null;
+  matchingCoopsByScheduleId = new Map<number, MatchingCoop[]>();
+  isLoadingMatchingCoops = false;
+
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
@@ -62,6 +83,35 @@ export class AddVaccineComponent {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  toggleMatchingCoops(schedule: MedicineSchedule) {
+    if (this.expandedScheduleId === schedule.id) {
+      this.expandedScheduleId = null;
+      return;
+    }
+    this.expandedScheduleId = schedule.id;
+    if (this.matchingCoopsByScheduleId.has(schedule.id)) {
+      return; // โหลดไปแล้วรอบก่อน ไม่ต้องยิงซ้ำ
+    }
+    this.isLoadingMatchingCoops = true;
+    this.api.get<MatchingCoopsResponse>(`/vaccines/schedule/matching-coops?id=${schedule.id}`).subscribe({
+      next: (data) => {
+        this.matchingCoopsByScheduleId.set(schedule.id, data?.matching_coops || []);
+        this.isLoadingMatchingCoops = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('โหลดรายชื่อคอกที่ต้องให้วัคซีนไม่สำเร็จ:', err);
+        this.matchingCoopsByScheduleId.set(schedule.id, []);
+        this.isLoadingMatchingCoops = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  matchingCoopsFor(schedule: MedicineSchedule): MatchingCoop[] {
+    return this.matchingCoopsByScheduleId.get(schedule.id) || [];
   }
 
   // เทียบแบบไม่สนตัวพิมพ์เล็ก-ใหญ่และช่องว่างหัว-ท้าย ตรงกับที่ backend เช็คซ้ำ
