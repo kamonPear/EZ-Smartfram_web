@@ -13,15 +13,19 @@ export interface LoginResponse {
   user: AuthUser;
 }
 
-const TOKEN_KEY = 'ez_auth_token';
-const USER_KEY = 'ez_auth_user';
-
 // ล็อกอินเข้าระบบ (endpoint อยู่ใต้ /api/auth/*, token เป็น JWT ส่งแบบ
 // Authorization: Bearer <token>) ไม่มีหน้าสมัครสมาชิกเอง เพราะเจ้าของฟาร์มเป็นคน
 // สร้างบัญชีให้เองผ่าน API โดยใช้ ADMIN_API_KEY - ในระบบไม่มี role ทุกบัญชีเท่ากันหมด
+//
+// เก็บ token/user ไว้ในหน่วยความจำ (field ของ service) เท่านั้น ไม่เขียนลง
+// localStorage - ตั้งใจให้หายทุกครั้งที่รีเฟรช/เปิดหน้าเว็บใหม่ เพื่อบังคับให้
+// ต้องล็อกอินใหม่เสมอ (ระหว่างใช้งานไม่ reload หน้า ยังใช้งานต่อได้ปกติ เพราะ
+// Angular service เป็น singleton อยู่แล้วตราบใดที่ไม่มีการโหลดหน้าใหม่)
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private base = API_BASE_URL;
+  private token: string | null = null;
+  private user: AuthUser | null = null;
 
   constructor(private http: HttpClient) {}
 
@@ -32,42 +36,24 @@ export class AuthService {
   }
 
   private setSession(res: LoginResponse) {
-    try {
-      localStorage.setItem(TOKEN_KEY, res.token);
-      localStorage.setItem(USER_KEY, JSON.stringify(res.user));
-    } catch {
-      // localStorage อาจใช้ไม่ได้ (เช่น private mode) - session จะไม่ persist ข้าม
-      // reload แต่ล็อกอินรอบนี้ยังใช้งานต่อได้จนกว่าจะปิดแท็บ
-    }
+    this.token = res.token;
+    this.user = res.user;
   }
 
   logout() {
-    try {
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
-    } catch {
-      // ไม่ต้องทำอะไรถ้าเคลียร์ไม่ได้
-    }
+    this.token = null;
+    this.user = null;
   }
 
   getToken(): string | null {
-    try {
-      return localStorage.getItem(TOKEN_KEY);
-    } catch {
-      return null;
-    }
+    return this.token;
   }
 
   currentUser(): AuthUser | null {
-    try {
-      const raw = localStorage.getItem(USER_KEY);
-      return raw ? (JSON.parse(raw) as AuthUser) : null;
-    } catch {
-      return null;
-    }
+    return this.user;
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    return !!this.token;
   }
 }

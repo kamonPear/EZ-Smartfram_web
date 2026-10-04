@@ -10,7 +10,7 @@
       </div>
     </div>
 
-    <form class="login-form" (ngSubmit)="submit()">
+    <form class="login-form" (ngSubmit)="submit()" autocomplete="off">
       <div class="field-group">
         <label class="field-label">ชื่อผู้ใช้</label>
         <div class="input-pill">
@@ -22,8 +22,8 @@
           </span>
           <input
             type="text"
-            name="username"
-            autocomplete="username"
+            name="ez-username-field"
+            autocomplete="off"
             [(ngModel)]="username"
             placeholder="ชื่อผู้ใช้"
             [disabled]="isSubmitting"
@@ -42,8 +42,8 @@
           </span>
           <input
             [type]="showPassword ? 'text' : 'password'"
-            name="password"
-            autocomplete="current-password"
+            name="ez-password-field"
+            autocomplete="new-password"
             [(ngModel)]="password"
             placeholder="รหัสผ่าน"
             [disabled]="isSubmitting"
