@@ -26,6 +26,14 @@ export class ThemeService {
     this.apply(saved !== 'light');
   }
 
+  /// ใช้ตอนไม่มีใคร login อยู่ (หน้า login เอง) - ไม่มี username ให้ผูกธีมด้วย เลย
+  /// ไม่ใช้ key เก่าที่ไม่ผูกบัญชีใคร (อาจมีค่าตกค้างจากก่อนแก้บั๊กนี้) รีเซ็ตกลับ
+  /// ไปที่ค่าเริ่มต้น (มืด) เสมอ กันธีมของบัญชีก่อนหน้าในแท็บเดียวกันค้างมาโชว์ที่
+  /// หน้า login ของบัญชีถัดไป
+  resetToDefault() {
+    this.apply(true);
+  }
+
   toggle() {
     this.apply(!this.isDark());
     try {

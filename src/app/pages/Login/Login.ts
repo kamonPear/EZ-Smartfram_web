@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
+import { ThemeService } from '../../services/theme.service';
 
 // หน้าล็อกอิน - ไม่มีลิงก์ "สมัครสมาชิก"/"ลืมรหัสผ่าน" ตั้งใจ เพราะแอดมินเป็นคน
 // สร้างบัญชีให้ผู้ใช้เองนอกระบบ (ดู AUTH_CONTRACT.md) หน้านี้จึงมีแค่ฟอร์ม
@@ -25,10 +26,15 @@ export class LoginComponent {
 
   constructor(
     private auth: AuthService,
+    private theme: ThemeService,
     private router: Router,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    // หน้า login ไม่มี username ให้ผูกธีมด้วย (ยังไม่ login) รีเซ็ตกลับค่าเริ่มต้น
+    // เสมอ กันธีมของบัญชีก่อนหน้า (ที่เพิ่ง logout มา) ค้างโชว์อยู่ที่หน้านี้
+    this.theme.resetToDefault();
+  }
 
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
@@ -48,6 +54,11 @@ export class LoginComponent {
 
     this.auth.login(username, password).subscribe({
       next: () => {
+        // ✅ โหลดธีมของ username นี้ใหม่ทันทีที่ login สำเร็จ - จำเป็นเพราะ sidebar
+        // (ที่ปกติเป็นคนเรียก theme.load() ตอน ngOnInit) เป็น layout shell ที่ถูก
+        // สร้างขึ้นแค่ครั้งเดียวต่อแท็บ ไม่ได้ re-mount ทุกครั้งที่ login ใหม่ ถ้าไม่
+        // เรียกตรงนี้ซ้ำ ธีมของบัญชีก่อนหน้าในแท็บเดียวกันจะค้างอยู่ข้ามบัญชี
+        this.theme.load();
         const redirect = this.route.snapshot.queryParamMap.get('redirect');
         // กัน redirect ที่ชี้กลับมาหน้า login เอง (เช่นจาก 401 ที่ยิงตอนยังไม่ล็อกอิน)
         // ไม่งั้นล็อกอินผ่านแล้วแต่ยังค้างอยู่หน้าเดิม
