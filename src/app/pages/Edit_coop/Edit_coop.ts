@@ -85,7 +85,7 @@ export class EditCoopComponent implements OnInit {
         // วันล่าสุดขึ้นก่อน วันเก่าไปอยู่ล่างสุด (เดิมไม่ได้เรียงเลย ใช้ลำดับดิบจาก
         // backend ซึ่งไม่จำเป็นต้องเรียงตามวันที่)
         this.healthRecords = [...(data?.health || [])].sort((a, b) => new Date(b.record_date).getTime() - new Date(a.record_date).getTime());
-        this.vaccineRecords = [...(data?.vaccines || [])].sort((a, b) => new Date(b.record_date).getTime() - new Date(a.record_date).getTime());
+        this.vaccineRecords = [...(data?.vaccine_history || [])].sort((a, b) => new Date(b.record_date).getTime() - new Date(a.record_date).getTime());
         this.eggRecords = [...(data?.eggs || [])].sort((a, b) => new Date(b.date_collect_egg).getTime() - new Date(a.date_collect_egg).getTime());
         this.isLoading = false;
         this.cdr.detectChanges();

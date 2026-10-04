@@ -2,17 +2,16 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   Coop,
-  latestHealth,
-  latestEgg,
-  latestVaccine,
+  vaccineTypeCount,
+  totalEggCount,
   deviceSummary,
   formatThaiDate,
 } from '../coop-summary.util';
 
 /**
  * การ์ดสรุปข้อมูลคอกแบบละเอียด แสดงตอนเอาเมาส์ไปชี้ที่คอก (ใช้ร่วมกันทั้งหน้ารายการคอก
- * และหน้าจัดวางผังฟาร์ม) - รวมสุขภาพ/ไข่/วัคซีนล่าสุด + สถานะอุปกรณ์ ในที่เดียว
- * แทนที่จะโชว์แค่สถานะอุปกรณ์เหมือนเดิม
+ * และหน้าจัดวางผังฟาร์ม) - โชว์ภาพรวมของคอก (วันเกิดไก่/จำนวนวัคซีนที่ให้ไปกี่ชนิด/
+ * จำนวนไข่สะสม/อุปกรณ์) แทนที่จะโชว์แค่ "รายการล่าสุด" ของแต่ละอย่างแบบเดิม
  */
 @Component({
   selector: 'app-coop-hover-card',
@@ -24,16 +23,12 @@ import {
 export class CoopHoverCard {
   @Input() coop!: Coop;
 
-  get health() {
-    return latestHealth(this.coop);
+  get vaccineCount() {
+    return vaccineTypeCount(this.coop);
   }
 
-  get egg() {
-    return latestEgg(this.coop);
-  }
-
-  get vaccine() {
-    return latestVaccine(this.coop);
+  get eggCount() {
+    return totalEggCount(this.coop);
   }
 
   get devices() {

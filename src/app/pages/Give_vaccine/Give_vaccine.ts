@@ -8,6 +8,8 @@ interface VaccineAlertRow {
   id: string;
   vaccineName: string;
   method: string;
+  chickenAge: number;
+  description: string;
   date: Date;
   isCompleted: boolean;
   daysUntil: number;
@@ -82,6 +84,8 @@ export class GiveVaccineComponent {
             id: a.id,
             vaccineName: a.vaccine_name || 'วัคซีน',
             method: a.injection_type || '-',
+            chickenAge: a.chicken_age || 0,
+            description: a.description || '',
             date: dateOnly,
             isCompleted: a.is_completed === true,
             daysUntil: Math.round((dateOnly.getTime() - todayOnly.getTime()) / 86400000),
@@ -124,7 +128,12 @@ export class GiveVaccineComponent {
   markGiven(a: VaccineAlertRow) {
     if (a.isCompleted || this.savingId) return;
     this.savingId = a.id;
-    this.api.put(`/vaccines/alerts?id=${a.id}`, { is_completed: true }).subscribe({
+    this.api.put(`/vaccines/alerts?id=${a.id}`, {
+      is_completed: true,
+      method: a.method,
+      chicken_age: a.chickenAge,
+      note: a.description,
+    }).subscribe({
       next: () => {
         this.savingId = null;
         this.flashToast(`บันทึกแล้ว - ${this.coopName || 'คอกนี้'}ได้รับวัคซีน ${a.vaccineName} แล้ว`, 'success');

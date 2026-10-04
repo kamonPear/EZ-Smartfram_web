@@ -63,7 +63,12 @@ export class NotificationsComponent {
     if (n.type === 'vaccine') {
       // id ของแจ้งเตือนวัคซีนคือ "vaccine_<alertId>" ตัดคำนำหน้าออกก่อนยิง PUT
       const alertId = n.id.replace(/^vaccine_/, '');
-      this.api.put(`/vaccines/alerts?id=${alertId}`, { is_completed: true }).subscribe({
+      this.api.put(`/vaccines/alerts?id=${alertId}`, {
+        is_completed: true,
+        method: n.method,
+        chicken_age: n.chickenAge,
+        note: n.description,
+      }).subscribe({
         next: () => {
           this.flashToast('บันทึกแล้ว - คอกนี้ได้รับวัคซีนแล้ว', 'success');
           this.removeLocal(n);

@@ -160,10 +160,19 @@
       <div class="farm-layout-section" *ngIf="placedCoops.length > 0">
         <div class="section-title-row">
           <h2 class="section-title">ผังฟาร์มของคุณ</h2>
-          <button class="arrange-farm-btn" routerLink="/farm-layout">
-            🗺️ จัดวางผังฟาร์ม
-          </button>
+          <!-- เข็มทิศ - แค่บอกทิศคร่าวๆ ไม่ต้องอิงทิศจริงของฟาร์ม วางไว้ฝั่งขวาสุดของ
+               แถวหัวข้อ (ที่ว่างอยู่) แทนที่จะไปเบียดกับปุ่มจนตกบรรทัด -->
+          <div class="compass">
+            <span class="compass-dir compass-n">↑<i>เหนือ</i></span>
+            <span class="compass-dir compass-s">↓<i>ใต้</i></span>
+            <span class="compass-dir compass-w">←<i>ตก</i></span>
+            <span class="compass-dir compass-e">→<i>ออก</i></span>
+          </div>
         </div>
+
+        <button class="arrange-farm-btn arrange-farm-btn--full" routerLink="/farm-layout">
+          🗺️ จัดวางผังฟาร์ม
+        </button>
 
         <div class="farm-layout-preview">
           <svg class="shape-boundary" viewBox="0 0 100 100" preserveAspectRatio="none">

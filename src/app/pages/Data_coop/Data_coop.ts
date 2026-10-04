@@ -135,7 +135,7 @@ export class DataCoopComponent implements OnInit, OnDestroy {
     this.note = data?.note || '';
     this.devicesList = data?.devices || [];
     this.healthRecords = data?.health || [];
-    this.vaccineRecords = data?.vaccines || [];
+    this.vaccineRecords = data?.vaccine_history || [];
     this.eggRecords = data?.eggs || [];
     this.buildSlots();
   }

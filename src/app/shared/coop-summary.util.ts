@@ -45,12 +45,15 @@ export interface Coop {
   coop_id: number;
   name_coop: string;
   amount: number;
+  birthday?: string | null;
   pos_x?: number | null;
   pos_y?: number | null;
   devices?: Device[];
   eggs?: EggRecord[];
   health?: HealthRecord[];
-  vaccines?: VaccineRecord[];
+  // ตั้งแต่แยกตาราง vaccine ออกเป็น vaccine (ประเภท) + vaccine_history (ประวัติให้
+  // จริงต่อคอก) แล้ว backend ส่งกลับมาในฟิลด์นี้แทน "vaccines" เดิม
+  vaccine_history?: VaccineRecord[];
 }
 
 function latestBy<T>(records: T[] | undefined, dateField: keyof T): T | null {
@@ -69,7 +72,18 @@ export function latestEgg(coop: Coop): EggRecord | null {
 }
 
 export function latestVaccine(coop: Coop): VaccineRecord | null {
-  return latestBy(coop.vaccines, 'record_date');
+  return latestBy(coop.vaccine_history, 'record_date');
+}
+
+/** จำนวนวัคซีน "ชนิด" ที่เคยให้คอกนี้ไปแล้ว (นับชื่อไม่ซ้ำ ไม่ใช่จำนวนครั้ง) */
+export function vaccineTypeCount(coop: Coop): number {
+  const names = new Set((coop.vaccine_history || []).map((v) => v.name));
+  return names.size;
+}
+
+/** รวมจำนวนไข่ทั้งหมดที่เก็บได้ของคอกนี้ (ผลรวมทุกรอบเก็บ ไม่ใช่แค่ครั้งล่าสุด) */
+export function totalEggCount(coop: Coop): number {
+  return (coop.eggs || []).reduce((sum, e) => sum + (e.number_egg || 0), 0);
 }
 
 export function deviceSummary(coop: Coop): { online: number; total: number } {

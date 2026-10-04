@@ -341,6 +341,7 @@
   margin: 0 0 20px;
 }
 
+
 .arrange-farm-btn {
   font-family: 'Kanit', sans-serif;
   background-color: var(--bg-card);
@@ -359,6 +360,67 @@
   }
 }
 
+// ปุ่ม "จัดวางผังฟาร์ม" ย้ายมาเป็นแถวของตัวเอง เต็มความกว้าง (เดิมอยู่ในแถวหัวข้อ
+// ข้างเข็มทิศ แต่สองอย่างชนกันจนตกบรรทัดในการ์ดแคบๆ)
+.arrange-farm-btn--full {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+// เข็มทิศ - แค่บอกทิศคร่าวๆ ประกอบด้วยลูกศร 4 ทิศรอบจุดกึ่งกลาง เดิมวางซ้อนในกรอบ
+// ผังฟาร์ม (บังหมุดคอกมุมบนซ้าย) ย้ายมาไว้ข้างปุ่ม "จัดวางผังฟาร์ม" แทน
+.compass {
+  position: relative;
+  // ใหญ่พอให้ป้ายกำกับทั้ง 4 ทิศอยู่ในขอบวงกลมจริงๆ (เดิม 44px เล็กเกินไป ตัวหนังสือ
+  // เลยล้นออกนอกวงกลมดูไม่สมดุล)
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  place-items: center;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: 50%;
+  padding: 4px;
+  box-sizing: border-box;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent-green-bright);
+  }
+}
+
+.compass-dir {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent-green-bright);
+
+  i {
+    font-style: normal;
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-top: 1px;
+  }
+}
+
+.compass-n { grid-column: 2; grid-row: 1; }
+.compass-s { grid-column: 2; grid-row: 3; }
+.compass-w { grid-column: 1; grid-row: 2; }
+.compass-e { grid-column: 3; grid-row: 2; }
+
 .coop-hover-anchor {
   position: absolute;
   bottom: calc(100% + 10px);
@@ -376,11 +438,16 @@
 
 /* พรีวิวผังฟาร์มที่หน้าแรก - อ่านอย่างเดียว (ไม่ลากได้) ใช้ดีไซน์เดียวกับ
    หน้า "จัดวางผังฟาร์ม" เพื่อให้เห็นภาพเดียวกันทั้ง 2 หน้า */
-// แถวปฏิทิน (ซ้าย) + ผังฟาร์ม (กลาง) + รายการ (ขวา) 3 ช่องเท่าๆ กัน stretch ให้สูง
-// เท่ากันทั้งแถว - ปฏิทิน/รายการมาจาก <app-date-picker-calendar> ตัวเดียวกัน (ให้
-// display:contents กับตัว host เพื่อให้กล่องลูก 2 กล่องของมันกลายเป็น flex item
-// ตรงๆ ของแถวนี้เลย) แล้วใช้ order แทรกผังฟาร์มให้อยู่ตรงกลางระหว่างกล่องทั้งสอง
-// โดยไม่ต้องยุ่งกับลำดับ element ใน DOM ถ้าจอแคบ wrap ลงมาเรียงต่อกันแทน
+// แถวปฏิทิน (ซ้าย) + ผังฟาร์ม (กลาง) + รายการ (ขวา) 3 ช่องเท่าๆ กัน - ปฏิทิน/รายการ
+// มาจาก <app-date-picker-calendar> ตัวเดียวกัน (ให้ display:contents กับตัว host
+// เพื่อให้กล่องลูก 2 กล่องของมันกลายเป็น flex item ตรงๆ ของแถวนี้เลย) แล้วใช้ order
+// แทรกผังฟาร์มให้อยู่ตรงกลางระหว่างกล่องทั้งสอง โดยไม่ต้องยุ่งกับลำดับ element ใน
+// DOM ถ้าจอแคบ wrap ลงมาเรียงต่อกันแทน
+// align-items: stretch ให้ทั้ง 3 กล่องสูงเท่ากัน - ลองเปลี่ยนเป็น flex-start ไปก่อน
+// หน้านี้ตอนกล่องผังฟาร์มยังสูงเกินจำเป็น (สี่เหลี่ยมเต็มความกว้างการ์ด) แต่พอย่อ
+// สี่เหลี่ยมให้เล็กลงแล้ว (.farm-layout-preview max-width: 280px ด้านล่าง) ความสูง
+// ตามธรรมชาติของกล่องปฏิทิน/ผังฟาร์มใกล้เคียงกันพอดี เลยกลับมาใช้ stretch เหมือนเดิม
+// ให้กล่องรายการ (ซึ่งสั้นกว่าด้วยตัวเอง) ยืดตามเท่าๆ กันทั้งแถว
 .farm-overview-row {
   display: flex;
   flex-wrap: wrap;
@@ -429,19 +496,19 @@
     margin-bottom: 2px;
   }
 
-  // กล่องรายการ stretch สูงเท่าแถวอยู่แล้ว (align-items: stretch ด้านบน) แต่เนื้อหา
-  // ข้างในเดิมจำกัดความสูงตายตัวไว้ที่ 260px ทำให้เหลือพื้นที่ว่างด้านล่างเวลารายการ
-  // สั้นกว่ากล่องอื่นในแถว - เปลี่ยนให้ยืดเต็มพื้นที่ที่มีจริงแทน แล้วค่อยเลื่อนเอา
-  // เฉพาะตอนเนื้อหายาวเกินจริงๆ
+  // กล่องรายการ - ลองให้ flex:1 ยืดเต็มพื้นที่ stretch มาแล้วค่อยเลื่อนไปแล้วสองรอบ
+  // (ทั้งตอนกล่องผังฟาร์มยังใหญ่ และตอนย่อเล็กลงแล้ว) แต่ยืนยันแล้วว่าไม่เสถียร -
+  // การ์ดบวมยาวตามเนื้อหาแทนที่จะเลื่อนจริง (น่าจะเพราะ ::ng-deep ผ่าน
+  // display:contents ของ host component ทำให้ parent ไม่ได้ definite height จริง
+  // ตามที่ flex ต้องการ) เลิกพยายามพึ่ง stretch แล้วล็อก max-height ตายตัวแทน -
+  // รับประกันว่าเลื่อนจริงเสมอ ต่อให้ค่านี้ไม่ตรงความสูงกล่องอื่นเป๊ะๆ ก็ตาม
   ::ng-deep .calendar-inline.upcoming-box {
     display: flex;
     flex-direction: column;
   }
 
   ::ng-deep .calendar-inline.upcoming-box .upcoming-list {
-    flex: 1;
-    min-height: 0;
-    max-height: none;
+    max-height: 420px;
     overflow-y: auto;
   }
 }
@@ -464,9 +531,10 @@
 
 .farm-layout-preview {
   width: 100%;
-  // เต็มความกว้างที่มีในกรอบการ์ด (การ์ด .farm-layout-section เองถูกจำกัด
-  // max-width ไว้แล้วด้านบน) ยังคง 1:1 ไว้เพื่อไม่ให้รูปทรงผังฟาร์มเพี้ยน แค่ไม่
-  // บีบแคบซ้ำอีกชั้นจนเหลือพื้นที่ว่างรอบๆ เยอะเกินไป
+  // เดิมเต็มความกว้างการ์ด (~400px) แล้วคง 1:1 ทำให้สี่เหลี่ยมสูงตามไปด้วย กลาย
+  // เป็นตัวที่ทำให้ทั้งแถว 3 กล่อง (ปฏิทิน/ผังฟาร์ม/รายการ) ถูก stretch สูงเกินไป -
+  // จำกัด max-width ไว้ให้เล็กลง ยังคง 1:1 เพื่อไม่ให้รูปทรงผังฟาร์มเพี้ยน
+  max-width: 280px;
   aspect-ratio: 1 / 1;
   margin: 0 auto;
   background-color: var(--bg-panel);

@@ -5,30 +5,24 @@
   </div>
 
   <div class="hover-card-row">
-    <span class="row-icon">🩺</span>
-    <span class="row-label">สุขภาพล่าสุด</span>
-    <span class="row-value" *ngIf="health">
-      แข็งแรง {{ health.healthy }} / ป่วย {{ health.poor_health }} · {{ formatDate(health.record_date) }}
-    </span>
-    <span class="row-value muted" *ngIf="!health">ยังไม่มีข้อมูล</span>
-  </div>
-
-  <div class="hover-card-row">
-    <span class="row-icon">🥚</span>
-    <span class="row-label">ไข่ล่าสุด</span>
-    <span class="row-value" *ngIf="egg">
-      {{ egg.number_egg }} ฟอง · {{ formatDate(egg.date_collect_egg) }}
-    </span>
-    <span class="row-value muted" *ngIf="!egg">ยังไม่มีข้อมูล</span>
+    <span class="row-icon">🎂</span>
+    <span class="row-label">วันเกิดไก่</span>
+    <span class="row-value" *ngIf="coop.birthday">{{ formatDate(coop.birthday) }}</span>
+    <span class="row-value muted" *ngIf="!coop.birthday">ยังไม่มีข้อมูล</span>
   </div>
 
   <div class="hover-card-row">
     <span class="row-icon">💉</span>
-    <span class="row-label">วัคซีนล่าสุด</span>
-    <span class="row-value" *ngIf="vaccine">
-      {{ vaccine.name }} · {{ formatDate(vaccine.record_date) }}
-    </span>
-    <span class="row-value muted" *ngIf="!vaccine">ยังไม่มีข้อมูล</span>
+    <span class="row-label">วัคซีน</span>
+    <span class="row-value" *ngIf="vaccineCount > 0">ให้แล้ว {{ vaccineCount }} ชนิด</span>
+    <span class="row-value muted" *ngIf="vaccineCount === 0">ยังไม่มีข้อมูล</span>
+  </div>
+
+  <div class="hover-card-row">
+    <span class="row-icon">🥚</span>
+    <span class="row-label">ไข่</span>
+    <span class="row-value" *ngIf="eggCount > 0">{{ eggCount }} ฟอง</span>
+    <span class="row-value muted" *ngIf="eggCount === 0">ยังไม่มีข้อมูล</span>
   </div>
 
   <div class="hover-card-row">

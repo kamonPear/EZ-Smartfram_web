@@ -12,6 +12,11 @@ export interface FarmNotification {
   daysUntil: number;
   coopId?: string;
   coopName?: string;
+  // เฉพาะ type === 'vaccine' - ส่งต่อไปตอนกด "เสร็จสิ้น" (PUT /vaccines/alerts)
+  // เพื่อให้แถวประวัติที่บันทึกมี method/note ครบ ไม่ใช่ปล่อยว่างเหมือนเดิม
+  method?: string;
+  chickenAge?: number;
+  description?: string;
 }
 
 // เตือนล่วงหน้า 2 วันก่อนถึงกำหนด (ทั้งวัคซีนและตรวจสุขภาพ) ไปจนถึงเลยกำหนดแล้ว
@@ -157,6 +162,9 @@ export class NotificationsService {
         daysUntil: daysUntilVaccine,
         coopId,
         coopName,
+        method: a?.injection_type || '-',
+        chickenAge: a?.chicken_age || 0,
+        description: a?.description || '',
       });
     }
 
