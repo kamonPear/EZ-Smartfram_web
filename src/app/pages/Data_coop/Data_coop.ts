@@ -59,6 +59,11 @@ export class DataCoopComponent implements OnInit, OnDestroy {
   vaccineRecords: VaccineRecord[] = [];
   eggRecords: EggRecord[] = [];
 
+  // ตรวจจับความเคลื่อนไหวที่วงกบประตู (เซนเซอร์ PIR) เฉพาะของคอกนี้ - จำนวนครั้ง
+  // และเวลาที่ตรวจจับล่าสุด ภายใน 24 ชม.ล่าสุด (backend กรองช่วงเวลาให้แล้ว)
+  motionCount: number = 0;
+  motionLastAt: Date | null = null;
+
   // คลิก/ชี้เมาส์ที่แท่งกราฟไข่ดูรายละเอียดของวันนั้นได้ (เหมือนหน้าเพิ่มไข่)
   hoveredEggBarKey: string | null = null;
   selectedEggBarKey: string | null = null;
@@ -111,6 +116,7 @@ export class DataCoopComponent implements OnInit, OnDestroy {
         this.fetchCoopDetails();
         this.fetchPendingVaccines();
         this.fetchManualAppointments();
+        this.fetchMotionAlerts();
         this.loadMarkers();
         this.startAutoRefresh();
       } else {
@@ -245,6 +251,34 @@ export class DataCoopComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ตรวจจับความเคลื่อนไหวที่วงกบประตู (เซนเซอร์ PIR) ของคอกนี้เท่านั้น - กรองจาก
+  // รายการรวมทุกคอกของ /api/motion-alerts เอาเฉพาะ coop_id ตรงกับหน้านี้
+  fetchMotionAlerts(silent = false) {
+    if (!this.selectedCoop) return;
+    this.api.get<any[]>('/motion-alerts').subscribe({
+      next: (rows) => {
+        const mine = (rows || []).filter(r => String(r?.coop_id) === String(this.selectedCoop));
+        this.motionCount = mine.length;
+        this.motionLastAt = mine.length
+          ? mine.reduce((latest: Date, r: any) => {
+              const t = new Date(r.timestamp);
+              return !isNaN(t.getTime()) && t > latest ? t : latest;
+            }, new Date(0))
+          : null;
+        if (!silent) this.cdr.detectChanges();
+      },
+      error: (err) => console.error('โหลดข้อมูลตรวจจับความเคลื่อนไหวไม่สำเร็จ:', err)
+    });
+  }
+
+  get motionSummaryText(): string {
+    if (this.motionCount === 0) return 'ยังไม่พบความเคลื่อนไหวใน 24 ชม.ที่ผ่านมา';
+    const timeLabel = this.motionLastAt
+      ? this.motionLastAt.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+      : '-';
+    return `ตรวจพบความเคลื่อนไหว ${this.motionCount} ครั้ง · ล่าสุด ${timeLabel}`;
+  }
+
   loadMarkers() {
     // ปฏิทินของคอกนี้เท่านั้น (ส่ง coopId กรองไว้) ไม่รวมคอกอื่น
     loadCalendarMarkers(this.api, Number(this.selectedCoop)).subscribe({
@@ -272,6 +306,7 @@ export class DataCoopComponent implements OnInit, OnDestroy {
         this.fetchCoopDetails(true);
         this.fetchPendingVaccines(true);
         this.fetchManualAppointments(true);
+        this.fetchMotionAlerts(true);
       });
     }
   }

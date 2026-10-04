@@ -87,6 +87,29 @@
   border-radius: 14px;
 }
 
+.motion-alert-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(171, 71, 188, 0.08);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+
+  &.has-motion {
+    background: rgba(171, 71, 188, 0.15);
+    color: #AB47BC;
+    font-weight: 600;
+  }
+}
+
+.motion-alert-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
 .mini-zone {
   position: absolute;
   top: 8px;

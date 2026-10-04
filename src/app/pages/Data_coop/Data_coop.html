@@ -45,6 +45,11 @@
           </div>
           <span class="mini-zone mini-zone--door">ประตู</span>
         </div>
+
+        <div class="motion-alert-row" [class.has-motion]="motionCount > 0">
+          <span class="motion-alert-icon">🚶</span>
+          <span class="motion-alert-text">{{ motionSummaryText }}</span>
+        </div>
       </div>
 
       <!-- 2. กราฟเก็บไข่ของคอกนี้ -->
