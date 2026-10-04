@@ -27,6 +27,9 @@
           <svg *ngIf="n.type === 'food'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 22c6.23-.05 7.87-5.57 7.5-10-.36-4.34-3.95-9.96-7.5-10-3.55.04-7.14 5.66-7.5 10-.37 4.43 1.27 9.95 7.5 10Z"/>
           </svg>
+          <svg *ngIf="n.type === 'motion'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="4" r="2"/><path d="m14 7-3 1-2 6 2 8"/><path d="m9 8-4 2 2 3"/><path d="m13 14 3 1 2 6"/>
+          </svg>
         </div>
         <div class="notification-body">
           <p class="notification-title">{{ n.title }}</p>

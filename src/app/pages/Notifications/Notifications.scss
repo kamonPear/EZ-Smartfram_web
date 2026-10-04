@@ -87,6 +87,7 @@
   &.is-vaccine { background: rgba(255, 167, 38, 0.15); color: #FFA726; }
   &.is-health { background: rgba(255, 167, 38, 0.15); color: #FFA726; }
   &.is-food { background: rgba(66, 165, 245, 0.15); color: #42A5F5; }
+  &.is-motion { background: rgba(171, 71, 188, 0.15); color: #AB47BC; }
 }
 
 .notification-card.is-urgent .notification-icon {
@@ -128,4 +129,5 @@
   &.is-food { background: #42A5F5; }
   &.is-health { background: #FFA726; }
   &.is-vaccine { background: var(--accent-green-bright); color: #0B1710; }
+  &.is-motion { background: #AB47BC; }
 }

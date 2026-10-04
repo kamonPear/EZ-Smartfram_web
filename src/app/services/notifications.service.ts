@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { forkJoin, map, Observable, of, catchError } from 'rxjs';
 import { ApiService } from './api.service';
 
-export type NotificationType = 'food' | 'vaccine' | 'health';
+export type NotificationType = 'food' | 'vaccine' | 'health' | 'motion';
 
 export interface FarmNotification {
   id: string;
@@ -47,12 +47,14 @@ export class NotificationsService {
       coops: this.api.get<any[]>('/coops').pipe(catchError(() => of([]))),
       alerts: this.api.get<any[]>('/vaccines/alerts').pipe(catchError(() => of([]))),
       healths: this.api.get<any[]>('/healths').pipe(catchError(() => of([]))),
+      motion: this.api.get<any[]>('/motion-alerts').pipe(catchError(() => of([]))),
     }).pipe(
-      map(({ foods, coops, alerts, healths }) => this.build(foods || [], coops || [], alerts || [], healths || []))
+      map(({ foods, coops, alerts, healths, motion }) =>
+        this.build(foods || [], coops || [], alerts || [], healths || [], motion || []))
     );
   }
 
-  private build(foods: any[], coops: any[], alerts: any[], healths: any[]): FarmNotification[] {
+  private build(foods: any[], coops: any[], alerts: any[], healths: any[], motion: any[] = []): FarmNotification[] {
     const notifications: FarmNotification[] = [];
     const today = new Date();
     const todayOnly = dateOnly(today);
@@ -165,6 +167,37 @@ export class NotificationsService {
         method: a?.injection_type || '-',
         chickenAge: a?.chicken_age || 0,
         description: a?.description || '',
+      });
+    }
+
+    // 5. แจ้งเตือนตรวจจับความเคลื่อนไหว (เซนเซอร์ PIR ที่วงกบประตู) - รวมเป็น 1
+    // แจ้งเตือนต่อคอก (ไม่ใช่ 1 อันต่อครั้งตรวจจับ เพราะอาจมีหลายสิบครั้ง/วัน) โชว์
+    // จำนวนครั้งรวมกับเวลาที่ตรวจจับล่าสุด ข้อมูลดิบมาจาก /api/motion-alerts
+    // (เรียงล่าสุดมาก่อนอยู่แล้วจาก backend)
+    const motionByCoop = new Map<string, { coopName: string; count: number; lastAt: Date }>();
+    for (const m of motion) {
+      const coopId = m?.coop_id != null ? String(m.coop_id) : null;
+      const ts = m?.timestamp ? new Date(m.timestamp) : null;
+      if (!coopId || !ts || isNaN(ts.getTime())) continue;
+      const coopName = m?.coop_name || coopNames.get(coopId) || `คอก ${coopId}`;
+      const existing = motionByCoop.get(coopId);
+      if (existing) {
+        existing.count += 1;
+        if (ts > existing.lastAt) existing.lastAt = ts;
+      } else {
+        motionByCoop.set(coopId, { coopName, count: 1, lastAt: ts });
+      }
+    }
+    for (const [coopId, info] of motionByCoop) {
+      const timeLabel = info.lastAt.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+      notifications.push({
+        id: `motion_${coopId}`,
+        type: 'motion',
+        title: `🚶 ตรวจพบความเคลื่อนไหวที่${info.coopName} (${info.count} ครั้ง ล่าสุด ${timeLabel})`,
+        urgent: false,
+        daysUntil: -1,
+        coopId,
+        coopName: info.coopName,
       });
     }
 

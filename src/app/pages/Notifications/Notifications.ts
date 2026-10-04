@@ -49,13 +49,14 @@ export class NotificationsComponent {
     });
   }
 
-  iconFor(n: FarmNotification): 'vaccine' | 'health' | 'food' {
+  iconFor(n: FarmNotification): 'vaccine' | 'health' | 'food' | 'motion' {
     return n.type;
   }
 
   buttonLabel(n: FarmNotification): string {
     if (n.type === 'food') return 'รับทราบ';
     if (n.type === 'health') return 'ไปตรวจสุขภาพ';
+    if (n.type === 'motion') return 'รับทราบ';
     return 'เสร็จสิ้น';
   }
 
