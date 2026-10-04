@@ -31,6 +31,17 @@ export class LoginComponent {
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef
   ) {
+    // ถ้า session ยังไม่หมดอายุ (ยัง login ค้างอยู่) แต่ดันมาโผล่หน้านี้ - ปกติ
+    // เกิดจากกดปุ่ม back/forward ของเบราว์เซอร์ย้อนไปเจอ /login ที่เคยอยู่ใน
+    // history ไม่ใช่ว่า logout จริง - เด้งกลับเข้าแอปทันทีโดยไม่โชว์ฟอร์ม login
+    // เลย กันสับสนว่า "อยู่หน้า login แล้วทำไมกด back/forward กลับเข้าแอปได้"
+    if (this.auth.isLoggedIn()) {
+      const redirect = this.route.snapshot.queryParamMap.get('redirect');
+      const target = redirect && !redirect.startsWith('/login') ? redirect : '/home';
+      this.router.navigateByUrl(target, { replaceUrl: true });
+      return;
+    }
+
     // หน้า login ไม่มี username ให้ผูกธีมด้วย (ยังไม่ login) รีเซ็ตกลับค่าเริ่มต้น
     // เสมอ กันธีมของบัญชีก่อนหน้า (ที่เพิ่ง logout มา) ค้างโชว์อยู่ที่หน้านี้
     this.theme.resetToDefault();
