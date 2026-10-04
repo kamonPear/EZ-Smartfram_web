@@ -63,7 +63,10 @@ export class LoginComponent {
         // กัน redirect ที่ชี้กลับมาหน้า login เอง (เช่นจาก 401 ที่ยิงตอนยังไม่ล็อกอิน)
         // ไม่งั้นล็อกอินผ่านแล้วแต่ยังค้างอยู่หน้าเดิม
         const target = redirect && !redirect.startsWith('/login') ? redirect : '/home';
-        this.router.navigateByUrl(target);
+        // ✅ replaceUrl: true - แทนที่ entry ของหน้า login ใน history แทนที่จะ push
+        // ซ้อนเข้าไปใหม่ กันกดปุ่มย้อนกลับ (back) ของเบราว์เซอร์แล้วเด้งกลับมาเจอ
+        // ฟอร์ม login อีกรอบทั้งที่ยัง login ค้างอยู่จริง (session ยังไม่หมดอายุ)
+        this.router.navigateByUrl(target, { replaceUrl: true });
       },
       error: (err: HttpErrorResponse) => {
         this.isSubmitting = false;
