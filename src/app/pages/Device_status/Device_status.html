@@ -44,7 +44,7 @@
         <div class="slot-icon">
           <img [src]="deviceIconSrc(slot.device)">
         </div>
-        <span class="slot-text">{{ slot.device!.name }}</span>
+        <span class="slot-text">{{ slot.device!.label }}</span>
 
         <div class="status-tooltip" *ngIf="slot.showStatus">
           สถานะ: <span [ngClass]="slot.status + '-text'">{{ getStatusLabel(slot.status) }}</span>
@@ -63,16 +63,28 @@
 
     <div class="sensor-table-panel">
       <h2 class="panel-title">ตารางเซ็นเซอร์</h2>
+      <p class="panel-summary" *ngIf="sortedDevices.length > 0">
+        <span class="dot" [class.on]="onlineCount > 0"></span>
+        ออนไลน์ {{ onlineCount }}/{{ sortedDevices.length }} ตัว
+      </p>
 
       <div class="sensor-list-container">
         <ng-container *ngIf="sortedDevices.length > 0; else noDevice">
           <div class="sensor-item" *ngFor="let device of sortedDevices">
             <div class="sensor-info">
-              <img [src]="deviceIconSrc(device)" [alt]="device.name">
-              <span class="sensor-name">{{ device.name }}</span>
+              <span class="icon-tile"><img [src]="deviceIconSrc(device)" [alt]="device.name"></span>
+              <span class="sensor-name">{{ deviceLabel(device) }}</span>
             </div>
+            <span class="sensor-value"
+                  [class.empty]="isActuator(device) || device.value == null"
+                  [class.stale]="device.current_status !== 'Online'">
+              <ng-container *ngIf="!isActuator(device) && device.value != null; else noValue">
+                {{ valueText(device) }}<small *ngIf="unitFor(device)">{{ unitFor(device) }}</small>
+              </ng-container>
+              <ng-template #noValue>–</ng-template>
+            </span>
             <div class="sensor-status" [class.online]="device.current_status === 'Online'">
-              {{ device.current_status === 'Online' ? 'ออนไลน์' : 'ออฟไลน์' }}
+              <span class="dot"></span>{{ statusLabel(device) }}
             </div>
           </div>
         </ng-container>

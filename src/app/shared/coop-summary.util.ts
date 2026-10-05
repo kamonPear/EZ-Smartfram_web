@@ -10,6 +10,7 @@ export interface Device {
   slot_index?: number;
   current_status: string;
   last_update?: string;
+  value?: number | null;
 }
 
 export interface EggRecord {
@@ -84,6 +85,14 @@ export function vaccineTypeCount(coop: Coop): number {
 /** รวมจำนวนไข่ทั้งหมดที่เก็บได้ของคอกนี้ (ผลรวมทุกรอบเก็บ ไม่ใช่แค่ครั้งล่าสุด) */
 export function totalEggCount(coop: Coop): number {
   return (coop.eggs || []).reduce((sum, e) => sum + (e.number_egg || 0), 0);
+}
+
+/** true = อุปกรณ์สั่งเปิด/ปิด (พัดลม/หลอดไฟ) ไม่ใช่เซนเซอร์วัดค่า - ตัดสินจากชื่อ
+ *  อุปกรณ์เหมือนกับ deviceIconSrc เพราะ backend ไม่ได้ส่ง device_type มาให้ใช้แยกจริงจัง */
+export function isActuatorDevice(name: string | undefined | null): boolean {
+  const n = (name || '').toLowerCase();
+  return n.includes('พัดลม') || n.includes('fan') ||
+         n.includes('หลอดไฟ') || n.includes('ไฟ') || n.includes('bulb') || n.includes('light');
 }
 
 export function deviceSummary(coop: Coop): { online: number; total: number } {

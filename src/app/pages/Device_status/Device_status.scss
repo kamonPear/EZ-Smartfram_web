@@ -210,13 +210,34 @@
   font-weight: 800;
   color: var(--text-primary);
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: 6px;
+}
+
+.panel-summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-muted);
+
+    &.on {
+      background: var(--accent-green-bright);
+      box-shadow: 0 0 6px var(--accent-green-bright);
+    }
+  }
 }
 
 .sensor-list-container {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
   flex: 1;
   min-height: 0;
@@ -235,13 +256,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border-bottom: 1px solid var(--border-subtle);
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  transition: border-color 0.2s ease, transform 0.2s ease;
 
-  &:last-child {
-    border-bottom: none;
+  &:hover {
+    border-color: var(--border-strong);
+    transform: translateX(2px);
   }
 }
 
@@ -253,12 +277,24 @@
   font-size: 14px;
   color: var(--text-primary);
   min-width: 0;
+  flex: 1;
+
+  .icon-tile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+  }
 
   img {
     width: 20px;
     height: 20px;
     object-fit: contain;
-    flex-shrink: 0;
   }
 
   .sensor-name {
@@ -266,6 +302,30 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+}
+
+// คอลัมน์ค่าวัดกว้างคงที่และชิดขวา ให้ตัวเลขของทุกแถวเรียงตรงกัน
+// (เดิมลอยตามความกว้างชื่อ และบางแถวไม่มีค่าเลยทำให้เยื้องกัน)
+.sensor-value {
+  flex-shrink: 0;
+  width: 76px;
+  text-align: right;
+  font-weight: 800;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  white-space: nowrap;
+
+  small {
+    margin-left: 2px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  // ไม่มีค่า หรือบอร์ดออฟไลน์ (ค่าที่เห็นเป็นค่าเก่า) ให้จางลง
+  &.empty { color: var(--text-muted); font-weight: 600; }
+  &.stale:not(.empty) { opacity: 0.5; }
 }
 
 .no-device-msg {
@@ -281,15 +341,26 @@
 .sensor-status {
   flex-shrink: 0;
   font-weight: 700;
-  font-size: 13px;
-  padding: 6px 16px;
+  font-size: 12px;
+  padding: 4px 10px;
   border-radius: 20px;
-  min-width: 72px;
-  text-align: center;
+  width: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
   color: var(--danger-grad-end, #e53935);
   background-color: rgba(198, 40, 40, 0.14);
   border: 1px solid rgba(198, 40, 40, 0.3);
   transition: all 0.2s ease;
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
 
   &.online {
     color: var(--accent-green-bright);
