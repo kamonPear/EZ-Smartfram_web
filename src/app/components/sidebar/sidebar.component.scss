@@ -416,3 +416,88 @@
     color: var(--danger-grad-end, #e53935);
   }
 }
+
+/* ป็อบอัพยืนยันออกจากระบบ - ดีไซน์เดียวกับโมดัลยืนยันอื่นๆ ในแอป อยู่เหนือ sidebar (z-index 1100) */
+.logout-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1200;
+  backdrop-filter: blur(2px);
+}
+
+.logout-modal {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  padding: 30px 40px;
+  border-radius: 20px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+  text-align: center;
+  width: 400px;
+  max-width: 90vw;
+  animation: logoutPopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  h3 {
+    margin-top: 0;
+    color: var(--text-primary);
+    font-size: 1.4rem;
+    font-weight: bold;
+  }
+
+  p {
+    color: var(--text-secondary);
+    margin-bottom: 26px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .logout-modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+
+    button {
+      padding: 12px 28px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-family: 'Kanit', sans-serif;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.1s, background-color 0.2s;
+
+      &.btn-cancel {
+        background-color: var(--bg-card-alt);
+        color: var(--text-primary);
+        &:hover { background-color: var(--border-strong); }
+      }
+
+      &.btn-confirm-logout {
+        background-color: #e57373;
+        color: #000;
+        &:hover { background-color: #ef5350; }
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
+}
+
+@keyframes logoutPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

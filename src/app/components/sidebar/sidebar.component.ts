@@ -92,7 +92,19 @@ export class SidebarComponent implements OnInit {
     return this.authService.currentUser()?.username ?? null;
   }
 
+  // กดปุ่มออกจากระบบแล้วถามยืนยันก่อน กันกดพลาด
+  showLogoutConfirm = signal(false);
+
   logout() {
+    this.showLogoutConfirm.set(true);
+  }
+
+  cancelLogout() {
+    this.showLogoutConfirm.set(false);
+  }
+
+  confirmLogout() {
+    this.showLogoutConfirm.set(false);
     this.close();
     this.authService.logout();
     this.router.navigate(['/login']);

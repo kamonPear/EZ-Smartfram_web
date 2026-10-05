@@ -87,3 +87,15 @@
     <span>EZ-SmartFarm v1.0</span>
   </div>
 </aside>
+
+<!-- ป็อบอัพยืนยันก่อนออกจากระบบ -->
+<div class="logout-modal-overlay" *ngIf="showLogoutConfirm()" (click)="cancelLogout()">
+  <div class="logout-modal" (click)="$event.stopPropagation()">
+    <h3>ยืนยันการออกจากระบบ?</h3>
+    <p>คุณต้องการออกจากระบบใช่หรือไม่</p>
+    <div class="logout-modal-actions">
+      <button class="btn-cancel" (click)="cancelLogout()">ยกเลิก</button>
+      <button class="btn-confirm-logout" (click)="confirmLogout()">ออกจากระบบ</button>
+    </div>
+  </div>
+</div>
