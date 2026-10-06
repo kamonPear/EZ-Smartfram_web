@@ -11,6 +11,14 @@
     <span class="row-value muted" *ngIf="!coop.birthday">ยังไม่มีข้อมูล</span>
   </div>
 
+  <!-- อายุไก่ตอนนี้ (นับจากวันเกิดถึงวันนี้) - เอาไว้ให้มองปราดเดียวรู้เลยว่าคอกนี้
+       อายุเท่าไหร่แล้ว ไม่ต้องมานั่งนับเองจากวันเกิดไก่ -->
+  <div class="hover-card-row" *ngIf="coop.birthday">
+    <span class="row-icon">🐤</span>
+    <span class="row-label">อายุไก่</span>
+    <span class="row-value">{{ age }}</span>
+  </div>
+
   <div class="hover-card-row">
     <span class="row-icon">💉</span>
     <span class="row-label">วัคซีน</span>

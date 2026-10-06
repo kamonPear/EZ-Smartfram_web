@@ -6,6 +6,7 @@ import {
   totalEggCount,
   deviceSummary,
   formatThaiDate,
+  formatChickenAge,
 } from '../coop-summary.util';
 
 /**
@@ -37,5 +38,9 @@ export class CoopHoverCard {
 
   formatDate(iso: string | undefined | null): string {
     return formatThaiDate(iso);
+  }
+
+  get age(): string {
+    return formatChickenAge(this.coop.birthday);
   }
 }

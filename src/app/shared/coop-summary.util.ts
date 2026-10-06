@@ -121,3 +121,28 @@ export function formatThaiDate(isoDate: string | undefined | null): string {
   if (isNaN(d.getTime())) return '-';
   return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
 }
+
+/** อายุไก่นับจากวันเกิดถึงวันนี้ แบบอ่านง่าย เช่น "2 เดือน 1 สัปดาห์ 3 วัน" - เทียบ
+ *  แค่ระดับวัน (ตัดเวลาทิ้ง) กันพลาดเรื่องเวลาในวันเดียวกันทำให้ปัดวันผิด */
+export function formatChickenAge(birthdayIso: string | undefined | null): string {
+  if (!birthdayIso) return '';
+  const birth = new Date(birthdayIso);
+  if (isNaN(birth.getTime())) return '';
+
+  const b = new Date(birth.getFullYear(), birth.getMonth(), birth.getDate());
+  const now = new Date();
+  const t = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const totalDays = Math.round((t.getTime() - b.getTime()) / 86400000);
+  if (totalDays < 0) return '';
+
+  const months = Math.floor(totalDays / 30);
+  const afterMonths = totalDays % 30;
+  const weeks = Math.floor(afterMonths / 7);
+  const days = afterMonths % 7;
+
+  const parts: string[] = [];
+  if (months > 0) parts.push(`${months} เดือน`);
+  if (weeks > 0) parts.push(`${weeks} สัปดาห์`);
+  if (days > 0 || parts.length === 0) parts.push(`${days} วัน`);
+  return parts.join(' ');
+}
