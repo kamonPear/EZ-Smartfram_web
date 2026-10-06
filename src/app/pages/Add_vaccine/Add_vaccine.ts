@@ -42,8 +42,16 @@ export class AddVaccineComponent {
 
   medicineName: string = '';
   method: string = '';
+  // minAgeDays/maxAgeDays คือค่าจริงที่ส่งไป backend (int, หน่วยวัน) - minAgeWeeks/
+  // minAgeMonths/maxAgeWeeks/maxAgeMonths เป็นแค่ช่องกรอก/แสดงหน่วยอื่นควบคู่กัน
+  // ไปด้วย (ดู onMinDaysChange/onMinWeeksChange/... ด้านล่าง) เพื่อให้เจ้าของฟาร์ม
+  // กรอกเป็นสัปดาห์หรือเดือนก็ได้โดยไม่ต้องแปลงเป็นวันเอง
   minAgeDays: number | null = null;
+  minAgeWeeks: number | null = null;
+  minAgeMonths: number | null = null;
   maxAgeDays: number | null = null;
+  maxAgeWeeks: number | null = null;
+  maxAgeMonths: number | null = null;
   description: string = '';
 
   methodOptions = ['พ่น', 'ฉีด', 'หยอดปาก', 'ผสมน้ำ', 'ผสมอาหาร'];
@@ -132,6 +140,76 @@ export class AddVaccineComponent {
 
   closeDropdowns() {
     this.isMethodDropdownOpen = false;
+  }
+
+  private round1(n: number): number {
+    return Math.round(n * 10) / 10;
+  }
+
+  // เรียกตอนแก้ช่อง "วัน" (ต่ำสุด) - วันเป็นค่าหลักอยู่แล้ว แค่คำนวณสัปดาห์/เดือน
+  // ที่เทียบเท่ากันมาโชว์คู่กัน
+  onMinDaysChange() {
+    if (this.minAgeDays === null || isNaN(this.minAgeDays)) {
+      this.minAgeWeeks = null;
+      this.minAgeMonths = null;
+      return;
+    }
+    this.minAgeWeeks = this.round1(this.minAgeDays / 7);
+    this.minAgeMonths = this.round1(this.minAgeDays / 30);
+  }
+
+  // เรียกตอนแก้ช่อง "สัปดาห์" (ต่ำสุด) - แปลงเป็นวันก่อน (ปัดเศษ เพราะ backend รับ
+  // แค่ int) แล้วคำนวณเดือนที่เทียบเท่าใหม่จากวันนั้น ไม่แตะช่องสัปดาห์เอง กันค่าที่
+  // เพิ่งพิมพ์โดนปัดเปลี่ยนขณะพิมพ์อยู่
+  onMinWeeksChange() {
+    if (this.minAgeWeeks === null || isNaN(this.minAgeWeeks)) {
+      this.minAgeDays = null;
+      this.minAgeMonths = null;
+      return;
+    }
+    this.minAgeDays = Math.round(this.minAgeWeeks * 7);
+    this.minAgeMonths = this.round1(this.minAgeDays / 30);
+  }
+
+  // เรียกตอนแก้ช่อง "เดือน" (ต่ำสุด) - หลักการเดียวกับ onMinWeeksChange
+  onMinMonthsChange() {
+    if (this.minAgeMonths === null || isNaN(this.minAgeMonths)) {
+      this.minAgeDays = null;
+      this.minAgeWeeks = null;
+      return;
+    }
+    this.minAgeDays = Math.round(this.minAgeMonths * 30);
+    this.minAgeWeeks = this.round1(this.minAgeDays / 7);
+  }
+
+  onMaxDaysChange() {
+    if (this.maxAgeDays === null || isNaN(this.maxAgeDays)) {
+      this.maxAgeWeeks = null;
+      this.maxAgeMonths = null;
+      return;
+    }
+    this.maxAgeWeeks = this.round1(this.maxAgeDays / 7);
+    this.maxAgeMonths = this.round1(this.maxAgeDays / 30);
+  }
+
+  onMaxWeeksChange() {
+    if (this.maxAgeWeeks === null || isNaN(this.maxAgeWeeks)) {
+      this.maxAgeDays = null;
+      this.maxAgeMonths = null;
+      return;
+    }
+    this.maxAgeDays = Math.round(this.maxAgeWeeks * 7);
+    this.maxAgeMonths = this.round1(this.maxAgeDays / 30);
+  }
+
+  onMaxMonthsChange() {
+    if (this.maxAgeMonths === null || isNaN(this.maxAgeMonths)) {
+      this.maxAgeDays = null;
+      this.maxAgeWeeks = null;
+      return;
+    }
+    this.maxAgeDays = Math.round(this.maxAgeMonths * 30);
+    this.maxAgeWeeks = this.round1(this.maxAgeDays / 7);
   }
 
   private flashToast(message: string, type: 'success' | 'error' = 'success') {
