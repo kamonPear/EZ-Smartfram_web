@@ -7,14 +7,11 @@
   flex-direction: column;
 }
 
-/* ดีไซน์ของ header (โลโก้+ชื่อหน้า) ย้ายไปรวมไว้ที่ styles.scss แล้ว
-   ใช้ร่วมกันทุกหน้า ดู .header-section/.header-content/.clickable-logo/
-   .logo-container/.title-group ที่นั่น - override แค่ width ตรงนี้ (scoped แค่
-   หน้านี้หน้าเดียวตาม Angular view encapsulation ไม่กระทบหน้าอื่น) ให้เท่ากับ
-   .section-stack ด้านล่าง กันกรอบหัวข้อดูแคบ/ไม่เท่ากับเนื้อหาที่กว้างกว่า */
-.header-section {
-  width: min(92%, 1100px);
-}
+/* ดีไซน์ของ header (โลโก้+ชื่อหน้า) ย้ายไปรวมไว้ที่ styles.scss แล้ว ใช้ร่วมกัน
+   ทุกหน้า ดู .header-section/.header-content/.clickable-logo/.logo-container/
+   .title-group ที่นั่น - เคยลองขยายให้เท่าเนื้อหาด้านล่าง (ซึ่งกว้างกว่า) แต่ดู
+   แปลกเพราะกรอบหัวข้อหน้าอื่นๆ แคบกว่านี้หมด เลยปล่อยให้ใช้ขนาดเดิม (760px) ร่วม
+   กับหน้าอื่น แม้จะไม่เท่าความกว้างของ .section-stack ด้านล่างแล้วก็ตาม */
 
 .loading-hint {
   text-align: center;
