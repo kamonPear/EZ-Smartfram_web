@@ -9,7 +9,12 @@
 
 /* ดีไซน์ของ header (โลโก้+ชื่อหน้า) ย้ายไปรวมไว้ที่ styles.scss แล้ว
    ใช้ร่วมกันทุกหน้า ดู .header-section/.header-content/.clickable-logo/
-   .logo-container/.title-group ที่นั่น */
+   .logo-container/.title-group ที่นั่น - override แค่ width ตรงนี้ (scoped แค่
+   หน้านี้หน้าเดียวตาม Angular view encapsulation ไม่กระทบหน้าอื่น) ให้เท่ากับ
+   .section-stack ด้านล่าง กันกรอบหัวข้อดูแคบ/ไม่เท่ากับเนื้อหาที่กว้างกว่า */
+.header-section {
+  width: min(92%, 1100px);
+}
 
 .loading-hint {
   text-align: center;
@@ -29,9 +34,9 @@
    ชัดเจน แทนการยัดรวมไว้ในกล่องเดียวแล้วขีดเส้นแบ่งบางๆเหมือนเดิม */
 .section-stack {
   width: 100%;
-  // เท่ากับความกว้างของกรอบหัวข้อหน้า (.header-section ใน styles.scss ใช้
-  // min(92%, 760px) เหมือนกัน) กันเนื้อหาด้านล่างดูกว้าง/ยาวเกินกรอบชื่อด้านบน
-  max-width: min(92%, 760px);
+  // เท่ากับ .header-section ด้านบน (override ไว้แล้วให้เท่ากัน) - กว้างกว่า
+  // 760px เดิม เพื่อให้ 3 คอลัมน์ใน .coop-info-row ด้านล่างมีที่พอ ไม่เบียดกัน
+  max-width: min(92%, 1100px);
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -52,10 +57,7 @@
   }
 }
 
-// .section-stack กว้างสุดแค่ 760px (เท่ากรอบหัวข้อ) อยู่แล้ว ไม่ใช่ 900px+ เหมือน
-// ก่อนหน้านี้ - breakpoint จึงใช้ 600px เดียวกับจุดอื่นในไฟล์นี้ (ไม่ใช่ 900px)
-// เพราะคอลัมน์แคบกว่าเดิมมาก ต้องรอจนจอเล็กจริงๆ ถึงค่อยพับกลับไปเรียงแนวตั้ง
-@media (max-width: 600px) {
+@media (max-width: 900px) {
   .coop-info-row {
     flex-direction: column;
 
