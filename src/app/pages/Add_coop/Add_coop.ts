@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picker-calendar';
 import { DayMarker, loadCalendarMarkers } from '../../shared/calendar-markers.util';
+import { toBackendDateOnly } from '../../shared/coop-summary.util';
 
 @Component({
   selector: 'app-add-coop',
@@ -123,8 +124,8 @@ export class AddCoopComponent {
     const payload = {
       name_coop: this.coopName.trim(),
       amount: this.chickenCount,
-      birthday: this.birthDate.toISOString(),
-      date_adopt_animals: this.receivedDate.toISOString(),
+      birthday: toBackendDateOnly(this.birthDate),
+      date_adopt_animals: toBackendDateOnly(this.receivedDate),
       note: this.note
     };
 

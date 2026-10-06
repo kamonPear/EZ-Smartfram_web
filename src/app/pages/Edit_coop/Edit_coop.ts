@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
-import { Device, EggRecord, HealthRecord, VaccineRecord } from '../../shared/coop-summary.util';
+import { Device, EggRecord, HealthRecord, VaccineRecord, toBackendDateOnly } from '../../shared/coop-summary.util';
 import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picker-calendar';
 import { DayMarker, loadCalendarMarkers } from '../../shared/calendar-markers.util';
 import { deviceIconSrc } from '../../shared/device-icon.util';
@@ -170,8 +170,8 @@ export class EditCoopComponent implements OnInit {
     const payload = {
       name_coop: this.coopName.trim(),
       amount: this.chickenCount,
-      birthday: this.birthDate.toISOString(),
-      date_adopt_animals: this.receivedDate.toISOString(),
+      birthday: toBackendDateOnly(this.birthDate),
+      date_adopt_animals: toBackendDateOnly(this.receivedDate),
       note: this.note
     };
 

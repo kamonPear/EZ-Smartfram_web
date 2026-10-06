@@ -101,6 +101,19 @@ export function deviceSummary(coop: Coop): { online: number; total: number } {
   return { online, total };
 }
 
+/** แปลง Date (ตามเวลาท้องถิ่นของเบราว์เซอร์) เป็นสตริงวันที่ล้วนๆ แบบที่ backend
+ *  เก็บ ("YYYY-MM-DDT00:00:00Z") โดยไม่แปลงโซนเวลาจริง - ห้ามใช้ .toISOString()
+ *  ตรงๆ กับ Date ที่สร้างจาก date picker เพราะนั่นแปลงเป็น UTC จริง ถ้าเวลาท้องถิ่น
+ *  เร็วกว่า UTC (เช่นไทย +7) เที่ยงคืนของวันที่เลือกจะกลายเป็น 17:00 ของวันก่อนหน้า
+ *  ใน UTC ทำให้วันเกิดไก่/วันรับเข้าเลี้ยงที่ส่งไป backend เพี้ยนไปหนึ่งวันเสมอ
+ *  (บั๊กที่เจอจริงในฐานข้อมูล - ดู Add_coop.ts/Edit_coop.ts) */
+export function toBackendDateOnly(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}T00:00:00Z`;
+}
+
 /** วันที่แบบไทย (พ.ศ.) สั้นๆ เช่น "3 ก.พ. 2569" ใช้ในการ์ดสรุปข้อมูลคอก */
 export function formatThaiDate(isoDate: string | undefined | null): string {
   if (!isoDate) return '-';
