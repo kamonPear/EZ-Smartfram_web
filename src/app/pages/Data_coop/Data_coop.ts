@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { Subscription, interval } from 'rxjs';
-import { Device, EggRecord, HealthRecord, VaccineRecord, formatThaiDate } from '../../shared/coop-summary.util';
+import { Device, EggRecord, HealthRecord, VaccineRecord, formatThaiDate, formatChickenAge } from '../../shared/coop-summary.util';
 import { deviceIconSrc } from '../../shared/device-icon.util';
 import { DayMarker, loadCalendarMarkers, formatDateKey } from '../../shared/calendar-markers.util';
 import { HealthAppointmentService, HealthAppointment } from '../../services/health-appointment.service';
@@ -314,6 +314,10 @@ export class DataCoopComponent implements OnInit, OnDestroy {
   formatDate(date: Date | null): string {
     if (!date) return '-';
     return date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  get chickenAgeText(): string {
+    return formatChickenAge(this.birthDate);
   }
 
   get deviceOnlineCount(): number {
