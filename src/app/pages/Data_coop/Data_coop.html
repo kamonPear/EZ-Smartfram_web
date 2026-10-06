@@ -99,6 +99,10 @@
         </div>
       </div>
 
+      <!-- 3-5. ข้อมูลไก่ / สุขภาพล่าสุด / วัคซีนที่ยังไม่ได้ให้ - วางเรียงข้างกัน
+           3 กล่องเท่ากัน เหมือนแถวปฏิทิน/ผังฟาร์ม/รายการที่หน้าแรก -->
+      <div class="coop-info-row">
+
       <!-- 3. ข้อมูลไก่ที่กรอกเข้ามา (รวมปุ่มปฏิทินของคอกนี้ไว้ในนี้ด้วย) -->
       <div class="card panel-card">
         <div class="device-link-row">
@@ -187,6 +191,8 @@
         <p class="record-empty" *ngIf="pendingVaccines.length === 0">ไม่มีวัคซีนที่ต้องให้ในตอนนี้</p>
 
         <button type="button" class="history-link-btn" *ngIf="vaccineRecords.length > 0" (click)="showVaccineHistory = true">ดูประวัติที่ให้แล้ว ({{ vaccineRecords.length }})</button>
+      </div>
+
       </div>
 
     </div>

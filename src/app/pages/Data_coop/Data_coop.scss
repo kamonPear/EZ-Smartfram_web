@@ -29,10 +29,38 @@
    ชัดเจน แทนการยัดรวมไว้ในกล่องเดียวแล้วขีดเส้นแบ่งบางๆเหมือนเดิม */
 .section-stack {
   width: 100%;
-  max-width: 720px;
+  // กว้างขึ้นจาก 720px เดิม เพื่อให้มีที่พอสำหรับแถว 3 คอลัมน์เท่ากันด้านล่าง
+  // (.coop-info-row) - การ์ดที่ยังเรียงต่อกันแนวตั้งด้านบน/ล่างก็จะกว้างขึ้นตามไป
+  // ด้วย แต่ยัง center อยู่กลางจอเหมือนเดิม
+  max-width: 1100px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+/* แถว "ข้อมูลไก่ / สุขภาพล่าสุด / วัคซีนที่ยังไม่ได้ให้" วางเรียงข้างกัน 3 กล่องเท่า
+   กัน (เหมือนแถวปฏิทิน/ผังฟาร์ม/รายการที่หน้าแรก) แทนที่จะไล่ลงมาทีละกล่อง */
+.coop-info-row {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 20px;
+
+  .panel-card {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .coop-info-row {
+    flex-direction: column;
+
+    .panel-card {
+      flex: unset;
+    }
+  }
 }
 
 .panel-card {
