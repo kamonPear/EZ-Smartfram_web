@@ -179,7 +179,7 @@
             [class.selected]="selectedDeductType === type"
             (click)="selectDeductType(type)"
           >
-            {{ type }}{{ isStockEmpty(type === FOOD_TYPE_SMALL ? smallStock : largeStock) ? ' (หมดแล้ว)' : '' }}
+            {{ type }}{{ isStockEmpty(type === FOOD_TYPE_SMALL ? smallStock : largeStock) ? ' (ยังไม่มีในสต็อก)' : '' }}
           </button>
         </div>
 
