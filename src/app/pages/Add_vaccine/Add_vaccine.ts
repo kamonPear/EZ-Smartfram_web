@@ -146,6 +146,13 @@ export class AddVaccineComponent {
     return Math.round(n * 10) / 10;
   }
 
+  // เดือนโชว์เป็นจำนวนเต็มเสมอ ไม่มีทศนิยม (เช่น 10 วัน = "0 เดือน" ไม่ใช่ "0.3
+  // เดือน") - นับเฉพาะเดือนที่ครบจริงๆ เหมือนวิธีนับอายุทั่วไป ถ้ายังไม่ครบเดือน
+  // ถัดไปก็ยังนับเป็นเดือนก่อนหน้าอยู่ จึงปัดลง (floor) ไม่ใช่ปัดเข้าใกล้
+  private monthsWhole(days: number): number {
+    return Math.floor(days / 30);
+  }
+
   // เรียกตอนแก้ช่อง "วัน" (ต่ำสุด) - วันเป็นค่าหลักอยู่แล้ว แค่คำนวณสัปดาห์/เดือน
   // ที่เทียบเท่ากันมาโชว์คู่กัน
   onMinDaysChange() {
@@ -155,7 +162,7 @@ export class AddVaccineComponent {
       return;
     }
     this.minAgeWeeks = this.round1(this.minAgeDays / 7);
-    this.minAgeMonths = this.round1(this.minAgeDays / 30);
+    this.minAgeMonths = this.monthsWhole(this.minAgeDays);
   }
 
   // เรียกตอนแก้ช่อง "สัปดาห์" (ต่ำสุด) - แปลงเป็นวันก่อน (ปัดเศษ เพราะ backend รับ
@@ -168,7 +175,7 @@ export class AddVaccineComponent {
       return;
     }
     this.minAgeDays = Math.round(this.minAgeWeeks * 7);
-    this.minAgeMonths = this.round1(this.minAgeDays / 30);
+    this.minAgeMonths = this.monthsWhole(this.minAgeDays);
   }
 
   // เรียกตอนแก้ช่อง "เดือน" (ต่ำสุด) - หลักการเดียวกับ onMinWeeksChange
@@ -178,6 +185,7 @@ export class AddVaccineComponent {
       this.minAgeWeeks = null;
       return;
     }
+    this.minAgeMonths = Math.floor(this.minAgeMonths);
     this.minAgeDays = Math.round(this.minAgeMonths * 30);
     this.minAgeWeeks = this.round1(this.minAgeDays / 7);
   }
@@ -189,7 +197,7 @@ export class AddVaccineComponent {
       return;
     }
     this.maxAgeWeeks = this.round1(this.maxAgeDays / 7);
-    this.maxAgeMonths = this.round1(this.maxAgeDays / 30);
+    this.maxAgeMonths = this.monthsWhole(this.maxAgeDays);
   }
 
   onMaxWeeksChange() {
@@ -199,7 +207,7 @@ export class AddVaccineComponent {
       return;
     }
     this.maxAgeDays = Math.round(this.maxAgeWeeks * 7);
-    this.maxAgeMonths = this.round1(this.maxAgeDays / 30);
+    this.maxAgeMonths = this.monthsWhole(this.maxAgeDays);
   }
 
   onMaxMonthsChange() {
@@ -208,6 +216,7 @@ export class AddVaccineComponent {
       this.maxAgeWeeks = null;
       return;
     }
+    this.maxAgeMonths = Math.floor(this.maxAgeMonths);
     this.maxAgeDays = Math.round(this.maxAgeMonths * 30);
     this.maxAgeWeeks = this.round1(this.maxAgeDays / 7);
   }
