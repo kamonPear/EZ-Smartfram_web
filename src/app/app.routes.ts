@@ -23,6 +23,7 @@ import { FoodComponent } from './pages/Food/Food';
 import { AddFoodComponent } from './pages/Add_food/Add_food';
 import { FoodTypeSummaryComponent } from './pages/Food_type_summary/Food_type_summary';
 import { CoopListComponent } from './pages/Coop_list/Coop_list';
+import { AddDeviceTypeComponent } from './pages/Add_device_type/Add_device_type';
 import { authGuard } from './services/auth.guard';
 
 export const routes: Routes = [
@@ -57,6 +58,8 @@ export const routes: Routes = [
       { path: 'farm-layout', component: FarmLayoutComponent },
 
       { path: 'setup', component: SetUpSystem },
+
+      { path: 'add-device-type', component: AddDeviceTypeComponent },
 
       { path: 'farm-thresholds', component: FarmThresholdsComponent },
 

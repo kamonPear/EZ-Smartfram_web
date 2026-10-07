@@ -14,7 +14,7 @@ export class SetUpSystem implements OnInit {
 
   deviceIconSrc = deviceIconSrc;
 
-  availableSensors = [
+  readonly builtInSensors = [
     { name: 'ESP 32', icon: 'assets/images/esp32.png' },
     { name: 'MQ-135', icon: 'assets/images/mq135.png' },
     { name: 'PIR MOTION', icon: 'assets/images/pir.png' },
@@ -23,6 +23,11 @@ export class SetUpSystem implements OnInit {
     { name: 'พัดลม', icon: 'assets/images/fan.png' },
     { name: 'หลอดไฟ', icon: 'assets/images/bulb.png' }
   ];
+
+  // ชนิดอุปกรณ์มาตรฐาน 7 แบบ + ชนิดที่ผู้ใช้เพิ่มเองจากหน้า "เพิ่มอุปกรณ์"
+  // (เฉพาะของฟาร์มตัวเอง) - โหลดจาก backend ตอนเปิดหน้า เลยเริ่มที่ค่ามาตรฐานไว้
+  // ก่อนกันถาดว่างระหว่างรอโหลด
+  availableSensors: { name: string; icon: string }[] = [...this.builtInSensors];
 
   slots: any[] = [];
   selectedCoop: string | null = null;
@@ -64,6 +69,20 @@ export class SetUpSystem implements OnInit {
         this.selectedCoop = params['coop'];
         this.fetchCoopData(); // 🌟 2. สั่งดึงข้อมูลอุปกรณ์ของคอกนี้
       }
+    });
+
+    this.fetchCustomDeviceTypes();
+  }
+
+  // ชนิดอุปกรณ์ที่ผู้ใช้เพิ่มเองจากหน้า "เพิ่มอุปกรณ์" (/add-device-type) - ต่อท้าย
+  // ชนิดมาตรฐาน 7 แบบในถาดเดียวกัน โหลดไม่สำเร็จก็แค่เหลือ 7 แบบมาตรฐานไว้เหมือนเดิม
+  private fetchCustomDeviceTypes() {
+    this.api.get<{ name: string; icon: string }[]>('/device-types').subscribe({
+      next: (rows) => {
+        this.availableSensors = [...this.builtInSensors, ...(rows || [])];
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('โหลดชนิดอุปกรณ์ที่เพิ่มเองไม่สำเร็จ:', err),
     });
   }
 

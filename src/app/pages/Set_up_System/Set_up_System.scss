@@ -45,6 +45,26 @@
   line-height: 1.4;
 }
 
+.add-device-type-btn {
+  display: block;
+  text-align: center;
+  background: rgba(114, 213, 114, 0.12);
+  border: 1.5px dashed var(--accent-green-bright);
+  border-radius: 12px;
+  padding: 10px;
+  margin: 0 0 16px;
+  color: var(--accent-green-bright);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: rgba(114, 213, 114, 0.2);
+  }
+}
+
 .palette-list {
   display: flex;
   flex-direction: column;

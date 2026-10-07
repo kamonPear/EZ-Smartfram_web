@@ -1,0 +1,76 @@
+<div class="add-device-type-container">
+  <header class="header-section">
+    <div class="header-content">
+      <div class="logo-container clickable-logo" routerLink="/">
+        <img src="assets/images/logo.png" alt="Farm Logo">
+      </div>
+      <div class="title-group">
+        <h1>เพิ่มอุปกรณ์</h1>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-area">
+    <div class="card info-card">
+      <div class="card-title-row">
+        <div class="card-title-left">
+          <div class="card-title-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="4" width="16" height="16" rx="3"/>
+              <path d="M9 9h6v6H9z"/>
+              <path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/>
+            </svg>
+          </div>
+          <h2>ตั้งชื่ออุปกรณ์ที่ซื้อมาใหม่</h2>
+        </div>
+      </div>
+      <p class="required-hint">ตั้งชื่อ+เลือกไอคอนไว้ครั้งเดียว แล้วจะไปโผล่ในถาดอุปกรณ์ของหน้า "จัดวางอุปกรณ์" ให้เลือกใช้ได้ทุกคอก</p>
+
+      <div class="field-stack">
+        <div class="input-pill">
+          <span class="input-pill-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.6 12.3 12.7 20.2a2 2 0 0 1-2.8 0l-6.1-6.1a2 2 0 0 1 0-2.8L11.7 3.4a2 2 0 0 1 1.4-.6H19a2 2 0 0 1 2 2v5.9a2 2 0 0 1-.4 1.6Z"/>
+              <circle cx="16.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/>
+            </svg>
+          </span>
+          <input type="text" [(ngModel)]="name" placeholder="ชื่ออุปกรณ์ *" maxlength="100">
+        </div>
+      </div>
+
+      <p class="field-label">เลือกไอคอน <span class="is-required">*</span></p>
+      <div class="icon-choices">
+        <button
+          type="button"
+          class="icon-choice"
+          *ngFor="let choice of iconChoices"
+          [class.selected]="selectedIcon === choice.src"
+          (click)="selectIcon(choice.src)"
+        >
+          <img [src]="choice.src" [alt]="choice.label">
+          <span>{{ choice.label }}</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-cancel" (click)="cancel()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="6" y1="6" x2="18" y2="18"/>
+          <line x1="18" y1="6" x2="6" y2="18"/>
+        </svg>
+        ยกเลิก
+      </button>
+      <button class="btn-confirm" [disabled]="isSaving" (click)="save()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        {{ isSaving ? 'กำลังบันทึก...' : 'บันทึกอุปกรณ์' }}
+      </button>
+    </div>
+  </main>
+
+  <div class="toast-notification" [class.is-error]="toastType === 'error'" *ngIf="showToast">
+    <span>{{ toastMessage }}</span>
+  </div>
+</div>

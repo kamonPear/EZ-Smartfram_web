@@ -8,6 +8,18 @@ const LIGHT_BULB_SVG = `data:image/svg+xml;utf8,${encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23F5A623" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/></svg>`
 )}`;
 
+// ไอคอนให้เลือกตอนเพิ่ม "ชนิดอุปกรณ์" ใหม่ (หน้า Add_device_type) - ชุดเดียวกับ
+// ไอคอนที่ใช้แสดงผลจริงในถาดอุปกรณ์ของหน้าจัดวาง (Set_up_System) ให้เลือกตรงกัน
+export const DEVICE_ICON_CHOICES: { label: string; src: string }[] = [
+  { label: 'ESP 32', src: 'assets/images/esp32.png' },
+  { label: 'MQ-135', src: 'assets/images/mq135.png' },
+  { label: 'PIR MOTION', src: 'assets/images/pir.png' },
+  { label: 'DHT22', src: 'assets/images/ds18b20.png' },
+  { label: 'MC-38', src: 'assets/images/mc38.png' },
+  { label: 'พัดลม', src: 'assets/images/fan.png' },
+  { label: 'หลอดไฟ', src: LIGHT_BULB_SVG },
+];
+
 function hasNoMatchingAsset(name: string): boolean {
   const n = (name || '').toLowerCase();
   return n.includes('หลอดไฟ') || n.includes('ไฟ') || n.includes('bulb') || n.includes('light');
