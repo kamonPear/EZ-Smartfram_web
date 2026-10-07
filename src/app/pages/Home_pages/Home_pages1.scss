@@ -744,6 +744,13 @@
         color: var(--text-secondary);
         font-size: 0.95rem;
       }
+
+      .coop-direction {
+        color: var(--accent-green-bright);
+        font-size: 0.78rem;
+        font-weight: 600;
+        margin-top: 2px;
+      }
     }
 
     .coop-edit-btn {

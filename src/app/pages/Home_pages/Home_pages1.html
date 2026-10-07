@@ -278,6 +278,8 @@
             <div class="coop-info">
               <span class="coop-name">{{ coop.name_coop || 'คอกที่ ' + coop.coop_id }}</span>
               <span class="coop-amount">{{ coop.amount }} ตัว</span>
+              <!-- ทิศของคอกในผังฟาร์ม (เทียบจุดกึ่งกลางผัง) - โชว์แค่ตอนจัดวางผังแล้ว -->
+              <span class="coop-direction" *ngIf="coopDirection(coop) as dir">🧭 ทิศ{{ dir }}</span>
             </div>
             <button class="coop-edit-btn" title="แก้ไขคอกนี้" (click)="editCoop($event, coop)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

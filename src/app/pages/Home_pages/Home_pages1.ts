@@ -191,6 +191,28 @@ export class HomePages1 implements OnInit, OnDestroy {
     return this.coops.filter((c) => c.pos_x != null && c.pos_y != null);
   }
 
+  // ทิศของคอกในผังฟาร์ม (8 ทิศ) - เทียบตำแหน่ง pos_x/pos_y (0-100%) กับจุดกึ่งกลาง
+  // ผัง (50,50) ไม่ได้อิงทิศจริงของฟาร์ม (เหมือนเข็มทิศที่ใช้แค่บอกทิศคร่าวๆ) แค่
+  // บอกว่าคอกนี้อยู่ทางไหนของผังเทียบกับคอกอื่น คืน null ถ้าคอกนี้ยังไม่ได้จัดวางผัง
+  private static readonly DIRECTION_LABELS = [
+    'เหนือ', 'ตะวันออกเฉียงเหนือ', 'ตะวันออก', 'ตะวันออกเฉียงใต้',
+    'ใต้', 'ตะวันตกเฉียงใต้', 'ตะวันตก', 'ตะวันตกเฉียงเหนือ',
+  ];
+
+  coopDirection(coop: Coop): string | null {
+    if (coop.pos_x == null || coop.pos_y == null) return null;
+    const dx = coop.pos_x - 50;
+    const dy = coop.pos_y - 50;
+    // ใกล้จุดกึ่งกลางผังเกินกว่าจะบอกทิศได้ชัดเจน
+    if (Math.hypot(dx, dy) < 4) return 'กึ่งกลางผัง';
+
+    // มุมแบบเข็มทิศ (0°=เหนือ, 90°=ตะวันออก, ตามเข็มนาฬิกา) - top(y) เพิ่มค่าลงล่าง
+    // บนจอ จึงต้องกลับเครื่องหมาย dy ก่อน เพื่อให้ "ขึ้นบน" = เหนือ
+    const bearing = (Math.atan2(dx, -dy) * 180) / Math.PI;
+    const index = Math.round(((bearing + 360) % 360) / 45) % 8;
+    return HomePages1.DIRECTION_LABELS[index];
+  }
+
   get farmShapeLabel(): string {
     if (this.farmShape === 'circle') return 'วงกลม';
     if (this.farmShape === 'square') return 'สี่เหลี่ยม';
