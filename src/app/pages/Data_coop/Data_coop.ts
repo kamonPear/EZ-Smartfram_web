@@ -32,6 +32,12 @@ interface PendingVaccine {
   daysUntil: number;
 }
 
+// รายการวัคซีนทั้งหมดที่เข้าเกณฑ์อายุของคอกนี้ (ต่างจาก PendingVaccine ตรงที่รวม
+// ตัวที่ให้ไปแล้วด้วย ไม่ใช่แค่ที่ยังไม่ให้) ใช้โชว์ในกรอบ "วัคซีนที่ให้"
+interface VaccineChecklistItem extends PendingVaccine {
+  isCompleted: boolean;
+}
+
 @Component({
   selector: 'app-data-coop',
   standalone: true,
@@ -74,14 +80,12 @@ export class DataCoopComponent implements OnInit, OnDestroy {
   slots: SlotPreview[] = [];
   hoveredSlotId: number | null = null;
 
-  // ป็อบอัพประวัติสุขภาพ/วัคซีน - หน้าหลักโชว์แค่ "ล่าสุด" เป็นแดชบอร์ด กดดูย้อนหลัง
-  // ทั้งหมดค่อยเด้งป็อบอัพ ไม่ต้องยัดประวัติทั้งหมดโชว์ค้างไว้ตลอด
-  showHealthHistory = false;
-  showVaccineHistory = false;
-
   // วัคซีนที่คอกนี้ยังไม่ได้ให้ (คำนวณจากตารางประเภทวัคซีนเทียบอายุไก่ เหมือน
-  // หน้า "ให้วัคซีน") - โชว์แค่ที่ยังไม่ให้ ไม่ใช่ทั้งหมด
+  // หน้า "ให้วัคซีน") - ใช้คำนวณ "นัดตรวจสุขภาพถัดไป" ใน healthAppointment ด้านล่าง
+  // เท่านั้น (ต้องเป็นแค่ที่ยังไม่ให้ ไม่งั้นจะไปแนะนำนัดตรวจก่อนวัคซีนที่ให้ไปแล้ว)
+  // ส่วนที่โชว์ในกรอบ "วัคซีนที่ให้" ใช้ vaccineChecklist (รวมทุกตัว) แทน
   pendingVaccines: PendingVaccine[] = [];
+  vaccineChecklist: VaccineChecklistItem[] = [];
 
   // นัดตรวจสุขภาพที่กำหนดวันเองของคอกนี้ (จาก backend แล้ว - ไม่ใช่ localStorage
   // อีกต่อไป) ใช้ร่วมกับ pendingVaccines ใน healthAppointment getter ด้านล่าง
@@ -209,7 +213,10 @@ export class DataCoopComponent implements OnInit, OnDestroy {
     });
   }
 
-  // วัคซีนที่ยังไม่ได้ให้ของคอกนี้ - คำนวณเดียวกับหน้า "ให้วัคซีน" (Give_vaccine)
+  // วัคซีนของคอกนี้ - คำนวณเดียวกับหน้า "ให้วัคซีน" (Give_vaccine) จาก response
+  // เดียวกันนี้สร้าง 2 ลิสต์: pendingVaccines (เฉพาะที่ยังไม่ให้ - ใช้คำนวณนัดตรวจ
+  // สุขภาพถัดไปเท่านั้น) และ vaccineChecklist (ทุกตัวรวมที่ให้แล้ว - โชว์ในกรอบ
+  // "วัคซีนที่ให้")
   fetchPendingVaccines(silent = false) {
     if (!this.selectedCoop) return;
     this.api.get<any[]>('/vaccines/alerts').subscribe({
@@ -217,20 +224,23 @@ export class DataCoopComponent implements OnInit, OnDestroy {
         const today = new Date();
         const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-        this.pendingVaccines = (alerts || [])
-          .filter(a => String(a?.coop_id) === String(this.selectedCoop) && a?.is_completed !== true && a?.date)
-          .map(a => {
-            const d = new Date(a.date);
-            const dateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-            return {
-              id: a.id,
-              vaccineName: a.vaccine_name || 'วัคซีน',
-              method: a.injection_type || '-',
-              date: dateOnly,
-              daysUntil: Math.round((dateOnly.getTime() - todayOnly.getTime()) / 86400000),
-            };
-          })
-          .sort((a, b) => a.date.getTime() - b.date.getTime());
+        const mine = (alerts || []).filter(a => String(a?.coop_id) === String(this.selectedCoop) && a?.date);
+
+        const toItem = (a: any) => {
+          const d = new Date(a.date);
+          const dateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+          return {
+            id: a.id,
+            vaccineName: a.vaccine_name || 'วัคซีน',
+            method: a.injection_type || '-',
+            date: dateOnly,
+            daysUntil: Math.round((dateOnly.getTime() - todayOnly.getTime()) / 86400000),
+            isCompleted: a?.is_completed === true,
+          };
+        };
+
+        this.vaccineChecklist = mine.map(toItem).sort((a, b) => a.date.getTime() - b.date.getTime());
+        this.pendingVaccines = this.vaccineChecklist.filter(v => !v.isCompleted);
         if (!silent) this.cdr.detectChanges();
       },
       error: (err) => console.error('โหลดข้อมูลวัคซีนที่ต้องให้ไม่สำเร็จ:', err)
@@ -399,13 +409,6 @@ export class DataCoopComponent implements OnInit, OnDestroy {
     return bar.bucketStart.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
   }
 
-  // สุขภาพ "ล่าสุด" เท่านั้นสำหรับแดชบอร์ดหลัก - ประวัติทั้งหมดย้อนหลังไปดูผ่าน
-  // ป็อบอัพต่างหาก (showHealthHistory)
-  get latestHealthRecord(): HealthRecord | null {
-    if (this.healthRecords.length === 0) return null;
-    return [...this.healthRecords].sort((a, b) => new Date(b.record_date).getTime() - new Date(a.record_date).getTime())[0];
-  }
-
   get healthHistorySorted(): HealthRecord[] {
     return [...this.healthRecords].sort((a, b) => new Date(b.record_date).getTime() - new Date(a.record_date).getTime());
   }
@@ -444,10 +447,6 @@ export class DataCoopComponent implements OnInit, OnDestroy {
     return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
-  get vaccineHistorySorted(): VaccineRecord[] {
-    return [...this.vaccineRecords].sort((a, b) => new Date(b.record_date).getTime() - new Date(a.record_date).getTime());
-  }
-
   vaccineStatusLabel(v: PendingVaccine): string {
     if (v.daysUntil < 0) return `เลยกำหนดมา ${-v.daysUntil} วัน`;
     if (v.daysUntil === 0) return 'ถึงกำหนดวันนี้';
@@ -459,6 +458,16 @@ export class DataCoopComponent implements OnInit, OnDestroy {
     if (v.daysUntil <= 0) return 'is-danger';
     if (v.daysUntil === 1) return 'is-warning';
     return 'is-ok';
+  }
+
+  // เหมือน vaccineStatusLabel/vaccineStatusClass แต่เช็คสถานะ "สำเร็จแล้ว" ก่อน
+  // (ใช้กับ vaccineChecklist ที่มีทั้งตัวที่ให้แล้วและยังไม่ได้ให้ปนกัน)
+  vaccineChecklistStatusLabel(v: VaccineChecklistItem): string {
+    return v.isCompleted ? 'สำเร็จแล้ว' : this.vaccineStatusLabel(v);
+  }
+
+  vaccineChecklistStatusClass(v: VaccineChecklistItem): string {
+    return v.isCompleted ? 'is-done' : this.vaccineStatusClass(v);
   }
 
   goToDeviceStatus() {

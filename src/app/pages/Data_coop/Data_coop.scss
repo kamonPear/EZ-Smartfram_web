@@ -271,10 +271,13 @@
   flex-direction: column;
   gap: 10px;
 
-  // รายการที่ยาวเกิน ~4 แถว เลื่อนดูในกรอบตัวเอง แทนที่จะดันความสูงของทั้งหน้า
-  // ยาวเรื่อยๆ ตามจำนวนประวัติที่สะสมไว้
+  // รายการที่ยาวเกินก็เลื่อนดูในกรอบตัวเอง แทนที่จะดันความสูงของการ์ดยาวเรื่อยๆ
+  // ตามจำนวนประวัติที่สะสมไว้ - ใช้กับการ์ด "รายการตรวจสุขภาพ"/"วัคซีนที่ให้" ใน
+  // .coop-info-row เท่านั้น ตั้งใจให้ไม่สูงไปกว่าการ์ด "ข้อมูลไก่" ข้างๆ (ซึ่งเป็น
+  // การ์ดอ้างอิงความสูงของแถว เนื้อหาคงที่ไม่ยืดตามข้อมูล) เพื่อไม่ให้แถวทั้งหมดถูก
+  // ดึงให้สูงขึ้นตามการ์ดที่มีประวัติเยอะ
   &.is-scrollable {
-    max-height: 260px;
+    max-height: 200px;
     overflow-y: auto;
     padding-right: 4px;
 
@@ -427,50 +430,6 @@
   }
 }
 
-/* แดชบอร์ดสุขภาพล่าสุด - เลขสองช่องเทียบกัน (สุขภาพดี/ป่วย) */
-.latest-stat-row {
-  display: flex;
-  gap: 14px;
-  margin-bottom: 10px;
-}
-
-.latest-stat-tile {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  padding: 14px 10px;
-  border-radius: 14px;
-  background: rgba(var(--fg-rgb), 0.05);
-  border: 1px solid var(--border-subtle);
-
-  &--good { background: rgba(114, 213, 114, 0.1); border-color: rgba(114, 213, 114, 0.25); }
-  &--bad { background: rgba(198, 40, 40, 0.08); border-color: rgba(198, 40, 40, 0.2); }
-}
-
-.latest-stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-title);
-
-  small { font-size: 0.75rem; font-weight: 500; color: rgba(var(--fg-rgb), 0.5); margin-left: 3px; }
-}
-
-.latest-stat-tile--good .latest-stat-value { color: var(--accent-green-bright); }
-.latest-stat-tile--bad .latest-stat-value { color: var(--danger-grad-end, #e53935); }
-
-.latest-stat-label {
-  color: rgba(var(--fg-rgb), 0.6);
-  font-size: 0.78rem;
-}
-
-.latest-stat-date {
-  color: rgba(var(--fg-rgb), 0.5);
-  font-size: 0.8rem;
-  margin: 0 0 12px;
-}
-
 .health-appointment-hint {
   font-size: 0.82rem;
   font-weight: 600;
@@ -548,46 +507,8 @@
   &.is-ok { background: rgba(114, 213, 114, 0.15); color: var(--accent-green-bright); }
   &.is-warning { background: rgba(255, 167, 38, 0.15); color: #FFA726; }
   &.is-danger { background: rgba(198, 40, 40, 0.15); color: var(--danger-grad-end, #e53935); }
-}
-
-/* ป็อบอัพประวัติ (สุขภาพ/วัคซีน) */
-.custom-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(2px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-}
-
-.custom-modal.history-modal {
-  width: 100%;
-  max-width: 480px;
-  max-height: 80vh;
-  background: var(--bg-card);
-  border: 1px solid var(--border-strong);
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
-  display: flex;
-  flex-direction: column;
-}
-
-.history-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-
-  h3 {
-    color: var(--text-title);
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin: 0;
-  }
+  // "สำเร็จแล้ว" ในรายการ "วัคซีนที่ให้" - เข้มกว่า is-ok ให้ดูแยกออกจาก "ยังมีเวลา"
+  &.is-done { background: rgba(76, 175, 80, 0.22); color: #4CAF50; }
 }
 
 .modal-close-btn {
@@ -610,10 +531,6 @@
     background: rgba(198, 40, 40, 0.14);
     color: var(--danger-grad-end, #e53935);
   }
-}
-
-.history-modal .record-list.is-scrollable {
-  max-height: 60vh;
 }
 
 @media (max-width: 600px) {
