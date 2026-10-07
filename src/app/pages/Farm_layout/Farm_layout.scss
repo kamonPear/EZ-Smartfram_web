@@ -52,6 +52,59 @@
   }
 }
 
+// เข็มทิศ - ดีไซน์เดียวกับหน้าแรก (ดู .compass ใน Home_pages1.scss) แค่ copy มา
+// เพราะสไตล์ของแต่ละหน้าถูกแยก scope กันไว้ (Angular component style encapsulation)
+.compass {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  margin-left: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  place-items: center;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: 50%;
+  padding: 4px;
+  box-sizing: border-box;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent-green-bright);
+  }
+}
+
+.compass-dir {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent-green-bright);
+
+  i {
+    font-style: normal;
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-top: 1px;
+  }
+}
+
+.compass-n { grid-column: 2; grid-row: 1; }
+.compass-s { grid-column: 2; grid-row: 3; }
+.compass-w { grid-column: 1; grid-row: 2; }
+.compass-e { grid-column: 3; grid-row: 2; }
+
 /* --- พื้นที่ Canvas โซนกลาง (เหมือนหน้าจัดวางอุปกรณ์) --- */
 .canvas-wrapper {
   flex: 1;
