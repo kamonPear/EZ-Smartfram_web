@@ -17,7 +17,7 @@
       <h3 class="palette-title">ลากอุปกรณ์ไปวางบนแคนวาส</h3>
       <!-- ตั้งชื่อ+ไอคอนอุปกรณ์ที่ซื้อมาใหม่ไว้ล่วงหน้า แล้วจะมาโผล่ในถาดนี้เอง -->
       <a class="add-device-type-btn" routerLink="/add-device-type">+ เพิ่มอุปกรณ์</a>
-      <div class="palette-list">
+      <div class="palette-list" *ngIf="availableSensors.length > 0">
         <div
           class="palette-item"
           [class.is-custom]="sensor.id != null"
@@ -31,6 +31,9 @@
           <span>{{ sensor.name }}</span>
         </div>
       </div>
+      <!-- ลบชนิดอุปกรณ์ทิ้งจนหมดแล้วจริงๆ (ไม่ใช่กำลังโหลด) - บอกตรงๆ แทนที่จะโชว์
+           ถาดว่างเฉยๆ ชวนให้คิดว่าโหลดไม่ขึ้น -->
+      <p class="palette-empty" *ngIf="availableSensors.length === 0">ยังไม่มีชนิดอุปกรณ์เลย กด "+ เพิ่มอุปกรณ์" ด้านบนเพื่อเริ่มต้น</p>
     </aside>
 
     <div class="farm-canvas" (dragover)="onCanvasDragOver($event)" (drop)="onCanvasDrop($event)">

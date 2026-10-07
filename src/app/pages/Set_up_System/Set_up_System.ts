@@ -15,12 +15,15 @@ export class SetUpSystem implements OnInit {
 
   deviceIconSrc = deviceIconSrc;
 
-  // ค่าตั้งต้นโชว์ไว้ก่อนระหว่างรอโหลดจริง (กันถาดว่างวูบๆ) - backend จะ seed ชนิด
-  // มาตรฐาน 7 แบบนี้เป็นแถวจริงให้ user ทุกคนอยู่แล้ว (ครั้งแรกที่เรียก GET
-  // /device-types ดู handlers.ensureDefaultDeviceTypes ฝั่ง backend) ตัวที่โหลดมา
-  // จริงจะมี id เสมอ แก้ไข/ลบได้ทุกตัวรวมถึง 7 แบบมาตรฐานด้วย ตามที่ผู้ใช้ขอ (ลบแล้ว
-  // ลบถาวร ไม่ seed กลับมาให้ใหม่)
-  readonly builtInSensors = DEVICE_ICON_CHOICES.map((c) => ({ name: c.label, icon: c.src }));
+  // ค่าตั้งต้นโชว์ไว้ก่อนระหว่างรอโหลดจริง (กันถาดว่างวูบๆ) - ต้องตรงกับ 7 แบบที่
+  // backend seed ให้ user ทุกคนจริงๆ เท่านั้น (ดู defaultDeviceTypes ใน
+  // handlers/device_type.go ฝั่ง backend) ไม่ใช่ทุกตัวใน DEVICE_ICON_CHOICES ทั้งหมด
+  // (อันนั้นมีตัวเลือกไอคอนเผื่อเพิ่มเองด้วย เอามาทำ placeholder ตรงนี้ไม่ได้ ไม่งั้น
+  // ชนิดที่ยังไม่มีจริงในระบบจะโผล่ในถาดก่อนโหลดเสร็จ คลิกแล้วไม่มี id ให้จัดการ)
+  private static readonly SEEDED_DEFAULT_LABELS = ['ESP 32', 'MQ-135', 'PIR MOTION', 'DHT22', 'MC-38', 'พัดลม', 'หลอดไฟ'];
+  readonly builtInSensors = DEVICE_ICON_CHOICES
+    .filter((c) => SetUpSystem.SEEDED_DEFAULT_LABELS.includes(c.label))
+    .map((c) => ({ name: c.label, icon: c.src }));
 
   availableSensors: { id?: number; name: string; icon: string }[] = [...this.builtInSensors];
 
@@ -83,12 +86,15 @@ export class SetUpSystem implements OnInit {
   }
 
   // ชนิดอุปกรณ์ทั้งหมดของ user นี้ (มาตรฐาน 7 แบบที่ backend seed ให้ + ที่เพิ่มเอง)
-  // แทนที่ค่าตั้งต้นทั้งก้อน ไม่ใช่ต่อท้าย เพราะ backend คืนทั้ง 7 แบบมาตรฐานมาด้วย
-  // อยู่แล้ว (ต่อท้ายจะกลายเป็นโชว์ซ้ำ 2 ชุด) โหลดไม่สำเร็จก็แค่เหลือค่าตั้งต้นไว้
+  // แทนที่ค่าตั้งต้นทั้งก้อนเสมอเมื่อโหลดสำเร็จ แม้ backend จะตอบ "array ว่าง" กลับมา
+  // จริงๆ ก็ตาม (เช่น user ลบชนิดอุปกรณ์ทิ้งจนหมดแล้วจริงๆ) - ต้องแทนที่ไม่ใช่แค่ตอน
+  // ยาวกว่า 0 เพราะงั้นถาดจะค้างโชว์ placeholder 7 แบบที่ไม่มี id จริงให้จัดการตลอด
+  // ไป ทำให้ดูเหมือนมีอุปกรณ์ "โผล่มาเอง" ทั้งที่ user ไม่ได้เพิ่มและลบไปหมดแล้ว
+  // ไม่แทนที่แค่ตอน request ตัวเอง fail จริงๆ (error callback) เท่านั้น
   private fetchCustomDeviceTypes() {
     this.api.get<{ id: number; name: string; icon: string }[]>('/device-types').subscribe({
       next: (rows) => {
-        if (rows && rows.length > 0) this.availableSensors = rows;
+        this.availableSensors = rows || [];
         this.cdr.detectChanges();
       },
       error: (err) => console.error('โหลดชนิดอุปกรณ์ไม่สำเร็จ:', err),

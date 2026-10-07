@@ -71,6 +71,14 @@
   gap: 10px;
 }
 
+.palette-empty {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 20px 4px;
+  line-height: 1.5;
+}
+
 .palette-item {
   display: flex;
   align-items: center;
