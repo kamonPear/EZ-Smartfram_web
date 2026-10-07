@@ -429,9 +429,21 @@ export class DataCoopComponent implements OnInit, OnDestroy {
       vaccineDate: null as Date | null,
     }));
 
+    // วันที่มีผลตรวจสุขภาพจริงบันทึกไว้แล้ว - ตัดนัดที่ตรงกับวันนี้ทิ้ง กันไม่ให้
+    // ขึ้น "ถึงกำหนดตรวจสุขภาพแล้ว" ค้างอยู่ทั้งที่ตรวจไปแล้วจริงๆ (เดิมคำนวณจากแค่
+    // วันครบกำหนดวัคซีนเฉยๆ ไม่เคยเช็คกับ healthRecords เลย)
+    const checkedDateKeys = new Set(
+      this.healthRecords
+        .map(r => new Date(r.record_date))
+        .filter(d => !isNaN(d.getTime()))
+        .map(d => formatDateKey(d))
+    );
+
     // นัดที่กำหนดเองอยู่ก่อนวัคซีนในลิสต์ตั้งใจ - ถ้าวันที่ตรงกันเป๊ะ (sort เสถียร) นัด
     // ที่กำหนดเองจะ "ชนะ" แสดงเป็นนัดที่เรากำหนดเอง ไม่ใช่นัดจากวัคซีนซ้ำวันเดียวกัน
-    const candidates = [...manualCandidates, ...vaccineCandidates].sort((a, b) => a.appointmentDate.getTime() - b.appointmentDate.getTime());
+    const candidates = [...manualCandidates, ...vaccineCandidates]
+      .filter(c => !checkedDateKeys.has(formatDateKey(c.appointmentDate)))
+      .sort((a, b) => a.appointmentDate.getTime() - b.appointmentDate.getTime());
     if (candidates.length === 0) return null;
 
     const nearest = candidates[0];
