@@ -10,8 +10,6 @@ import { ApiService } from './api.service';
 // (ไม่มีแถวจริงในฐานข้อมูล) ห้ามเอาไปแสดงตรงๆ หรือสลับไปใช้ค่า default ปลอมๆ แทน
 // เพราะหน้าแรกจะโชว์เหมือนมีคนตั้งค่าไว้แล้วทั้งที่จริงยังไม่ได้ตั้ง - ใช้ isConfigured
 // (id > 0) แยกสถานะ "ยังไม่ตั้งค่า" ออกจาก "ตั้งค่าไว้แล้วเป็น 0" ให้ชัดเจน
-export const DEFAULT_DRAFT_TEMP = 25;
-export const DEFAULT_DRAFT_AMMONIA = 35;
 
 interface FarmThresholdResponse {
   id?: number;
