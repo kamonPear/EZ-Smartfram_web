@@ -561,7 +561,14 @@ export class AddHealthComponent {
       error: (err: any) => {
         this.isSaving = false;
         console.error('บันทึกข้อมูลสุขภาพไม่สำเร็จ:', err);
-        this.flashToast('บันทึกข้อมูลสุขภาพไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
+        // ✅ มีผลตรวจของคอกนี้วันนี้อยู่แล้ว (backend กันซ้ำด้วย unique constraint
+        // ใหม่) - บอกตรงๆ ว่าให้ไปแก้ไขข้อมูลเดิมแทนที่จะเพิ่มซ้ำ แทนข้อความ error
+        // กลางๆ ที่ทำให้เข้าใจผิดว่าระบบล่ม แล้วกดบันทึกซ้ำไปเรื่อยๆ
+        if (err.status === 409) {
+          this.flashToast(`มีผลตรวจของคอกนี้วันที่ ${this.formatDate(this.collectDate)} อยู่แล้ว กรุณาแก้ไขข้อมูลเดิมแทน (ไปที่หน้าแก้ไขคอก)`, 'error');
+        } else {
+          this.flashToast('บันทึกข้อมูลสุขภาพไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
+        }
         this.cdr.detectChanges();
       }
     });
