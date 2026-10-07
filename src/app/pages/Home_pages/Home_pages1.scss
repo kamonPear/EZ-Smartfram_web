@@ -750,6 +750,11 @@
         font-size: 0.78rem;
         font-weight: 600;
         margin-top: 2px;
+
+        &.is-unset {
+          color: var(--text-secondary);
+          font-weight: 500;
+        }
       }
     }
 
