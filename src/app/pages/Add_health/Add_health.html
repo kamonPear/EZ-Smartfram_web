@@ -230,8 +230,8 @@
           (mouseleave)="onBarHoverEnd()"
         >
           <div class="egg-chart-bar-track">
-            <div class="egg-chart-tooltip" *ngIf="hoveredBarKey === bar.key">{{ bar.value }} ตัว</div>
-            <div class="egg-chart-bar-fill" [style.height.%]="barHeightPercent(bar.value)"></div>
+            <div class="egg-chart-tooltip" *ngIf="hoveredBarKey === bar.key">{{ barTooltip(bar) }}</div>
+            <div class="egg-chart-bar-fill" [class]="barColor(bar)" [style.height.%]="barHeightPercent(bar)"></div>
           </div>
           <span class="egg-chart-bar-label">{{ bar.label }}</span>
         </div>

@@ -503,6 +503,12 @@
     // ไก่ป่วยใช้โทนแดง แทนโทนเขียวของหน้าไข่ - แท่งสูงคือปัญหาที่ต้องระวัง
     background: rgba(198, 40, 40, 0.3);
     transition: height 0.3s ease, background 0.2s ease;
+
+    // ตรวจแล้วแต่ไม่มีไก่ป่วยเลย (value=0 แต่มีการบันทึกจริง) - แท่งเตี้ยๆ โทน
+    // เขียวแทนแดง ไว้ยืนยันว่ามีข้อมูลแล้ว ไม่ใช่ปล่อยว่างจนดูเหมือนยังไม่ได้ตรวจ
+    &.is-all-healthy {
+      background: rgba(114, 213, 114, 0.35);
+    }
   }
 
   .egg-chart-bar-label {
@@ -512,11 +518,17 @@
 
   &:hover .egg-chart-bar-fill {
     background: var(--danger-grad-end, #e53935);
+
+    &.is-all-healthy {
+      background: var(--accent-green-bright);
+    }
   }
 
   &.is-today {
     .egg-chart-bar-fill {
       background: var(--danger-grad-end, #e53935);
+
+      &.is-all-healthy { background: var(--accent-green-bright); }
     }
     .egg-chart-bar-label {
       color: var(--danger-grad-end, #e53935);
@@ -527,6 +539,11 @@
   &.is-selected .egg-chart-bar-fill {
     background: var(--danger-grad-end, #e53935);
     box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--danger-grad-end, #e53935);
+
+    &.is-all-healthy {
+      background: var(--accent-green-bright);
+      box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--accent-green-bright);
+    }
   }
 
   &.is-selected .egg-chart-bar-label {

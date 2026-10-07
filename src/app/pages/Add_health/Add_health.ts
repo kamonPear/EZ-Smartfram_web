@@ -15,6 +15,11 @@ interface ChartBar {
   key: string;
   label: string;
   value: number;
+  // true = มีการบันทึกผลตรวจของช่วงนี้อย่างน้อย 1 ครั้ง (ต่อให้ป่วย 0 ตัวก็ตาม) -
+  // ใช้แยกกรณี "ตรวจแล้วไม่มีไก่ป่วยเลย" ออกจาก "ยังไม่ได้ตรวจเลยวันนี้" ซึ่งเดิม
+  // value=0 เหมือนกันทั้งคู่ ทำให้แท่งกราฟสูง 0% มองไม่เห็นทั้งสองกรณี เจ้าของฟาร์ม
+  // ที่เพิ่งตรวจเสร็จ (ไก่สุขภาพดีหมด) เลยดูเหมือนข้อมูลไม่ขึ้นเลย
+  hasRecord: boolean;
   isCurrent: boolean;
   bucketStart: Date;
 }
@@ -345,6 +350,7 @@ export class AddHealthComponent {
         key: formatDateKey(d),
         label: String(d.getDate()),
         value: this.totalPoorInBucket(d, 'day'),
+        hasRecord: this.recordsForBucket(d, 'day').length > 0,
         isCurrent: i === 0,
         bucketStart: d,
       });
@@ -362,6 +368,7 @@ export class AddHealthComponent {
         key: `${d.getFullYear()}-${d.getMonth()}`,
         label: THAI_MONTH_SHORT[d.getMonth()],
         value: this.totalPoorInBucket(d, 'month'),
+        hasRecord: this.recordsForBucket(d, 'month').length > 0,
         isCurrent: i === 0,
         bucketStart: d,
       });
@@ -379,6 +386,7 @@ export class AddHealthComponent {
         key: String(y),
         label: String(y + 543),
         value: this.totalPoorInBucket(new Date(y, 0, 1), 'year'),
+        hasRecord: this.recordsForBucket(new Date(y, 0, 1), 'year').length > 0,
         isCurrent: i === 0,
         bucketStart: new Date(y, 0, 1),
       });
@@ -390,9 +398,22 @@ export class AddHealthComponent {
     return Math.max(1, ...this.chartBars.map(b => b.value));
   }
 
-  barHeightPercent(value: number): number {
-    if (value <= 0) return 0;
-    return Math.max(6, (value / this.chartMax) * 100);
+  // value<=0 แต่ hasRecord=true (ตรวจแล้วไก่สุขภาพดีหมด ไม่มีป่วยเลย) ยังโชว์แท่ง
+  // เตี้ยๆ ไว้ยืนยันว่ามีการบันทึกจริง ไม่ใช่ปล่อยว่างจนดูเหมือนข้อมูลหาย (ดู
+  // barColor สำหรับสีที่ใช้แยกกรณีนี้จากแท่ง "มีไก่ป่วย" จริงๆ)
+  barHeightPercent(bar: ChartBar): number {
+    if (bar.value <= 0) return bar.hasRecord ? 4 : 0;
+    return Math.max(6, (bar.value / this.chartMax) * 100);
+  }
+
+  barColor(bar: ChartBar): string {
+    return bar.value <= 0 && bar.hasRecord ? 'is-all-healthy' : '';
+  }
+
+  barTooltip(bar: ChartBar): string {
+    if (!bar.hasRecord) return 'ยังไม่มีการตรวจ';
+    if (bar.value <= 0) return 'ไม่มีไก่ป่วย';
+    return `${bar.value} ตัว`;
   }
 
   get selectedBar(): ChartBar | undefined {
