@@ -53,6 +53,18 @@ export class NotificationsComponent {
     return n.type;
   }
 
+  // คลิกที่ตัวการ์ด (ไม่ใช่ปุ่ม) ไปหน้าที่เกี่ยวข้องของคอกนั้นเลย - สุขภาพไปหน้า
+  // ตรวจสุขภาพ, วัคซีนไปหน้าให้วัคซีน (คนละหน้ากับปุ่ม "เสร็จสิ้น" ที่บันทึกสถานะ
+  // ตรงๆ โดยไม่เปลี่ยนหน้า) ส่วนอาหาร/ความเคลื่อนไหวไม่มีหน้าที่เกี่ยวข้องให้ไป กดการ์ด
+  // แล้วไม่ทำอะไร
+  cardClick(n: FarmNotification) {
+    if (n.type === 'health') {
+      this.router.navigate(['/add-health'], { queryParams: { coop_id: n.coopId } });
+    } else if (n.type === 'vaccine') {
+      this.router.navigate(['/give-vaccine'], { queryParams: { coop_id: n.coopId } });
+    }
+  }
+
   buttonLabel(n: FarmNotification): string {
     if (n.type === 'food') return 'รับทราบ';
     if (n.type === 'health') return 'ไปตรวจสุขภาพ';

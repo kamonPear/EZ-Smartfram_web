@@ -71,6 +71,17 @@
   &.is-urgent {
     border-color: rgba(198, 40, 40, 0.4);
   }
+
+  // สุขภาพ/วัคซีน คลิกที่การ์ดไปหน้าที่เกี่ยวข้องของคอกนั้นได้เลย (ดู cardClick)
+  &.is-clickable {
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+
+    &:hover {
+      border-color: var(--accent-green-bright);
+      transform: translateY(-1px);
+    }
+  }
 }
 
 .notification-icon {

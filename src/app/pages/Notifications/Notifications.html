@@ -15,7 +15,7 @@
     <p class="loading-hint" *ngIf="isLoading">กำลังโหลดการแจ้งเตือน...</p>
 
     <div class="notification-list" *ngIf="!isLoading">
-      <div class="notification-card" *ngFor="let n of notifications" [class.is-urgent]="n.urgent">
+      <div class="notification-card" *ngFor="let n of notifications" [class.is-urgent]="n.urgent" [class.is-clickable]="n.type === 'health' || n.type === 'vaccine'" (click)="cardClick(n)">
         <div class="notification-icon" [class]="'is-' + n.type">
           <svg *ngIf="n.type === 'vaccine'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="m18 2 4 4"/><path d="m17 7 3-3"/><path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5"/><path d="m9 11 4 4"/><path d="m5 19-3 3"/><path d="m14 4 6 6"/>
@@ -34,7 +34,7 @@
         <div class="notification-body">
           <p class="notification-title">{{ n.title }}</p>
           <div class="notification-action-row">
-            <button type="button" class="notification-action-btn" [class]="'is-' + n.type" (click)="handleAction(n)">
+            <button type="button" class="notification-action-btn" [class]="'is-' + n.type" (click)="$event.stopPropagation(); handleAction(n)">
               {{ buttonLabel(n) }}
             </button>
           </div>
