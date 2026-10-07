@@ -456,6 +456,32 @@
   color: rgba(var(--fg-rgb), 0.5);
   font-size: 0.85rem;
   margin: 0 0 26px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 14px;
+}
+
+.chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+}
+
+.chart-legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &.is-healthy { background: var(--accent-green-bright); }
+  &.is-poor { background: var(--danger-grad-end, #e53935); }
 }
 
 .egg-chart {
@@ -492,23 +518,31 @@
     flex: 1;
     width: 100%;
     display: flex;
-    align-items: flex-end;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  // แท่งเดียวแต่ซ้อน 2 สี (เขียว=สุขภาพดี ที่ฐาน, แดง=ป่วย ด้านบน) ความสูงรวม =
+  // จำนวนไก่ทั้งหมดที่ตรวจวันนั้นเทียบกับแท่งที่มากสุดในช่วง - overflow:hidden
+  // ตัดมุมโค้งให้ท่อนข้างในตามกรอบนอกโดยไม่ต้องไปปัดมุมทีละท่อนเอง
+  .egg-chart-bar-stack {
+    width: 60%;
+    min-width: 4px;
+    display: flex;
+    flex-direction: column-reverse;
+    border-radius: 6px 6px 2px 2px;
+    overflow: hidden;
+    transition: height 0.3s ease;
   }
 
   .egg-chart-bar-fill {
-    width: 60%;
-    min-width: 4px;
-    border-radius: 6px 6px 2px 2px;
-    // ไก่ป่วยใช้โทนแดง แทนโทนเขียวของหน้าไข่ - แท่งสูงคือปัญหาที่ต้องระวัง
-    background: rgba(198, 40, 40, 0.3);
+    width: 100%;
     transition: height 0.3s ease, background 0.2s ease;
 
-    // ตรวจแล้วแต่ไม่มีไก่ป่วยเลย (value=0 แต่มีการบันทึกจริง) - แท่งเตี้ยๆ โทน
-    // เขียวแทนแดง ไว้ยืนยันว่ามีข้อมูลแล้ว ไม่ใช่ปล่อยว่างจนดูเหมือนยังไม่ได้ตรวจ
-    &.is-all-healthy {
-      background: rgba(114, 213, 114, 0.35);
-    }
+    &.is-healthy { background: rgba(114, 213, 114, 0.45); }
+    // ไก่ป่วยใช้โทนแดง แทนโทนเขียวของหน้าไข่ - ท่อนนี้สูงคือปัญหาที่ต้องระวัง
+    &.is-poor { background: rgba(198, 40, 40, 0.45); }
   }
 
   .egg-chart-bar-label {
@@ -516,39 +550,24 @@
     color: rgba(var(--fg-rgb), 0.45);
   }
 
-  &:hover .egg-chart-bar-fill {
-    background: var(--danger-grad-end, #e53935);
-
-    &.is-all-healthy {
-      background: var(--accent-green-bright);
-    }
+  &:hover {
+    .is-healthy { background: var(--accent-green-bright); }
+    .is-poor { background: var(--danger-grad-end, #e53935); }
   }
 
-  &.is-today {
-    .egg-chart-bar-fill {
-      background: var(--danger-grad-end, #e53935);
-
-      &.is-all-healthy { background: var(--accent-green-bright); }
-    }
-    .egg-chart-bar-label {
-      color: var(--danger-grad-end, #e53935);
-      font-weight: 700;
-    }
+  &.is-today .egg-chart-bar-label {
+    color: var(--accent-green-bright);
+    font-weight: 700;
   }
 
-  &.is-selected .egg-chart-bar-fill {
-    background: var(--danger-grad-end, #e53935);
-    box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--danger-grad-end, #e53935);
-
-    &.is-all-healthy {
-      background: var(--accent-green-bright);
+  &.is-selected {
+    .egg-chart-bar-stack {
       box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--accent-green-bright);
     }
-  }
-
-  &.is-selected .egg-chart-bar-label {
-    color: var(--danger-grad-end, #e53935);
-    font-weight: 700;
+    .egg-chart-bar-label {
+      color: var(--accent-green-bright);
+      font-weight: 700;
+    }
   }
 }
 

@@ -211,7 +211,13 @@
         </div>
       </div>
 
-      <p class="egg-summary-sub">กราฟด้านล่างติดตามจำนวน "ไก่ป่วย" ตามช่วงเวลาที่เลือก</p>
+      <p class="egg-summary-sub">
+        กราฟด้านล่างแสดงจำนวนไก่สุขภาพดี/ป่วยตามช่วงเวลาที่เลือก
+        <span class="chart-legend">
+          <span class="chart-legend-item"><span class="chart-legend-dot is-healthy"></span>สุขภาพดี</span>
+          <span class="chart-legend-item"><span class="chart-legend-dot is-poor"></span>ป่วย</span>
+        </span>
+      </p>
 
       <div class="chart-mode-tabs">
         <button type="button" [class.active]="chartMode === 'day'" (click)="setChartMode('day')">รายวัน</button>
@@ -231,7 +237,10 @@
         >
           <div class="egg-chart-bar-track">
             <div class="egg-chart-tooltip" *ngIf="hoveredBarKey === bar.key">{{ barTooltip(bar) }}</div>
-            <div class="egg-chart-bar-fill" [class]="barColor(bar)" [style.height.%]="barHeightPercent(bar)"></div>
+            <div class="egg-chart-bar-stack" [style.height.%]="barTotalHeightPercent(bar)">
+              <div class="egg-chart-bar-fill is-poor" [style.height.%]="segmentHeightPercent(bar.poorValue, bar)"></div>
+              <div class="egg-chart-bar-fill is-healthy" [style.height.%]="segmentHeightPercent(bar.healthyValue, bar)"></div>
+            </div>
           </div>
           <span class="egg-chart-bar-label">{{ bar.label }}</span>
         </div>

@@ -14,11 +14,14 @@ type ChartMode = 'day' | 'month' | 'year';
 interface ChartBar {
   key: string;
   label: string;
-  value: number;
-  // true = มีการบันทึกผลตรวจของช่วงนี้อย่างน้อย 1 ครั้ง (ต่อให้ป่วย 0 ตัวก็ตาม) -
-  // ใช้แยกกรณี "ตรวจแล้วไม่มีไก่ป่วยเลย" ออกจาก "ยังไม่ได้ตรวจเลยวันนี้" ซึ่งเดิม
-  // value=0 เหมือนกันทั้งคู่ ทำให้แท่งกราฟสูง 0% มองไม่เห็นทั้งสองกรณี เจ้าของฟาร์ม
-  // ที่เพิ่งตรวจเสร็จ (ไก่สุขภาพดีหมด) เลยดูเหมือนข้อมูลไม่ขึ้นเลย
+  // แยก 2 ค่าไว้ในแท่งเดียวกัน (stacked bar) - เขียว (healthyValue) อยู่ฐาน แดง
+  // (poorValue) ซ้อนด้านบน ความสูงรวมของแท่ง = จำนวนไก่ทั้งหมดที่ตรวจวันนั้น ทำให้
+  // เห็นทั้งสุขภาพดี/ป่วยในกราฟเดียว แทนที่จะมีแค่ตัวเลขป่วยแล้วมองไม่เห็นว่าตรวจ
+  // ไปแล้วจริงไหมตอนป่วย 0 ตัว
+  healthyValue: number;
+  poorValue: number;
+  // true = มีการบันทึกผลตรวจของช่วงนี้อย่างน้อย 1 ครั้ง - ใช้แยกกรณี "ตรวจแล้วแต่
+  // นับได้ 0 ทั้งคู่" ออกจาก "ยังไม่ได้ตรวจเลย" ซึ่งทั้งสองกรณีไม่มีแท่งให้เห็นเหมือนกัน
   hasRecord: boolean;
   isCurrent: boolean;
   bucketStart: Date;
@@ -330,8 +333,12 @@ export class AddHealthComponent {
     return this.recordsForBucket(bucketStart, mode).reduce((s, r) => s + (r.poor_health || 0), 0);
   }
 
-  // กราฟแท่งติดตามจำนวน "ไก่ป่วย" (ตัวเลขที่เจ้าของฟาร์มต้องจับตาดูมากที่สุด)
-  // ย้อนหลัง 14 วัน/12 เดือน/5 ปี ตามโหมดที่เลือก
+  private totalHealthyInBucket(bucketStart: Date, mode: ChartMode): number {
+    return this.recordsForBucket(bucketStart, mode).reduce((s, r) => s + (r.healthy || 0), 0);
+  }
+
+  // กราฟแท่งซ้อน (stacked) แสดงทั้งจำนวนไก่สุขภาพดีและป่วยในแท่งเดียวกัน ย้อนหลัง
+  // 14 วัน/12 เดือน/5 ปี ตามโหมดที่เลือก
   get chartBars(): ChartBar[] {
     if (this.chartMode === 'month') return this.monthlyBars;
     if (this.chartMode === 'year') return this.yearlyBars;
@@ -349,7 +356,8 @@ export class AddHealthComponent {
       bars.push({
         key: formatDateKey(d),
         label: String(d.getDate()),
-        value: this.totalPoorInBucket(d, 'day'),
+        healthyValue: this.totalHealthyInBucket(d, 'day'),
+        poorValue: this.totalPoorInBucket(d, 'day'),
         hasRecord: this.recordsForBucket(d, 'day').length > 0,
         isCurrent: i === 0,
         bucketStart: d,
@@ -367,7 +375,8 @@ export class AddHealthComponent {
       bars.push({
         key: `${d.getFullYear()}-${d.getMonth()}`,
         label: THAI_MONTH_SHORT[d.getMonth()],
-        value: this.totalPoorInBucket(d, 'month'),
+        healthyValue: this.totalHealthyInBucket(d, 'month'),
+        poorValue: this.totalPoorInBucket(d, 'month'),
         hasRecord: this.recordsForBucket(d, 'month').length > 0,
         isCurrent: i === 0,
         bucketStart: d,
@@ -385,7 +394,8 @@ export class AddHealthComponent {
       bars.push({
         key: String(y),
         label: String(y + 543),
-        value: this.totalPoorInBucket(new Date(y, 0, 1), 'year'),
+        healthyValue: this.totalHealthyInBucket(new Date(y, 0, 1), 'year'),
+        poorValue: this.totalPoorInBucket(new Date(y, 0, 1), 'year'),
         hasRecord: this.recordsForBucket(new Date(y, 0, 1), 'year').length > 0,
         isCurrent: i === 0,
         bucketStart: new Date(y, 0, 1),
@@ -394,26 +404,32 @@ export class AddHealthComponent {
     return bars;
   }
 
+  // สเกลของกราฟอิง "จำนวนไก่ทั้งหมดที่ตรวจ" (สุขภาพดี+ป่วย) ของแท่งที่มากที่สุดใน
+  // ช่วงที่โชว์อยู่ ไม่ใช่แค่จำนวนป่วยเหมือนเดิม เพราะตอนนี้แท่งแสดงทั้งคู่ซ้อนกัน
   get chartMax(): number {
-    return Math.max(1, ...this.chartBars.map(b => b.value));
+    return Math.max(1, ...this.chartBars.map(b => b.healthyValue + b.poorValue));
   }
 
-  // value<=0 แต่ hasRecord=true (ตรวจแล้วไก่สุขภาพดีหมด ไม่มีป่วยเลย) ยังโชว์แท่ง
-  // เตี้ยๆ ไว้ยืนยันว่ามีการบันทึกจริง ไม่ใช่ปล่อยว่างจนดูเหมือนข้อมูลหาย (ดู
-  // barColor สำหรับสีที่ใช้แยกกรณีนี้จากแท่ง "มีไก่ป่วย" จริงๆ)
-  barHeightPercent(bar: ChartBar): number {
-    if (bar.value <= 0) return bar.hasRecord ? 4 : 0;
-    return Math.max(6, (bar.value / this.chartMax) * 100);
+  // ความสูงของแท่งรวม (เขียว+แดงซ้อนกัน) เทียบกับ chartMax - ถ้ามีการตรวจแต่นับ
+  // ได้ 0 ทั้งคู่ (กรณีหายาก) ยังโชว์แท่งเตี้ยๆ ไว้ยืนยันว่ามีการบันทึกจริง ไม่ใช่
+  // ปล่อยว่างจนดูเหมือนข้อมูลหาย
+  barTotalHeightPercent(bar: ChartBar): number {
+    const total = bar.healthyValue + bar.poorValue;
+    if (total <= 0) return bar.hasRecord ? 4 : 0;
+    return Math.max(6, (total / this.chartMax) * 100);
   }
 
-  barColor(bar: ChartBar): string {
-    return bar.value <= 0 && bar.hasRecord ? 'is-all-healthy' : '';
+  // ความสูงของแต่ละท่อนสี (เขียว/แดง) เป็น % ของความสูงแท่งรวมเอง (ไม่ใช่ % ของ
+  // ทั้งแท่งกราฟ) เพื่อให้สัดส่วนสุขภาพดี/ป่วยภายในแท่งนั้นถูกต้องเสมอ
+  segmentHeightPercent(part: number, bar: ChartBar): number {
+    const total = bar.healthyValue + bar.poorValue;
+    if (total <= 0 || part <= 0) return 0;
+    return (part / total) * 100;
   }
 
   barTooltip(bar: ChartBar): string {
     if (!bar.hasRecord) return 'ยังไม่มีการตรวจ';
-    if (bar.value <= 0) return 'ไม่มีไก่ป่วย';
-    return `${bar.value} ตัว`;
+    return `สุขภาพดี ${bar.healthyValue} / ป่วย ${bar.poorValue} ตัว`;
   }
 
   get selectedBar(): ChartBar | undefined {
