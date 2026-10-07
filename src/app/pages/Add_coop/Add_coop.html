@@ -53,6 +53,9 @@
             <span class="input-pill-value" [class.placeholder]="!birthDate">{{ birthDate ? formatDate(birthDate) : 'วันเกิดไก่' }}</span>
             <span class="input-pill-action">เลือกวันที่</span>
           </div>
+          <!-- พอเลือกวันเกิดไก่แล้ว โชว์อายุ ณ วันนี้ทันที จะได้รู้คร่าวๆ ว่าไก่
+               อายุเท่าไหร่แล้วโดยไม่ต้องกดบันทึกก่อน -->
+          <p class="age-hint" *ngIf="birthDateAgeText">อายุไก่ตอนนี้: {{ birthDateAgeText }}</p>
 
           <div class="input-pill">
             <span class="input-pill-icon">

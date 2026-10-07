@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
-import { Device, EggRecord, HealthRecord, VaccineRecord, toBackendDateOnly } from '../../shared/coop-summary.util';
+import { Device, EggRecord, HealthRecord, VaccineRecord, toBackendDateOnly, formatChickenAge } from '../../shared/coop-summary.util';
 import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picker-calendar';
 import { DayMarker, loadCalendarMarkers } from '../../shared/calendar-markers.util';
 import { deviceIconSrc } from '../../shared/device-icon.util';
@@ -143,6 +143,10 @@ export class EditCoopComponent implements OnInit {
   formatIsoDate(iso: string | null | undefined): string {
     if (!iso) return '';
     return this.formatDate(new Date(iso));
+  }
+
+  get birthDateAgeText(): string {
+    return formatChickenAge(this.birthDate);
   }
 
   // วันที่รับเข้าเลี้ยงต้องไม่ก่อนวันเกิดไก่ (เอาไก่เข้าคอกก่อนไก่เกิดไม่ได้อยู่แล้ว)

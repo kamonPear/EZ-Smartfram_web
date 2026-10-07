@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picker-calendar';
 import { DayMarker, loadCalendarMarkers } from '../../shared/calendar-markers.util';
-import { toBackendDateOnly } from '../../shared/coop-summary.util';
+import { toBackendDateOnly, formatChickenAge } from '../../shared/coop-summary.util';
 
 @Component({
   selector: 'app-add-coop',
@@ -83,6 +83,10 @@ export class AddCoopComponent {
   formatDate(date: Date | null): string {
     if (!date) return '';
     return date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  get birthDateAgeText(): string {
+    return formatChickenAge(this.birthDate);
   }
 
   private flashToast(message: string, type: 'success' | 'error' = 'success') {

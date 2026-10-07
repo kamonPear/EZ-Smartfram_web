@@ -19,6 +19,13 @@
   font-weight: 600;
 }
 
+.age-hint {
+  margin: 8px 0 0;
+  color: var(--accent-green-bright);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
 /* ดีไซน์ของ header (โลโก้+ชื่อหน้า) ย้ายไปรวมไว้ที่ styles.scss แล้ว
    ใช้ร่วมกันทุกหน้า ดู .header-section/.header-content/.clickable-logo/
    .logo-container/.title-group ที่นั่น */
