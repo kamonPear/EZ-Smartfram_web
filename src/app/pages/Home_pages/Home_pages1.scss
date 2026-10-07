@@ -113,6 +113,27 @@
   white-space: nowrap;
 }
 
+.threshold-not-configured {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 18px 0 6px;
+  text-align: center;
+
+  span {
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  .threshold-not-configured-hint {
+    color: var(--accent-green-bright);
+    font-size: 0.78rem;
+    font-weight: 500;
+  }
+}
+
 @media (max-width: 500px) {
   .threshold-dashboard-card {
     padding: 16px 12px;

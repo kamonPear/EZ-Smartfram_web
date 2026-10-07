@@ -1,7 +1,7 @@
 import { Component, ChangeDetectorRef, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { FarmThresholdService } from '../../services/farm-threshold.service';
+import { DEFAULT_DRAFT_AMMONIA, DEFAULT_DRAFT_TEMP, FarmThresholdService } from '../../services/farm-threshold.service';
 
 @Component({
   selector: 'app-farm-thresholds',
@@ -32,8 +32,15 @@ export class FarmThresholdsComponent {
     // เองเพราะแอปนี้ไม่มี zone.js
     effect(() => {
       if (this.thresholds.isLoaded()) {
-        this.temp = this.thresholds.temperature();
-        this.ammonia = this.thresholds.ammonia();
+        // ยังไม่เคยตั้งค่าเลย (ไม่ใช่ตั้งไว้เป็น 0 จริงๆ) - เริ่มฟอร์มที่ค่ากลางแนะนำ
+        // แทนที่จะเป็น 0 ซึ่งอยู่นอกช่วงปกติและต้องกด "+" เองหลายสิบครั้ง
+        if (this.thresholds.isConfigured()) {
+          this.temp = this.thresholds.temperature();
+          this.ammonia = this.thresholds.ammonia();
+        } else {
+          this.temp = DEFAULT_DRAFT_TEMP;
+          this.ammonia = DEFAULT_DRAFT_AMMONIA;
+        }
         this.isLoading = false;
         this.cdr.detectChanges();
       }

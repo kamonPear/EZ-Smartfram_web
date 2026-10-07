@@ -17,7 +17,7 @@
         <h2 class="section-title">ค่ามาตรฐานของฟาร์ม</h2>
         <span class="threshold-edit-hint">⚙️ ตั้งค่า</span>
       </div>
-      <div class="threshold-gauges-row">
+      <div class="threshold-gauges-row" *ngIf="!thresholds.isLoaded() || thresholds.isConfigured()">
         <div class="threshold-gauge">
           <div class="gauge-ring" [style.background]="gaugeBackground(thresholds.temperature(), 50, '#4FD3E8')">
             <div class="gauge-center">
@@ -34,6 +34,12 @@
           </div>
           <span class="gauge-label">💨 ปริมาณแอมโมเนียที่ตั้งไว้คงที่</span>
         </div>
+      </div>
+      <!-- ยังไม่เคยตั้งค่ามาตรฐานของฟาร์มเลย (ไม่มีแถวใน backend) - บอกตรงๆ แทนที่
+           จะโชว์ค่า default ปลอมๆ ซึ่งทำให้ดูเหมือนมีคนตั้งค่าไว้แล้ว -->
+      <div class="threshold-not-configured" *ngIf="thresholds.isLoaded() && !thresholds.isConfigured()">
+        <span>ยังไม่ได้ตั้งค่ามาตรฐานของฟาร์ม</span>
+        <span class="threshold-not-configured-hint">แตะเพื่อตั้งค่า</span>
       </div>
     </section>
 
