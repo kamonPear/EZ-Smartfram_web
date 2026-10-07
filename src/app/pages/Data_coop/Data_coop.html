@@ -148,7 +148,9 @@
             นัดตรวจถัดไปวันที่ {{ formatDateObj(appt.appointmentDate) }}<ng-container *ngIf="appt.vaccineName"> (เตรียมให้{{ appt.vaccineName }} วันที่ {{ formatDateObj(appt.vaccineDate!) }})</ng-container>
           </ng-container>
           <ng-container *ngIf="!appt.isFuture">
-            ถึงกำหนดตรวจสุขภาพแล้ว<ng-container *ngIf="appt.vaccineName"> (เตรียมให้{{ appt.vaccineName }} วันที่ {{ formatDateObj(appt.vaccineDate!) }})</ng-container>
+            <ng-container *ngIf="isAppointmentToday(appt.appointmentDate)">ถึงกำหนดตรวจสุขภาพวันนี้ ({{ formatDateObj(appt.appointmentDate) }})</ng-container>
+            <ng-container *ngIf="!isAppointmentToday(appt.appointmentDate)">เลยกำหนดตรวจสุขภาพมาแล้ว ตั้งแต่วันที่ {{ formatDateObj(appt.appointmentDate) }}</ng-container>
+            <ng-container *ngIf="appt.vaccineName"> (เตรียมให้{{ appt.vaccineName }} วันที่ {{ formatDateObj(appt.vaccineDate!) }})</ng-container>
           </ng-container>
         </p>
         <ng-template #noAppt>

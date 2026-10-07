@@ -447,6 +447,18 @@ export class DataCoopComponent implements OnInit, OnDestroy {
     return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
+  // แยก "ถึงกำหนดวันนี้พอดี" ออกจาก "เลยกำหนดมาแล้ว" - isFuture เฉยๆ บอกได้แค่
+  // "ถึงกำหนดแล้วหรือยัง" ไม่บอกว่าคือวันนี้เป๊ะหรือเลยมาหลายวันแล้ว ทำให้ข้อความ
+  // เดิมดูเหมือนแจ้งเตือนลอยๆ ไม่บอกว่า "วันนี้" ต้องตรวจ
+  isAppointmentToday(appointmentDate: Date): boolean {
+    const today = new Date();
+    return (
+      appointmentDate.getFullYear() === today.getFullYear() &&
+      appointmentDate.getMonth() === today.getMonth() &&
+      appointmentDate.getDate() === today.getDate()
+    );
+  }
+
   vaccineStatusLabel(v: PendingVaccine): string {
     if (v.daysUntil < 0) return `เลยกำหนดมา ${-v.daysUntil} วัน`;
     if (v.daysUntil === 0) return 'ถึงกำหนดวันนี้';
