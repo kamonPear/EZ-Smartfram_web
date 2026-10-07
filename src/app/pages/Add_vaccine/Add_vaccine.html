@@ -115,18 +115,20 @@
             <label class="field-label">อายุต่ำสุดที่ให้<span class="field-label-required">*</span></label>
             <!-- กรอกช่องไหนก็ได้ วัน/สัปดาห์/เดือน - อีก 2 ช่องจะคำนวณให้อัตโนมัติ
                  (ดู onMinDaysChange/onMinWeeksChange/onMinMonthsChange) จะได้ไม่ต้อง
-                 แปลงหน่วยเอง -->
+                 แปลงหน่วยเอง - (wheel) กัน input type=number ของเบราว์เซอร์เปลี่ยนค่า
+                 เองเวลาเมาส์ชี้ค้างอยู่แล้วเลื่อนจอผ่าน (บั๊กที่เจอจริง: ตั้งใจพิมพ์
+                 61 แต่ scroll ผ่านช่องทำให้ขยับเป็น 62 โดยไม่รู้ตัว) -->
             <div class="age-range-row">
               <div class="input-pill">
-                <input type="number" min="0" [(ngModel)]="minAgeDays" (ngModelChange)="onMinDaysChange()" placeholder="0">
+                <input type="number" min="0" [(ngModel)]="minAgeDays" (ngModelChange)="onMinDaysChange()" (wheel)="$event.preventDefault()" placeholder="0">
                 <span class="input-pill-suffix">วัน</span>
               </div>
               <div class="input-pill">
-                <input type="number" min="0" step="0.1" [(ngModel)]="minAgeWeeks" (ngModelChange)="onMinWeeksChange()" placeholder="0">
+                <input type="number" min="0" step="0.1" [(ngModel)]="minAgeWeeks" (ngModelChange)="onMinWeeksChange()" (wheel)="$event.preventDefault()" placeholder="0">
                 <span class="input-pill-suffix">สัปดาห์</span>
               </div>
               <div class="input-pill">
-                <input type="number" min="0" step="1" [(ngModel)]="minAgeMonths" (ngModelChange)="onMinMonthsChange()" placeholder="0">
+                <input type="number" min="0" step="1" [(ngModel)]="minAgeMonths" (ngModelChange)="onMinMonthsChange()" (wheel)="$event.preventDefault()" placeholder="0">
                 <span class="input-pill-suffix">เดือน</span>
               </div>
             </div>
@@ -136,15 +138,15 @@
             <label class="field-label">อายุสูงสุดที่ให้<span class="field-label-required">*</span></label>
             <div class="age-range-row">
               <div class="input-pill">
-                <input type="number" min="0" [(ngModel)]="maxAgeDays" (ngModelChange)="onMaxDaysChange()" placeholder="0">
+                <input type="number" min="0" [(ngModel)]="maxAgeDays" (ngModelChange)="onMaxDaysChange()" (wheel)="$event.preventDefault()" placeholder="0">
                 <span class="input-pill-suffix">วัน</span>
               </div>
               <div class="input-pill">
-                <input type="number" min="0" step="0.1" [(ngModel)]="maxAgeWeeks" (ngModelChange)="onMaxWeeksChange()" placeholder="0">
+                <input type="number" min="0" step="0.1" [(ngModel)]="maxAgeWeeks" (ngModelChange)="onMaxWeeksChange()" (wheel)="$event.preventDefault()" placeholder="0">
                 <span class="input-pill-suffix">สัปดาห์</span>
               </div>
               <div class="input-pill">
-                <input type="number" min="0" step="1" [(ngModel)]="maxAgeMonths" (ngModelChange)="onMaxMonthsChange()" placeholder="0">
+                <input type="number" min="0" step="1" [(ngModel)]="maxAgeMonths" (ngModelChange)="onMaxMonthsChange()" (wheel)="$event.preventDefault()" placeholder="0">
                 <span class="input-pill-suffix">เดือน</span>
               </div>
             </div>
