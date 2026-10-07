@@ -51,6 +51,22 @@
   margin: 0 auto;
 }
 
+// การ์ดอุปกรณ์/ประวัติสุขภาพ/วัคซีน/ไข่ไก่ - เรียงเป็นกริด 2 คอลัมน์แทนการต่อ
+// กันยาวๆ ทีละใบเหมือนเดิม กว้างกว่า .form-grid-single เพราะมี 2 คอลัมน์ให้พอดี
+.records-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 30px;
+  max-width: 900px;
+  margin: 30px auto 0;
+}
+
+@media (max-width: 760px) {
+  .records-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-subtle);
