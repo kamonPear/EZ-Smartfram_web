@@ -77,7 +77,10 @@ export class SidebarComponent implements OnInit {
     { label: 'คลังอาหาร',                 svgIcon: 'food',                   route: '/food' },
     { label: 'เพิ่มคอกไก่',               icon: 'assets/images/chicken.png', route: '/add-coop' },
     { label: 'จัดวางผังฟาร์ม',            icon: 'assets/images/coopchicken.png', route: '/farm-layout' },
-    { label: 'เพิ่มอุปกรณ์',              icon: 'assets/images/esp32.png',   route: '/arrange' },
+    // ✅ เปลี่ยนชื่อจาก "เพิ่มอุปกรณ์" เป็น "วางอุปกรณ์เซนเซอร์" กันสับสนกับเมนู/
+    // ปุ่ม "เพิ่มอุปกรณ์" ใหม่ (หน้า /add-device-type) ซึ่งคือตั้งชื่อ+ไอคอน "ชนิด"
+    // อุปกรณ์ไว้ล่วงหน้า - หน้านี้คือเอาอุปกรณ์ไปวางลงคอกจริงๆ คนละเรื่องกัน
+    { label: 'วางอุปกรณ์เซนเซอร์',        icon: 'assets/images/esp32.png',   route: '/arrange' },
     // ✅ นี่คือหน้าเพิ่ม "ประเภท" วัคซีน/ยาใหม่เข้าระบบ (ไม่ผูกกับคอกไหน) ส่วน
     // การ "ให้วัคซีน" คอกใดคอกหนึ่งจริงๆ ย้ายไปกดจากหน้า "ข้อมูลคอกไก่" แทน
     { label: 'เพิ่มประเภทวัคซีน/ยา',      icon: 'assets/images/Vaccine.png', route: '/add-vaccine' },

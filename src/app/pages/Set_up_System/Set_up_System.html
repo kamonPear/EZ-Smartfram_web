@@ -20,9 +20,11 @@
       <div class="palette-list">
         <div
           class="palette-item"
+          [class.is-custom]="sensor.id != null"
           *ngFor="let sensor of availableSensors"
           draggable="true"
-          (dragstart)="onPaletteDragStart($event, sensor)">
+          (dragstart)="onPaletteDragStart($event, sensor)"
+          (click)="onPaletteItemClick(sensor)">
           <div class="palette-icon">
             <img [src]="deviceIconSrc(sensor)">
           </div>
@@ -83,11 +85,61 @@
     <div class="custom-modal">
       <h3>ยืนยันการลบอุปกรณ์</h3>
       <p>คุณต้องการนำอุปกรณ์นี้ออกจากการจัดวางใช่หรือไม่?</p>
-      
+
       <div class="modal-actions">
         <button class="btn-cancel" (click)="cancelRemove()">ยกเลิก</button>
         <button class="btn-confirm" (click)="confirmRemove()">ตกลง</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ป็อบอัพจัดการชนิดอุปกรณ์ที่เพิ่มเอง - คลิกชื่อในถาดด้านซ้ายมาเปิด โชว์ชื่อ/
+       ไอคอนตอนที่เพิ่มเข้ามา แก้ไขหรือลบได้จากตรงนี้ (7 แบบมาตรฐานคลิกไม่มีผล) -->
+  <div class="custom-modal-overlay" *ngIf="managingType">
+    <div class="custom-modal manage-type-modal">
+      <ng-container *ngIf="!showDeleteTypeConfirm; else deleteConfirmBlock">
+        <h3>จัดการอุปกรณ์</h3>
+        <p class="manage-type-hint">อุปกรณ์นี้ถูกเพิ่มไว้ด้วยชื่อ "{{ managingType.name }}" แก้ไขชื่อ/ไอคอน หรือลบทิ้งได้ที่นี่</p>
+
+        <div class="field-stack">
+          <div class="input-pill">
+            <input type="text" [(ngModel)]="editName" placeholder="ชื่ออุปกรณ์ *" maxlength="100">
+          </div>
+        </div>
+
+        <p class="field-label">ไอคอน</p>
+        <div class="icon-choices">
+          <button
+            type="button"
+            class="icon-choice"
+            *ngFor="let choice of iconChoices"
+            [class.selected]="editIcon === choice.src"
+            (click)="selectEditIcon(choice.src)"
+          >
+            <img [src]="choice.src" [alt]="choice.label">
+            <span>{{ choice.label }}</span>
+          </button>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-cancel" [disabled]="isSavingEdit" (click)="closeManageModal()">ปิด</button>
+          <button class="btn-danger" [disabled]="isSavingEdit" (click)="showDeleteTypeConfirm = true">ลบอุปกรณ์นี้</button>
+          <button class="btn-confirm" [disabled]="isSavingEdit" (click)="saveEditedType()">
+            {{ isSavingEdit ? 'กำลังบันทึก...' : 'บันทึก' }}
+          </button>
+        </div>
+      </ng-container>
+
+      <ng-template #deleteConfirmBlock>
+        <h3>ลบอุปกรณ์นี้?</h3>
+        <p>"{{ managingType.name }}" จะถูกลบออกจากถาดอุปกรณ์ถาวร (อุปกรณ์ที่วางลงคอกไปแล้วไม่หายตามไปด้วย)</p>
+        <div class="modal-actions">
+          <button class="btn-cancel" [disabled]="isDeletingType" (click)="showDeleteTypeConfirm = false">ยกเลิก</button>
+          <button class="btn-danger" [disabled]="isDeletingType" (click)="deleteManagedType()">
+            {{ isDeletingType ? 'กำลังลบ...' : 'ยืนยันลบ' }}
+          </button>
+        </div>
+      </ng-template>
     </div>
   </div>
 

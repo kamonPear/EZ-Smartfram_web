@@ -1,12 +1,13 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { deviceIconSrc, DEVICE_ICON_CHOICES } from '../../shared/device-icon.util';
 @Component({
   selector: 'app-set-up-system',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './Set_up_System.html',
   styleUrls: ['./Set_up_System.scss']
 })
@@ -20,8 +21,20 @@ export class SetUpSystem implements OnInit {
 
   // ชนิดอุปกรณ์มาตรฐาน 7 แบบ + ชนิดที่ผู้ใช้เพิ่มเองจากหน้า "เพิ่มอุปกรณ์"
   // (เฉพาะของฟาร์มตัวเอง) - โหลดจาก backend ตอนเปิดหน้า เลยเริ่มที่ค่ามาตรฐานไว้
-  // ก่อนกันถาดว่างระหว่างรอโหลด
-  availableSensors: { name: string; icon: string }[] = [...this.builtInSensors];
+  // ก่อนกันถาดว่างระหว่างรอโหลด - ตัวที่เพิ่มเองเท่านั้นที่มี id (มาจาก DB จริง)
+  // ใช้แยกว่าคลิกแล้วเปิดป็อบอัพจัดการได้ไหม (มาตรฐาน 7 แบบแก้ไข/ลบไม่ได้)
+  availableSensors: { id?: number; name: string; icon: string }[] = [...this.builtInSensors];
+
+  readonly iconChoices = DEVICE_ICON_CHOICES;
+
+  // ป็อบอัพจัดการชนิดอุปกรณ์ที่เพิ่มเอง (คลิกที่ชื่อในถาดด้านซ้าย) - โชว์ชื่อ/ไอคอน
+  // ตอนเพิ่มเข้ามา แก้ไขหรือลบได้จากตรงนี้เลย
+  managingType: { id: number; name: string; icon: string } | null = null;
+  editName = '';
+  editIcon = '';
+  isSavingEdit = false;
+  isDeletingType = false;
+  showDeleteTypeConfirm = false;
 
   slots: any[] = [];
   selectedCoop: string | null = null;
@@ -71,12 +84,87 @@ export class SetUpSystem implements OnInit {
   // ชนิดอุปกรณ์ที่ผู้ใช้เพิ่มเองจากหน้า "เพิ่มอุปกรณ์" (/add-device-type) - ต่อท้าย
   // ชนิดมาตรฐาน 7 แบบในถาดเดียวกัน โหลดไม่สำเร็จก็แค่เหลือ 7 แบบมาตรฐานไว้เหมือนเดิม
   private fetchCustomDeviceTypes() {
-    this.api.get<{ name: string; icon: string }[]>('/device-types').subscribe({
+    this.api.get<{ id: number; name: string; icon: string }[]>('/device-types').subscribe({
       next: (rows) => {
         this.availableSensors = [...this.builtInSensors, ...(rows || [])];
         this.cdr.detectChanges();
       },
       error: (err) => console.error('โหลดชนิดอุปกรณ์ที่เพิ่มเองไม่สำเร็จ:', err),
+    });
+  }
+
+  // คลิก (ไม่ใช่ลาก) ที่ชนิดอุปกรณ์ในถาด - เปิดป็อบอัพจัดการได้เฉพาะชนิดที่เพิ่มเอง
+  // (มี id จริงจาก DB) ส่วน 7 แบบมาตรฐานคลิกแล้วไม่มีอะไรเกิดขึ้น (ลากวางได้ตามปกติ)
+  onPaletteItemClick(sensor: { id?: number; name: string; icon: string }) {
+    if (sensor.id == null) return;
+    this.managingType = { id: sensor.id, name: sensor.name, icon: sensor.icon };
+    this.editName = sensor.name;
+    this.editIcon = sensor.icon;
+    this.showDeleteTypeConfirm = false;
+    this.cdr.detectChanges();
+  }
+
+  closeManageModal() {
+    this.managingType = null;
+    this.showDeleteTypeConfirm = false;
+    this.cdr.detectChanges();
+  }
+
+  selectEditIcon(src: string) {
+    this.editIcon = src;
+  }
+
+  saveEditedType() {
+    if (!this.managingType) return;
+    const trimmedName = this.editName.trim();
+    if (!trimmedName || !this.editIcon) return;
+
+    this.isSavingEdit = true;
+    this.api.put<{ id: number; name: string; icon: string }>(`/device-types?id=${this.managingType.id}`, {
+      name: trimmedName,
+      icon: this.editIcon,
+    }).subscribe({
+      next: (updated) => {
+        this.isSavingEdit = false;
+        const idx = this.availableSensors.findIndex((s) => s.id === this.managingType?.id);
+        if (idx !== -1) this.availableSensors[idx] = updated;
+        this.toastMessage = 'แก้ไขอุปกรณ์สำเร็จ!';
+        this.showToast = true;
+        this.closeManageModal();
+        setTimeout(() => { this.showToast = false; this.cdr.detectChanges(); }, 2500);
+      },
+      error: (err) => {
+        this.isSavingEdit = false;
+        console.error('แก้ไขชนิดอุปกรณ์ไม่สำเร็จ:', err);
+        const serverMsg = typeof err.error === 'string' ? err.error.trim() : '';
+        this.toastMessage = serverMsg || 'แก้ไขอุปกรณ์ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
+        this.showToast = true;
+        this.cdr.detectChanges();
+        setTimeout(() => { this.showToast = false; this.cdr.detectChanges(); }, 2500);
+      }
+    });
+  }
+
+  deleteManagedType() {
+    if (!this.managingType) return;
+    this.isDeletingType = true;
+    this.api.delete(`/device-types?id=${this.managingType.id}`).subscribe({
+      next: () => {
+        this.isDeletingType = false;
+        this.availableSensors = this.availableSensors.filter((s) => s.id !== this.managingType?.id);
+        this.toastMessage = 'ลบอุปกรณ์แล้ว';
+        this.showToast = true;
+        this.closeManageModal();
+        setTimeout(() => { this.showToast = false; this.cdr.detectChanges(); }, 2500);
+      },
+      error: (err) => {
+        this.isDeletingType = false;
+        console.error('ลบชนิดอุปกรณ์ไม่สำเร็จ:', err);
+        this.toastMessage = 'ลบอุปกรณ์ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
+        this.showToast = true;
+        this.cdr.detectChanges();
+        setTimeout(() => { this.showToast = false; this.cdr.detectChanges(); }, 2500);
+      }
     });
   }
 

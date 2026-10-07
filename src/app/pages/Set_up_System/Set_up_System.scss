@@ -107,6 +107,23 @@
     .palette-icon { background: rgba(114, 213, 114, 0.25); }
   }
 
+  // ชนิดที่เพิ่มเอง (มี id จริง) คลิกเปิดป็อบอัพจัดการได้ - จุดเล็กๆ บอกใบ้ว่าคลิก
+  // ได้ไม่ใช่แค่ลากอย่างเดียว ชนิดมาตรฐาน 7 แบบไม่มีจุดนี้ (คลิกไม่มีผล)
+  &.is-custom {
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-green-bright);
+    }
+  }
+
   &:active {
     cursor: grabbing;
   }
@@ -352,6 +369,127 @@
       &:active {
         transform: scale(0.95); /* กดยุบลงไปนิดนึง */
       }
+    }
+  }
+}
+
+// ป็อบอัพจัดการชนิดอุปกรณ์ที่เพิ่มเอง - กว้างกว่าป็อบอัพยืนยันลบเดิม (350px) เพราะมี
+// ฟอร์ม+กริดไอคอนข้างใน และ override สีปุ่มจาก .custom-modal ด้านบน (ที่นั่น
+// .btn-confirm ตั้งใจให้แดงเพราะเป็นปุ่ม "ยืนยันลบ" แต่ที่นี่ .btn-confirm คือปุ่ม
+// "บันทึก" ปกติ ต้องเขียวแทน ส่วนลบจริงๆใช้ .btn-danger ใหม่)
+.manage-type-modal {
+  width: 420px;
+  max-width: calc(100vw - 40px);
+  text-align: left;
+
+  .manage-type-hint {
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+  }
+
+  .field-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .input-pill {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background: rgba(var(--fg-rgb), 0.06);
+    border: 1.5px solid var(--border-subtle);
+    border-radius: 30px;
+    padding: 12px 18px;
+    box-sizing: border-box;
+
+    &:focus-within {
+      border-color: var(--accent-green-bright);
+      box-shadow: 0 0 0 3px rgba(114, 213, 114, 0.18);
+    }
+
+    input {
+      flex: 1;
+      min-width: 0;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-title);
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 500;
+
+      &::placeholder { color: rgba(var(--fg-rgb), 0.4); }
+    }
+  }
+
+  .field-label {
+    margin: 0 0 10px;
+    color: var(--text-title);
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .icon-choices {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 22px;
+  }
+
+  .icon-choice {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 4px;
+    border-radius: 12px;
+    background: rgba(var(--fg-rgb), 0.06);
+    border: 1.2px solid var(--border-subtle);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+
+    &:hover { border-color: var(--accent-green-bright); }
+
+    &.selected {
+      background: rgba(114, 213, 114, 0.12);
+      border-color: var(--accent-green-bright);
+      border-width: 1.6px;
+    }
+
+    img { width: 24px; height: 24px; object-fit: contain; }
+
+    span {
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    &.selected span { color: var(--accent-green-bright); }
+  }
+
+  .modal-actions button {
+    padding: 10px 18px;
+    font-size: 0.95rem;
+
+    &.btn-confirm {
+      background-color: var(--accent-green-bright);
+      color: #0B1710;
+      &:hover { background-color: var(--accent-green-bright); filter: brightness(1.08); }
+    }
+
+    &.btn-danger {
+      background-color: #FF5252;
+      color: #fff;
+      &:hover { background-color: #E53935; }
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
   }
 }
