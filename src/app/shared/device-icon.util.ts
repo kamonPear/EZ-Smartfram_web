@@ -63,6 +63,43 @@ const BULB_SVG = svgIcon(
   '<path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/>'
 );
 
+// กล้องวงจรปิด
+const CAMERA_SVG = svgIcon(
+  '<path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8Z"/>' +
+  '<circle cx="12" cy="13" r="3.3"/>'
+);
+
+// ปั๊มน้ำ
+const PUMP_SVG = svgIcon(
+  '<path d="M12 2s-6.5 7-6.5 11.5a6.5 6.5 0 0 0 13 0C18.5 9 12 2 12 2Z"/>'
+);
+
+// เซนเซอร์วัดระดับน้ำ
+const WATER_LEVEL_SVG = svgIcon(
+  '<rect x="5" y="3" width="14" height="18" rx="2"/>' +
+  '<path d="M5 13.5c2-1.5 4-1.5 6 0s4 1.5 6 0"/>' +
+  '<path d="M5 17.5c2-1.5 4-1.5 6 0s4 1.5 6 0"/>'
+);
+
+// สวิตช์ควบคุม/รีเลย์
+const RELAY_SVG = svgIcon(
+  '<rect x="2" y="7" width="20" height="10" rx="5"/>' +
+  '<circle cx="16" cy="12" r="3.2" fill="' + ICON_COLOR + '" stroke="none"/>'
+);
+
+// เซนเซอร์แสง
+const LIGHT_SENSOR_SVG = svgIcon(
+  '<circle cx="12" cy="12" r="4"/>' +
+  '<path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>'
+);
+
+// ออด/เสียงเตือน
+const BUZZER_SVG = svgIcon(
+  '<path d="M3 9v6h4l5 5V4L7 9H3Z"/>' +
+  '<path d="M16 9a4 4 0 0 1 0 6"/>' +
+  '<path d="M19 6a8 8 0 0 1 0 12"/>'
+);
+
 interface DeviceIconEntry {
   label: string;
   src: string;
@@ -78,7 +115,13 @@ export const DEVICE_ICON_CHOICES: DeviceIconEntry[] = [
   { label: 'DHT22', src: THERMOMETER_SVG, matchKeywords: ['dht22', 'dht-22', 'ds18b20', 'อุณหภูมิ', 'temp'] },
   { label: 'MC-38', src: DOOR_SENSOR_SVG, matchKeywords: ['mc-38', 'mc38', 'ประตู', 'door'] },
   { label: 'พัดลม', src: FAN_SVG, matchKeywords: ['พัดลม', 'fan'] },
-  { label: 'หลอดไฟ', src: BULB_SVG, matchKeywords: ['หลอดไฟ', 'ไฟ', 'bulb', 'light'] },
+  { label: 'หลอดไฟ', src: BULB_SVG, matchKeywords: ['หลอดไฟ', 'bulb'] },
+  { label: 'กล้อง', src: CAMERA_SVG, matchKeywords: ['กล้อง', 'camera', 'cctv'] },
+  { label: 'ปั๊มน้ำ', src: PUMP_SVG, matchKeywords: ['ปั๊ม', 'pump'] },
+  { label: 'วัดระดับน้ำ', src: WATER_LEVEL_SVG, matchKeywords: ['ระดับน้ำ', 'water level', 'float'] },
+  { label: 'สวิตช์/รีเลย์', src: RELAY_SVG, matchKeywords: ['สวิตช์', 'รีเลย์', 'relay', 'switch'] },
+  { label: 'เซนเซอร์แสง', src: LIGHT_SENSOR_SVG, matchKeywords: ['เซนเซอร์แสง', 'ldr', 'light sensor'] },
+  { label: 'ออด/เสียงเตือน', src: BUZZER_SVG, matchKeywords: ['ออด', 'buzzer', 'alarm', 'เสียงเตือน'] },
 ];
 
 /** คืน src ของไอคอนอุปกรณ์ที่ใช้แทน <img src> ได้ตรงๆ - จับคู่จากชื่ออุปกรณ์ก่อน

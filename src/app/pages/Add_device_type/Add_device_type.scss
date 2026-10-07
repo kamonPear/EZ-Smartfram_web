@@ -130,19 +130,18 @@
   }
 }
 
-/* --- เลือกไอคอนอุปกรณ์ --- */
+/* --- เลือกไอคอนอุปกรณ์ - ไอคอนล้วน ไม่มีชื่อกำกับ (ชื่อดูได้ตอน hover จาก title) --- */
 .icon-choices {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 10px;
 }
 
 .icon-choice {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 14px 6px;
+  justify-content: center;
+  aspect-ratio: 1;
   border-radius: 14px;
   background: rgba(var(--fg-rgb), 0.06);
   border: 1.2px solid var(--border-subtle);
@@ -161,20 +160,9 @@
   }
 
   img {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     object-fit: contain;
-  }
-
-  span {
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    text-align: center;
-  }
-
-  &.selected span {
-    color: var(--accent-green-bright);
   }
 }
 
@@ -205,6 +193,6 @@
   }
 
   .icon-choices {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 }
