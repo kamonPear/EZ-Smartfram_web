@@ -387,6 +387,30 @@
     margin-bottom: 20px;
   }
 
+  .manage-type-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 0 16px;
+
+    img {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+      border-radius: 50%;
+      background: rgba(114, 213, 114, 0.14);
+      padding: 12px;
+      box-sizing: border-box;
+    }
+
+    span {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-title);
+    }
+  }
+
   .field-stack {
     display: flex;
     flex-direction: column;

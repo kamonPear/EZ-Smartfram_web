@@ -27,9 +27,10 @@ export class SetUpSystem implements OnInit {
 
   readonly iconChoices = DEVICE_ICON_CHOICES;
 
-  // ป็อบอัพจัดการชนิดอุปกรณ์ที่เพิ่มเอง (คลิกที่ชื่อในถาดด้านซ้าย) - โชว์ชื่อ/ไอคอน
-  // ตอนเพิ่มเข้ามา แก้ไขหรือลบได้จากตรงนี้เลย
-  managingType: { id: number; name: string; icon: string } | null = null;
+  // ป็อบอัพจัดการชนิดอุปกรณ์ (คลิกที่ชื่อในถาดด้านซ้าย - ทุกตัวคลิกได้) โชว์ชื่อ/
+  // ไอคอนตอนเพิ่มเข้ามา - id = null หมายถึงชนิดมาตรฐาน 7 แบบของระบบ (โชว์ข้อมูล
+  // อย่างเดียว แก้ไข/ลบไม่ได้) ส่วน id จริงคือชนิดที่ผู้ใช้เพิ่มเอง แก้ไข/ลบได้เต็มที่
+  managingType: { id: number | null; name: string; icon: string } | null = null;
   editName = '';
   editIcon = '';
   isSavingEdit = false;
@@ -93,11 +94,11 @@ export class SetUpSystem implements OnInit {
     });
   }
 
-  // คลิก (ไม่ใช่ลาก) ที่ชนิดอุปกรณ์ในถาด - เปิดป็อบอัพจัดการได้เฉพาะชนิดที่เพิ่มเอง
-  // (มี id จริงจาก DB) ส่วน 7 แบบมาตรฐานคลิกแล้วไม่มีอะไรเกิดขึ้น (ลากวางได้ตามปกติ)
+  // คลิก (ไม่ใช่ลาก) ที่ชนิดอุปกรณ์ในถาด - เปิดป็อบอัพจัดการเสมอ ไม่ว่าจะเป็นชนิด
+  // มาตรฐานหรือที่เพิ่มเอง (เทมเพลตจะโชว์ปุ่มแก้ไข/ลบแค่ตอน managingType.id ไม่ใช่
+  // null เท่านั้น - ดู saveEditedType/deleteManagedType ที่กันไว้อีกชั้นด้วย)
   onPaletteItemClick(sensor: { id?: number; name: string; icon: string }) {
-    if (sensor.id == null) return;
-    this.managingType = { id: sensor.id, name: sensor.name, icon: sensor.icon };
+    this.managingType = { id: sensor.id ?? null, name: sensor.name, icon: sensor.icon };
     this.editName = sensor.name;
     this.editIcon = sensor.icon;
     this.showDeleteTypeConfirm = false;
@@ -115,7 +116,7 @@ export class SetUpSystem implements OnInit {
   }
 
   saveEditedType() {
-    if (!this.managingType) return;
+    if (!this.managingType || this.managingType.id == null) return;
     const trimmedName = this.editName.trim();
     if (!trimmedName || !this.editIcon) return;
 
@@ -146,7 +147,7 @@ export class SetUpSystem implements OnInit {
   }
 
   deleteManagedType() {
-    if (!this.managingType) return;
+    if (!this.managingType || this.managingType.id == null) return;
     this.isDeletingType = true;
     this.api.delete(`/device-types?id=${this.managingType.id}`).subscribe({
       next: () => {
