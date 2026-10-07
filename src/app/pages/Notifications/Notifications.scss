@@ -141,4 +141,12 @@
   &.is-health { background: #FFA726; }
   &.is-vaccine { background: var(--accent-green-bright); color: #0B1710; }
   &.is-motion { background: #AB47BC; }
+
+  // ยังไม่ถึงวันครบกำหนดให้วัคซีน - โทนเทาแทนเขียว กดได้แต่แค่บอกเหตุผล ไม่บันทึก
+  &.is-disabled {
+    background: rgba(var(--fg-rgb), 0.12);
+    color: rgba(var(--fg-rgb), 0.5);
+
+    &:hover { transform: none; }
+  }
 }

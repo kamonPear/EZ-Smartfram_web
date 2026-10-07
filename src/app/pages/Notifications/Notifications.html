@@ -34,7 +34,7 @@
         <div class="notification-body">
           <p class="notification-title">{{ n.title }}</p>
           <div class="notification-action-row">
-            <button type="button" class="notification-action-btn" [class]="'is-' + n.type" (click)="$event.stopPropagation(); handleAction(n)">
+            <button type="button" class="notification-action-btn" [class]="'is-' + n.type" [class.is-disabled]="n.type === 'vaccine' && !canCompleteVaccine(n)" (click)="$event.stopPropagation(); handleAction(n)">
               {{ buttonLabel(n) }}
             </button>
           </div>

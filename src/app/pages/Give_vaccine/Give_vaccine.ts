@@ -127,6 +127,12 @@ export class GiveVaccineComponent {
 
   markGiven(a: VaccineAlertRow) {
     if (a.isCompleted || this.savingId) return;
+    // ✅ กดให้วัคซีนก่อนถึงวันครบกำหนดจริงไม่ได้ (เดิมกดได้ตลอด แม้การ์ดจะบอกว่า
+    // "อีก X วันถึงกำหนด" อยู่ก็ตาม) - backend เช็คซ้ำอีกชั้นเป็นด่านจริงอยู่แล้ว
+    if (a.daysUntil > 0) {
+      this.flashToast('ยังไม่ถึงวันครบกำหนดให้วัคซีนนี้ กดให้วัคซีนก่อนไม่ได้', 'error');
+      return;
+    }
     this.savingId = a.id;
     this.api.put(`/vaccines/alerts?id=${a.id}`, {
       is_completed: true,
@@ -142,7 +148,8 @@ export class GiveVaccineComponent {
       error: (err) => {
         console.error('บันทึกการให้วัคซีนไม่สำเร็จ:', err);
         this.savingId = null;
-        this.flashToast('บันทึกการให้วัคซีนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
+        const serverMsg = typeof err.error === 'string' ? err.error.trim() : '';
+        this.flashToast(serverMsg || 'บันทึกการให้วัคซีนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
         this.cdr.detectChanges();
       }
     });

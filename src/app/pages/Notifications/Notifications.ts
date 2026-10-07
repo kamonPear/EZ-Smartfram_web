@@ -65,15 +65,27 @@ export class NotificationsComponent {
     }
   }
 
+  // ✅ กดสำเร็จก่อนถึงวันครบกำหนดจริงไม่ได้ (เดิมกดได้ตลอด แม้แจ้งเตือนจะบอกว่า
+  // "อีก X วันถึงกำหนด" อยู่ก็ตาม) - ปุ่มนี้คุมแค่ชั้น UI เป็นด่านแรก ส่วน backend
+  // ก็เช็คซ้ำอีกชั้นเป็นด่านจริง (กันเรียก API ตรงๆ ข้ามหน้านี้ไปเลย)
+  canCompleteVaccine(n: FarmNotification): boolean {
+    return n.type !== 'vaccine' || n.daysUntil <= 0;
+  }
+
   buttonLabel(n: FarmNotification): string {
     if (n.type === 'food') return 'รับทราบ';
     if (n.type === 'health') return 'ไปตรวจสุขภาพ';
     if (n.type === 'motion') return 'รับทราบ';
+    if (n.type === 'vaccine' && !this.canCompleteVaccine(n)) return 'ยังไม่ถึงวันให้';
     return 'เสร็จสิ้น';
   }
 
   handleAction(n: FarmNotification) {
     if (n.type === 'vaccine') {
+      if (!this.canCompleteVaccine(n)) {
+        this.flashToast('ยังไม่ถึงวันครบกำหนดให้วัคซีนนี้ กดสำเร็จก่อนไม่ได้', 'error');
+        return;
+      }
       // id ของแจ้งเตือนวัคซีนคือ "vaccine_<alertId>" ตัดคำนำหน้าออกก่อนยิง PUT
       const alertId = n.id.replace(/^vaccine_/, '');
       this.api.put(`/vaccines/alerts?id=${alertId}`, {
@@ -88,7 +100,10 @@ export class NotificationsComponent {
         },
         error: (err) => {
           console.error('อัปเดตสถานะวัคซีนไม่สำเร็จ:', err);
-          this.flashToast('บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
+          // ข้อความจริงจาก backend (เช่น "ยังไม่ถึงวันครบกำหนด...") ถ้ามี แทน
+          // ข้อความกลางๆ ที่ทำให้เข้าใจผิดว่าแค่ลองใหม่แล้วจะผ่าน
+          const serverMsg = typeof err.error === 'string' ? err.error.trim() : '';
+          this.flashToast(serverMsg || 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
           this.cdr.detectChanges();
         }
       });
