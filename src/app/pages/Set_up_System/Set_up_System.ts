@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
-import { deviceIconSrc } from '../../shared/device-icon.util';
+import { deviceIconSrc, DEVICE_ICON_CHOICES } from '../../shared/device-icon.util';
 @Component({
   selector: 'app-set-up-system',
   standalone: true,
@@ -14,15 +14,9 @@ export class SetUpSystem implements OnInit {
 
   deviceIconSrc = deviceIconSrc;
 
-  readonly builtInSensors = [
-    { name: 'ESP 32', icon: 'assets/images/esp32.png' },
-    { name: 'MQ-135', icon: 'assets/images/mq135.png' },
-    { name: 'PIR MOTION', icon: 'assets/images/pir.png' },
-    { name: 'DHT22', icon: 'assets/images/ds18b20.png' },
-    { name: 'MC-38', icon: 'assets/images/mc38.png' },
-    { name: 'พัดลม', icon: 'assets/images/fan.png' },
-    { name: 'หลอดไฟ', icon: 'assets/images/bulb.png' }
-  ];
+  // ชนิดมาตรฐาน 7 แบบ - ใช้ไอคอน SVG ชุดเดียวกับหน้า "เพิ่มอุปกรณ์"
+  // (DEVICE_ICON_CHOICES) ไม่ต้อง copy รายชื่อ/ไอคอนซ้ำอีกชุด
+  readonly builtInSensors = DEVICE_ICON_CHOICES.map((c) => ({ name: c.label, icon: c.src }));
 
   // ชนิดอุปกรณ์มาตรฐาน 7 แบบ + ชนิดที่ผู้ใช้เพิ่มเองจากหน้า "เพิ่มอุปกรณ์"
   // (เฉพาะของฟาร์มตัวเอง) - โหลดจาก backend ตอนเปิดหน้า เลยเริ่มที่ค่ามาตรฐานไว้
