@@ -449,8 +449,19 @@ export class DataCoopComponent implements OnInit, OnDestroy {
     const nearest = candidates[0];
     const today = new Date();
     const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    // ถ้าวัคซีนหลายชนิดครบกำหนดวันเดียวกันพอดี (เลยต้องตรวจสุขภาพวันเดียวกันด้วย)
+    // รวมชื่อวัคซีนทุกชนิดเป็นนัดเดียว ไม่ใช่โชว์แค่ตัวแรกที่สุ่มมาจาก sort เพราะ
+    // ตรวจครั้งเดียวเอาผลไปใช้กับวัคซีนทุกชนิดที่ตรงวันนั้นได้เลย
+    const nearestKey = formatDateKey(nearest.appointmentDate);
+    const sameDate = vaccineCandidates.filter(c => formatDateKey(c.appointmentDate) === nearestKey);
+    const combinedVaccineName = sameDate.length > 0
+      ? sameDate.map(c => c.vaccineName).join('และ')
+      : nearest.vaccineName;
+
     return {
       ...nearest,
+      vaccineName: combinedVaccineName,
       isFuture: nearest.appointmentDate.getTime() > todayOnly.getTime(),
     };
   }
