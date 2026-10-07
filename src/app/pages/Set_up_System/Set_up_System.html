@@ -93,20 +93,20 @@
     </div>
   </div>
 
-  <!-- ป็อบอัพจัดการอุปกรณ์ - คลิกชื่อในถาดด้านซ้ายมาเปิดได้ทุกตัว ชนิดมาตรฐาน 7
-       แบบของระบบ (ไม่มี id จริง) โชว์ข้อมูลอย่างเดียวแก้ไข/ลบไม่ได้ ส่วนชนิดที่
-       เพิ่มเอง (มี id) แก้ไขชื่อ/ไอคอนหรือลบได้เต็มที่ -->
+  <!-- ป็อบอัพจัดการอุปกรณ์ - คลิกชื่อในถาดด้านซ้ายมาเปิดได้ทุกตัว รวมถึง 7 แบบ
+       มาตรฐาน (backend seed เป็นแถวจริงให้ user ทุกคน แก้ไข/ลบถาวรได้หมด) -
+       managingType.id == null เกิดได้แค่ตอนคลิกระหว่างที่ยังโหลดจาก backend ไม่เสร็จ -->
   <div class="custom-modal-overlay" *ngIf="managingType">
     <div class="custom-modal manage-type-modal">
 
-      <!-- ชนิดมาตรฐานของระบบ - โชว์ข้อมูลอย่างเดียว -->
+      <!-- ยังโหลดข้อมูลจาก backend ไม่เสร็จ (ไม่มี id ให้แก้ไข/ลบ) -->
       <ng-container *ngIf="managingType.id == null">
-        <h3>ชนิดอุปกรณ์มาตรฐาน</h3>
+        <h3>กำลังโหลดข้อมูลอุปกรณ์</h3>
         <div class="manage-type-preview">
           <img [src]="managingType.icon" [alt]="managingType.name">
           <span>{{ managingType.name }}</span>
         </div>
-        <p class="manage-type-hint">เป็นชนิดอุปกรณ์มาตรฐานของระบบ แก้ไขชื่อหรือลบไม่ได้ ถ้าต้องการเพิ่มชนิดของตัวเอง ไปที่ "+ เพิ่มอุปกรณ์" ด้านบน</p>
+        <p class="manage-type-hint">ยังโหลดข้อมูลอุปกรณ์นี้ไม่เสร็จ ปิดแล้วลองคลิกใหม่อีกครั้ง</p>
         <div class="modal-actions">
           <button class="btn-confirm" (click)="closeManageModal()">ปิด</button>
         </div>

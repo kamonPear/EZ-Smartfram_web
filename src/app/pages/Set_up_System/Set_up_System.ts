@@ -15,21 +15,21 @@ export class SetUpSystem implements OnInit {
 
   deviceIconSrc = deviceIconSrc;
 
-  // ชนิดมาตรฐาน 7 แบบ - ใช้ไอคอน SVG ชุดเดียวกับหน้า "เพิ่มอุปกรณ์"
-  // (DEVICE_ICON_CHOICES) ไม่ต้อง copy รายชื่อ/ไอคอนซ้ำอีกชุด
+  // ค่าตั้งต้นโชว์ไว้ก่อนระหว่างรอโหลดจริง (กันถาดว่างวูบๆ) - backend จะ seed ชนิด
+  // มาตรฐาน 7 แบบนี้เป็นแถวจริงให้ user ทุกคนอยู่แล้ว (ครั้งแรกที่เรียก GET
+  // /device-types ดู handlers.ensureDefaultDeviceTypes ฝั่ง backend) ตัวที่โหลดมา
+  // จริงจะมี id เสมอ แก้ไข/ลบได้ทุกตัวรวมถึง 7 แบบมาตรฐานด้วย ตามที่ผู้ใช้ขอ (ลบแล้ว
+  // ลบถาวร ไม่ seed กลับมาให้ใหม่)
   readonly builtInSensors = DEVICE_ICON_CHOICES.map((c) => ({ name: c.label, icon: c.src }));
 
-  // ชนิดอุปกรณ์มาตรฐาน 7 แบบ + ชนิดที่ผู้ใช้เพิ่มเองจากหน้า "เพิ่มอุปกรณ์"
-  // (เฉพาะของฟาร์มตัวเอง) - โหลดจาก backend ตอนเปิดหน้า เลยเริ่มที่ค่ามาตรฐานไว้
-  // ก่อนกันถาดว่างระหว่างรอโหลด - ตัวที่เพิ่มเองเท่านั้นที่มี id (มาจาก DB จริง)
-  // ใช้แยกว่าคลิกแล้วเปิดป็อบอัพจัดการได้ไหม (มาตรฐาน 7 แบบแก้ไข/ลบไม่ได้)
   availableSensors: { id?: number; name: string; icon: string }[] = [...this.builtInSensors];
 
   readonly iconChoices = DEVICE_ICON_CHOICES;
 
-  // ป็อบอัพจัดการชนิดอุปกรณ์ (คลิกที่ชื่อในถาดด้านซ้าย - ทุกตัวคลิกได้) โชว์ชื่อ/
-  // ไอคอนตอนเพิ่มเข้ามา - id = null หมายถึงชนิดมาตรฐาน 7 แบบของระบบ (โชว์ข้อมูล
-  // อย่างเดียว แก้ไข/ลบไม่ได้) ส่วน id จริงคือชนิดที่ผู้ใช้เพิ่มเอง แก้ไข/ลบได้เต็มที่
+  // ป็อบอัพจัดการชนิดอุปกรณ์ (คลิกที่ชื่อในถาดด้านซ้าย - ทุกตัวคลิกได้ รวมถึง 7 แบบ
+  // มาตรฐาน เพราะ backend seed เป็นแถวจริงให้ user ทุกคนแล้ว แก้ไข/ลบถาวรได้หมด) -
+  // id = null เกิดได้แค่ตอนคลิกระหว่างที่ยังโหลดจาก backend ไม่เสร็จ (ใช้ builtInSensors
+  // ตั้งต้นซึ่งไม่มี id) กรณีนี้โชว์ข้อมูลอย่างเดียวไปก่อน กันปุ่มแก้ไข/ลบพังเพราะยังไม่มี id จริง
   managingType: { id: number | null; name: string; icon: string } | null = null;
   editName = '';
   editIcon = '';
@@ -82,15 +82,16 @@ export class SetUpSystem implements OnInit {
     this.fetchCustomDeviceTypes();
   }
 
-  // ชนิดอุปกรณ์ที่ผู้ใช้เพิ่มเองจากหน้า "เพิ่มอุปกรณ์" (/add-device-type) - ต่อท้าย
-  // ชนิดมาตรฐาน 7 แบบในถาดเดียวกัน โหลดไม่สำเร็จก็แค่เหลือ 7 แบบมาตรฐานไว้เหมือนเดิม
+  // ชนิดอุปกรณ์ทั้งหมดของ user นี้ (มาตรฐาน 7 แบบที่ backend seed ให้ + ที่เพิ่มเอง)
+  // แทนที่ค่าตั้งต้นทั้งก้อน ไม่ใช่ต่อท้าย เพราะ backend คืนทั้ง 7 แบบมาตรฐานมาด้วย
+  // อยู่แล้ว (ต่อท้ายจะกลายเป็นโชว์ซ้ำ 2 ชุด) โหลดไม่สำเร็จก็แค่เหลือค่าตั้งต้นไว้
   private fetchCustomDeviceTypes() {
     this.api.get<{ id: number; name: string; icon: string }[]>('/device-types').subscribe({
       next: (rows) => {
-        this.availableSensors = [...this.builtInSensors, ...(rows || [])];
+        if (rows && rows.length > 0) this.availableSensors = rows;
         this.cdr.detectChanges();
       },
-      error: (err) => console.error('โหลดชนิดอุปกรณ์ที่เพิ่มเองไม่สำเร็จ:', err),
+      error: (err) => console.error('โหลดชนิดอุปกรณ์ไม่สำเร็จ:', err),
     });
   }
 
