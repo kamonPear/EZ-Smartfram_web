@@ -34,6 +34,9 @@ export class DeviceStatusComponent implements OnInit, OnDestroy {
   private labels = new Map<Device, string>();
 
   private refreshSubscription!: Subscription;
+  // request ที่กำลังบิน - รอบโพลถัดไปข้ามไปถ้าอันเก่ายังไม่ตอบ กัน request ซ้อน
+  // และกันผลเก่ามาทับผลใหม่
+  private inFlight: Subscription | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -57,13 +60,16 @@ export class DeviceStatusComponent implements OnInit, OnDestroy {
     if (this.refreshSubscription) {
       this.refreshSubscription.unsubscribe();
     }
+    this.inFlight?.unsubscribe();
   }
 
   fetchDevices(silent = false) {
     if (!this.coopId) return;
+    if (silent && this.inFlight && !this.inFlight.closed) return;
+    this.inFlight?.unsubscribe();
     if (!silent) this.isLoading = true;
 
-    this.api.get<any>(`/coops?id=${this.coopId}`).subscribe({
+    this.inFlight = this.api.get<any>(`/coops?id=${this.coopId}`).subscribe({
       next: (data) => {
         this.coopName = data?.name_coop || null;
         this.devices = data?.devices || [];

@@ -47,6 +47,9 @@ export class HomePages1 implements OnInit, OnDestroy {
   // ตอบกลับเลย ลูป retry จะหยุดเงียบๆ (เพราะ retryTimer ตั้งใน error callback ที่ไม่มี
   // วันถูกเรียก) ทำให้ดูเหมือนหน้าค้างต้องรีเฟรชเองถึงจะกลับมาทำงาน
   private requestSeq = 0;
+  // ตั้งเป็น true ตอน ngOnDestroy - กัน request ที่ยังค้างอยู่ตอบ error มาทีหลังแล้ว
+  // ตั้ง retry loop ใหม่ / detectChanges บน view ที่ถูกทำลายไปแล้ว
+  private destroyed = false;
 
   // ผังฟาร์ม (จากหน้า "จัดวางผังฟาร์ม") - โชว์พรีวิวไว้ที่หน้าแรกด้วยเลย ไม่ใช่แค่
   // บันทึกไว้เงียบๆ ผู้ใช้ถึงจะเห็นผลว่าจัดวางไปแล้วจริง
@@ -138,7 +141,7 @@ export class HomePages1 implements OnInit, OnDestroy {
     const seq = ++this.requestSeq;
     this.api.get<Coop[]>('/coops').pipe(timeout(8000)).subscribe({
       next: (data) => {
-        if (seq !== this.requestSeq) return; // มีรีเควสต์ใหม่กว่าแทนที่ไปแล้ว - ผลลัพธ์นี้เก่าเกินไป
+        if (this.destroyed || seq !== this.requestSeq) return; // มีรีเควสต์ใหม่กว่าแทนที่ไปแล้ว - ผลลัพธ์นี้เก่าเกินไป
         this.coops = data || [];
         this.isLoading = false;
         this.reconnectStartedAt = null;
@@ -150,7 +153,7 @@ export class HomePages1 implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       },
       error: (err: any) => {
-        if (seq !== this.requestSeq) return;
+        if (this.destroyed || seq !== this.requestSeq) return;
         console.error('ดึงข้อมูลคอกไก่ล้มเหลว:', err);
         this.isLoading = false;
         this.loadError = true;
@@ -171,6 +174,7 @@ export class HomePages1 implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
     if (this.retryTimer) clearTimeout(this.retryTimer);
     if (this.longRetryTimer) clearTimeout(this.longRetryTimer);
   }

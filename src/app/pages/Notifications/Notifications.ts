@@ -17,6 +17,9 @@ import { FarmNotification, NotificationsService } from '../../services/notificat
 export class NotificationsComponent {
   isLoading = true;
   notifications: FarmNotification[] = [];
+  // แหล่งข้อมูลที่โหลดไม่สำเร็จ - โชว์เตือนบนหน้า ไม่ให้เข้าใจผิดว่า "ไม่มีแจ้งเตือน"
+  failedSources: string[] = [];
+  loadFailed = false;
 
   // แจ้งผลลัพธ์กดปุ่ม "เสร็จสิ้น" ของวัคซีน - ของเดิมกดแล้วการ์ดหายไปเงียบๆ ไม่รู้
   // ว่าบันทึกสำเร็จจริงไหม
@@ -38,11 +41,14 @@ export class NotificationsComponent {
     this.notificationsService.load().subscribe({
       next: (list) => {
         this.notifications = list;
+        this.failedSources = this.notificationsService.lastLoadFailed;
+        this.loadFailed = false;
         this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('โหลดการแจ้งเตือนไม่สำเร็จ:', err);
+        this.loadFailed = true;
         this.isLoading = false;
         this.cdr.detectChanges();
       }

@@ -173,7 +173,7 @@
               <img src="assets/images/coopchicken.png" alt=" Coop Icon">
             </div>
             <div class="coop-info">
-              <span class="coop-name">{{ coop.name_coop || 'คอกที่ ' + coop.coop_id }}</span>
+              <span class="coop-name" [attr.title]="coop.name_coop || null">{{ coop.name_coop || 'คอกที่ ' + coop.coop_id }}</span>
               <span class="coop-amount">{{ coop.amount }} ตัว</span>
               <!-- ทิศของคอกในผังฟาร์ม (เทียบจุดกึ่งกลางผัง) - ถ้ายังไม่เคยจัดวางผัง
                    ฟาร์มเลยบอกตรงๆ แทนที่จะไม่ขึ้นอะไรเลย -->

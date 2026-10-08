@@ -129,8 +129,17 @@ export class AddHealthComponent {
     forkJoin({
       alerts: this.api.get<any[]>('/vaccines/alerts'),
       manual: this.healthAppointmentService.list(this.coopId),
+      healths: this.api.get<HealthRecord[]>(`/healths?coop_id=${this.coopId}`),
     }).subscribe({
-      next: ({ alerts, manual }) => {
+      next: ({ alerts, manual, healths }) => {
+        // วันที่มีผลตรวจจริงบันทึกไว้แล้ว - ตัดนัดวันนั้นทิ้ง (เหมือนหน้าข้อมูลคอกและ
+        // แจ้งเตือน) ไม่งั้นกลับมาหน้านี้จะล็อกวันที่ที่ตรวจไปแล้วและกดบันทึกซ้ำชน 409
+        const checkedKeys = new Set(
+          (healths || [])
+            .map(h => new Date(h.record_date))
+            .filter(d => !isNaN(d.getTime()))
+            .map(d => formatDateKey(d))
+        );
         const vaccineCandidates = (alerts || [])
           .filter(a => String(a?.coop_id) === String(this.coopId) && a?.is_completed !== true && a?.date)
           .map(a => {
@@ -150,6 +159,7 @@ export class AddHealthComponent {
         // นัดที่กำหนดเองจะ "ชนะ" แสดงเป็นนัดที่เรากำหนดเอง ไม่ใช่นัดจากวัคซีนซ้ำวันเดียวกัน
         const candidates = [...manualCandidates, ...vaccineCandidates]
           .filter(c => !isNaN(c.appointmentDate.getTime()))
+          .filter(c => !checkedKeys.has(formatDateKey(c.appointmentDate)))
           .sort((a, b) => a.appointmentDate.getTime() - b.appointmentDate.getTime());
 
         if (candidates.length > 0) {
@@ -515,6 +525,12 @@ export class AddHealthComponent {
 
     if (!this.coopId || this.healthyCount == null || this.poorHealthCount == null || !this.collectDate) {
       this.flashToast('กรุณาเลือกคอกและกรอกจำนวนไก่ให้ครบถ้วน', 'error');
+      return;
+    }
+
+    if (!Number.isInteger(this.healthyCount) || !Number.isInteger(this.poorHealthCount) ||
+        this.healthyCount < 0 || this.poorHealthCount < 0) {
+      this.flashToast('จำนวนไก่ต้องเป็นจำนวนเต็มตั้งแต่ 0 ขึ้นไป', 'error');
       return;
     }
 

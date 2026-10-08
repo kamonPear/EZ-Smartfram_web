@@ -26,9 +26,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         // ตอนอยู่ที่ /login?redirect=/home มันจะไม่ถือว่าเป็นหน้า login แล้ว
         // เอา url เดิมทั้งก้อนมายัดเป็น redirect ซ้อนเข้าไปอีกชั้นทุกครั้งที่เจอ 401
         const onLoginPage = current.split('?')[0] === '/login';
-        router.navigate(['/login'], {
-          queryParams: current && !onLoginPage ? { redirect: current } : {}
-        });
+        // อยู่หน้า login อยู่แล้ว (เช่นกรอกรหัสผิดได้ 401) ไม่ต้อง navigate ซ้ำ -
+        // ไม่งั้น queryParams: {} จะเขียนทับ ?redirect= เดิมทิ้ง
+        if (!onLoginPage) {
+          router.navigate(['/login'], {
+            queryParams: current ? { redirect: current } : {}
+          });
+        }
       }
       return throwError(() => err);
     })

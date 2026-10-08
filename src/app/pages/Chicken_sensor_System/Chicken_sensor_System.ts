@@ -17,6 +17,8 @@ export class ChickensensorSystemComponent implements OnInit {
   deviceIconSrc = deviceIconSrc;
   coops: Coop[] = [];
   tooltipDeviceId: number | null = null;
+  isLoading = true;
+  loadError = false;
 
   constructor(
     private router: Router,
@@ -29,13 +31,20 @@ export class ChickensensorSystemComponent implements OnInit {
   }
 
   loadCoopsFromDatabase() {
+    this.isLoading = true;
+    this.loadError = false;
     this.api.get<Coop[]>('/coops').subscribe({
       next: (data) => {
         this.coops = data || [];
+        this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: (err: any) => {
         console.error('ดึงข้อมูลคอกไก่ล้มเหลว:', err);
+        // บอกผู้ใช้ตรงๆ พร้อมปุ่มลองใหม่ ไม่ปล่อยหน้าว่างเปล่าเงียบๆ จนดูเหมือนไม่มีคอก
+        this.isLoading = false;
+        this.loadError = true;
+        this.cdr.detectChanges();
       }
     });
   }

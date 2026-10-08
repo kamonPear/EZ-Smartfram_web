@@ -194,3 +194,42 @@
   }
 }
 
+.status-hint {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 40px 0;
+  margin: 0;
+}
+
+.status-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 44px 0;
+  color: var(--text-secondary);
+
+  p {
+    margin: 0;
+    font-size: 0.92rem;
+  }
+
+  .retry-btn {
+    background-color: transparent;
+    color: var(--accent-green);
+    border: 1.5px solid var(--accent-green);
+    border-radius: 30px;
+    padding: 10px 22px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: rgba(var(--fg-rgb), 0.06);
+      border-color: var(--accent-green-dark);
+      color: var(--accent-green-dark);
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { Injectable, signal } from '@angular/core';
+import { Observable, tap } from 'rxjs';
 import { ApiService } from './api.service';
 
 // ค่ามาตรฐานอุณหภูมิ/แอมโมเนียของฟาร์ม - ใช้คู่กันกับหน้า Farm_thresholds
@@ -41,12 +42,14 @@ export class FarmThresholdService {
     });
   }
 
-  save(temperature: number, ammonia: number) {
-    this.temperature.set(temperature);
-    this.ammonia.set(ammonia);
-    this.isConfigured.set(true);
-    this.api.put('/farm-threshold', { temperature, ammonia }).subscribe({
-      error: (err) => console.error('บันทึกค่ามาตรฐานของฟาร์มไม่สำเร็จ:', err)
-    });
+  // อัปเดต signal เฉพาะเมื่อ backend บันทึกสำเร็จ - ผู้เรียกต้อง subscribe เอง
+  save(temperature: number, ammonia: number): Observable<unknown> {
+    return this.api.put('/farm-threshold', { temperature, ammonia }).pipe(
+      tap(() => {
+        this.temperature.set(temperature);
+        this.ammonia.set(ammonia);
+        this.isConfigured.set(true);
+      })
+    );
   }
 }

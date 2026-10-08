@@ -96,6 +96,7 @@ export class DataCoopComponent implements OnInit, OnDestroy {
   dayMarkers: Map<string, DayMarker> | null = null;
 
   private refreshSubscription!: Subscription;
+  private detailsInFlight: Subscription | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -113,6 +114,20 @@ export class DataCoopComponent implements OnInit, OnDestroy {
 
     this.route.queryParams.subscribe(params => {
       if (params['coop']) {
+        if (this.selectedCoop && this.selectedCoop !== params['coop']) {
+          // เปลี่ยนคอก - ล้างข้อมูลคอกเดิมก่อน กันของคอกเก่าค้างโชว์ระหว่างรอโหลด
+          this.devicesList = [];
+          this.healthRecords = [];
+          this.vaccineRecords = [];
+          this.eggRecords = [];
+          this.pendingVaccines = [];
+          this.vaccineChecklist = [];
+          this.manualAppointments = [];
+          this.motionCount = 0;
+          this.motionLastAt = null;
+          this.selectedCoopName = null;
+          this.buildSlots();
+        }
         this.selectedCoop = params['coop'];
       }
 
@@ -133,6 +148,7 @@ export class DataCoopComponent implements OnInit, OnDestroy {
     if (this.refreshSubscription) {
       this.refreshSubscription.unsubscribe();
     }
+    this.detailsInFlight?.unsubscribe();
   }
 
   private applyCoopDetails(data: any) {
@@ -197,9 +213,13 @@ export class DataCoopComponent implements OnInit, OnDestroy {
 
   fetchCoopDetails(silent = false) {
     if (!this.selectedCoop) return;
+    // โพลอัตโนมัติข้ามรอบถ้าอันเก่ายังไม่ตอบ กัน request ซ้อน/ผลเก่าทับผลใหม่ ส่วน
+    // การโหลดปกติ (เช่นเปลี่ยนคอก) ยกเลิกอันเก่าที่ค้างอยู่
+    if (silent && this.detailsInFlight && !this.detailsInFlight.closed) return;
+    this.detailsInFlight?.unsubscribe();
     if (!silent) this.isLoading = true;
 
-    this.api.get<any>(`/coops?id=${this.selectedCoop}`).subscribe({
+    this.detailsInFlight = this.api.get<any>(`/coops?id=${this.selectedCoop}`).subscribe({
       next: (data) => {
         this.applyCoopDetails(data);
         this.isLoading = false;

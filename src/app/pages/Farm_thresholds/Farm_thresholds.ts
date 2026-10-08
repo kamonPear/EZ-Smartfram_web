@@ -21,6 +21,7 @@ export class FarmThresholdsComponent {
   isLoading = true;
 
   showToast = false;
+  toastMessage = '';
   isSaving = false;
 
   constructor(private router: Router, private thresholds: FarmThresholdService, private cdr: ChangeDetectorRef) {
@@ -53,13 +54,29 @@ export class FarmThresholdsComponent {
   }
 
   save() {
-    this.thresholds.save(this.temp, this.ammonia);
     this.isSaving = true;
-    this.showToast = true;
-    // โชว์ toast สั้นๆก่อนพากลับไปหน้าแรก (คล้ายกับ Navigator.pop ของแอปมือถือ
-    // หลังบันทึกค่ามาตรฐานสำเร็จ)
-    setTimeout(() => {
-      this.router.navigate(['/home']);
-    }, 700);
+    // รอผลจาก backend จริงก่อน - สำเร็จค่อยโชว์ toast แล้วพากลับหน้าแรก (คล้ายกับ
+    // Navigator.pop ของแอปมือถือ) ถ้าล้มเหลวอยู่หน้านี้ต่อและแจ้งผู้ใช้
+    this.thresholds.save(this.temp, this.ammonia).subscribe({
+      next: () => {
+        this.toastMessage = 'บันทึกค่ามาตรฐานสำเร็จ';
+        this.showToast = true;
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          this.router.navigate(['/home']);
+        }, 700);
+      },
+      error: (err) => {
+        console.error('บันทึกค่ามาตรฐานของฟาร์มไม่สำเร็จ:', err);
+        this.isSaving = false;
+        this.toastMessage = 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
+        this.showToast = true;
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          this.showToast = false;
+          this.cdr.detectChanges();
+        }, 2500);
+      }
+    });
   }
 }

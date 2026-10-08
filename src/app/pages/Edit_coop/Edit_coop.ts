@@ -242,7 +242,7 @@ export class EditCoopComponent implements OnInit {
         healthy: this.healthForm.healthy,
         poor_health: this.healthForm.poorHealth,
         note: this.healthForm.note,
-        record_date: this.recordDate.toISOString()
+        record_date: toBackendDateOnly(this.recordDate)
       };
       this.submitRecord('health', '/healths', payload);
     } else if (this.openRecordModal === 'vaccine') {
@@ -256,7 +256,7 @@ export class EditCoopComponent implements OnInit {
         method: this.vaccineForm.method,
         recommended_age: this.vaccineForm.recommendedAge,
         note: this.vaccineForm.note,
-        record_date: this.recordDate.toISOString()
+        record_date: toBackendDateOnly(this.recordDate)
       };
       this.submitRecord('vaccine', '/vaccines', payload);
     } else if (this.openRecordModal === 'egg') {
@@ -268,7 +268,7 @@ export class EditCoopComponent implements OnInit {
         coop_id: Number(this.coopId),
         number_egg: this.eggForm.numberEgg,
         note: this.eggForm.note,
-        date_collect_egg: this.recordDate.toISOString()
+        date_collect_egg: toBackendDateOnly(this.recordDate)
       };
       this.submitRecord('egg', '/eggs', payload);
     }

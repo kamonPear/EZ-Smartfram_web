@@ -14,6 +14,12 @@
 
     <p class="loading-hint" *ngIf="isLoading">กำลังโหลดการแจ้งเตือน...</p>
 
+    <p class="empty-hint" *ngIf="!isLoading && (loadFailed || failedSources.length > 0)" role="alert">
+      ⚠️ โหลดข้อมูลแจ้งเตือนไม่ครบ<span *ngIf="failedSources.length > 0"> ({{ failedSources.join(', ') }})</span>
+      - รายการด้านล่างอาจไม่สมบูรณ์
+      <button type="button" (click)="load()">ลองใหม่</button>
+    </p>
+
     <div class="notification-list" *ngIf="!isLoading">
       <div class="notification-card" *ngFor="let n of notifications" [class.is-urgent]="n.urgent" [class.is-clickable]="n.type === 'health' || n.type === 'vaccine'" (click)="cardClick(n)">
         <div class="notification-icon" [class]="'is-' + n.type">
@@ -41,7 +47,7 @@
         </div>
       </div>
 
-      <p class="empty-hint" *ngIf="notifications.length === 0">ไม่มีการแจ้งเตือน</p>
+      <p class="empty-hint" *ngIf="notifications.length === 0 && !loadFailed && failedSources.length === 0">ไม่มีการแจ้งเตือน</p>
     </div>
   </main>
 

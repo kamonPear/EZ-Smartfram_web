@@ -118,8 +118,17 @@ export class HealthAppointmentsComponent {
     forkJoin({
       coops: this.api.get<any[]>('/coops'),
       alerts: this.api.get<any[]>('/vaccines/alerts'),
+      healths: this.api.get<any[]>('/healths'),
     }).subscribe({
-      next: ({ coops, alerts }) => {
+      next: ({ coops, alerts, healths }) => {
+        // นัดวันที่มีผลตรวจจริงของคอกนั้นบันทึกไว้แล้วถือว่าเสร็จ ไม่ต้องโชว์ค้าง
+        // (ตรงกับที่หน้าแจ้งเตือนและหน้าข้อมูลคอกทำอยู่)
+        const checked = new Set<string>();
+        for (const h of healths || []) {
+          const d = h?.record_date ? new Date(h.record_date) : null;
+          if (h?.coop_id == null || !d || isNaN(d.getTime())) continue;
+          checked.add(`${h.coop_id}_${formatDateKey(d)}`);
+        }
         const coopNames = new Map<string, string>();
         for (const c of coops || []) {
           const id = String(c?.coop_id ?? '');
@@ -139,6 +148,7 @@ export class HealthAppointmentsComponent {
           const appointmentDate = new Date(vaccineDateOnly);
           appointmentDate.setDate(appointmentDate.getDate() - 1);
           const coopId = String(a?.coop_id ?? '-');
+          if (checked.has(`${coopId}_${formatDateKey(appointmentDate)}`)) continue;
 
           list.push({
             coopId,
@@ -292,6 +302,16 @@ export class HealthAppointmentsComponent {
   // เลือกวันที่จากปฏิทินแล้ว - ยังไม่บันทึกทันที ขอให้ยืนยันก่อนเสมอ (กันกดพลาด
   // วันที่ติดกัน) ปิดปฏิทินแล้วเก็บวันที่ไว้รอกดยืนยันในป็อบอัพถัดไป
   onDaySelected(day: Date) {
+    // เลือกวันที่ผ่านมาแล้ว (ก่อนวันนี้) - แจ้งเตือนและเปิดปฏิทินค้างไว้ให้เลือกวันใหม่
+    // ส่วนวันนี้ยังเลือกได้ (ไปบันทึกผลตรวจของวันนี้)
+    const today = new Date();
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const pickedOnly = new Date(day.getFullYear(), day.getMonth(), day.getDate());
+    if (pickedOnly.getTime() < todayOnly.getTime()) {
+      this.flashToast(`เลยวันที่ ${this.formatDate(day)} มาแล้ว กรุณาเลือกวันตั้งแต่วันนี้เป็นต้นไป`, 'error');
+      return;
+    }
+
     this.isCalendarOpen = false;
     this.pendingDay = day;
     this.showConfirmDialog = true;
@@ -327,40 +347,56 @@ export class HealthAppointmentsComponent {
     const targetOnly = new Date(day.getFullYear(), day.getMonth(), day.getDate());
     const isFuture = targetOnly.getTime() > todayOnly.getTime();
 
-    const proceed = () => {
-      if (!isFuture) {
-        this.router.navigate(['/add-health'], {
-          queryParams: { coop_id: coopId, date: formatDateKey(day) }
+    const oldManual = item?.kind === 'manual' ? item.manual : undefined;
+
+    if (!isFuture) {
+      // ไปหน้าบันทึกผลตรวจเลย - นัดตั้งเองเดิม (ถ้ามี) ลบทิ้งก่อนไป
+      const goCheck = () => this.router.navigate(['/add-health'], {
+        queryParams: { coop_id: coopId, date: formatDateKey(day) }
+      });
+      if (oldManual) {
+        this.healthAppointmentService.remove(oldManual.appointment_id).subscribe({
+          next: goCheck,
+          error: (err) => {
+            console.error('ลบนัดเดิมไม่สำเร็จ:', err);
+            this.flashToast('แก้ไขนัดไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
+          }
         });
-        return;
+      } else {
+        goCheck();
       }
-
-      this.healthAppointmentService.create(coopId, day).subscribe({
-        next: () => {
-          this.flashToast(`บันทึกนัดตรวจสุขภาพวันที่ ${this.formatDate(day)} ลงปฏิทินแล้ว`);
-          this.loadManualAppointments();
-          this.loadCoopMarkers();
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          console.error('บันทึกนัดตรวจไม่สำเร็จ:', err);
-          this.flashToast('บันทึกนัดตรวจไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
-        }
-      });
-    };
-
-    if (item?.kind === 'manual' && item.manual) {
-      this.healthAppointmentService.remove(item.manual.appointment_id).subscribe({
-        next: proceed,
-        error: (err) => {
-          console.error('ลบนัดเดิมไม่สำเร็จ:', err);
-          this.flashToast('แก้ไขนัดไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
-        }
-      });
-    } else {
-      proceed();
+      this.cdr.detectChanges();
+      return;
     }
 
+    // สร้างนัดใหม่ก่อน แล้วค่อยลบนัดเดิม - ถ้าสร้างไม่สำเร็จนัดเดิมยังอยู่ ไม่หายไป
+    // เงียบๆ (ถ้าลบเดิมพลาดทีหลังอย่างมากก็ได้นัดซ้ำ ซึ่งลบเองได้และปลอดภัยกว่า)
+    const finish = (message: string, type: 'success' | 'error' = 'success') => {
+      this.flashToast(message, type);
+      this.loadManualAppointments();
+      this.loadCoopMarkers();
+      this.cdr.detectChanges();
+    };
+    this.healthAppointmentService.create(coopId, day).subscribe({
+      next: () => {
+        const okMsg = `บันทึกนัดตรวจสุขภาพวันที่ ${this.formatDate(day)} ลงปฏิทินแล้ว`;
+        if (!oldManual) {
+          finish(okMsg);
+          return;
+        }
+        this.healthAppointmentService.remove(oldManual.appointment_id).subscribe({
+          next: () => finish(okMsg),
+          error: (err) => {
+            console.error('ลบนัดเดิมไม่สำเร็จ:', err);
+            finish('บันทึกนัดใหม่แล้ว แต่ลบนัดเดิมไม่สำเร็จ กรุณาลบนัดเดิมเอง', 'error');
+          }
+        });
+      },
+      error: (err) => {
+        console.error('บันทึกนัดตรวจไม่สำเร็จ:', err);
+        this.flashToast('บันทึกนัดตรวจไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
+      }
+    });
     this.cdr.detectChanges();
   }
 

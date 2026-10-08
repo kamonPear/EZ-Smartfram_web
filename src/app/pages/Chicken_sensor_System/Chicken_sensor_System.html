@@ -12,7 +12,16 @@
   </header>
 
   <main class="content-area">
-    <div class="coop-grid">
+    <p class="status-hint" *ngIf="isLoading">กำลังโหลดข้อมูลคอก...</p>
+
+    <div class="status-error" *ngIf="!isLoading && loadError" role="alert">
+      <p>โหลดข้อมูลคอกไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อแล้วลองใหม่</p>
+      <button type="button" class="retry-btn" (click)="loadCoopsFromDatabase()">🔄 ลองใหม่</button>
+    </div>
+
+    <p class="status-hint" *ngIf="!isLoading && !loadError && coops.length === 0">ยังไม่มีคอกไก่ในระบบ</p>
+
+    <div class="coop-grid" *ngIf="!isLoading && !loadError">
       <div class="coop-card" *ngFor="let coop of coops" (click)="selectCoop(coop)">
         <div class="coop-card-header">
           <div class="coop-icon">

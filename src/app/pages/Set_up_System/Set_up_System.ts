@@ -321,15 +321,18 @@ export class SetUpSystem implements OnInit {
   confirmRemove() {
     if (this.slotToDelete !== null) {
       const slotIdx = this.slotToDelete;
+      const removed = this.slots[slotIdx].device;
+      const removedStatus = this.slots[slotIdx].status;
 
       // 1. เคลียร์ค่าในหน้าจอ (Frontend)
-      this.slots[slotIdx].device = null; 
+      this.slots[slotIdx].device = null;
       this.slots[slotIdx].status = 'normal';
 
       // 🌟 เพิ่มบรรทัดนี้: บังคับให้ Angular วาดหน้าจอใหม่ทันที รูปเซนเซอร์จะหายวับไปเลย!
       this.cdr.detectChanges();
 
-      // 2. ยิง API ไปลบในฐานข้อมูล (Backend)
+      // 2. ยิง API ไปลบในฐานข้อมูล (Backend) - ถ้าล้มเหลวคืนอุปกรณ์กลับเข้าช่องเดิม
+      // และแจ้งผู้ใช้ ไม่ให้หน้าจอบอกว่าลบแล้วทั้งที่ยังอยู่ใน DB
       if (this.selectedCoop) {
         this.api.delete<any>(`/devices?coop_id=${this.selectedCoop}&slot_index=${slotIdx}`).subscribe({
           next: (res) => {
@@ -337,7 +340,12 @@ export class SetUpSystem implements OnInit {
           },
           error: (err) => {
             console.error('❌ เกิดข้อผิดพลาด ลบข้อมูลใน Database ไม่สำเร็จ:', err);
-            // ถ้าระบบจริง อาจจะเด้ง Toast บอกผู้ใช้ว่าลบไม่สำเร็จ
+            this.slots[slotIdx].device = removed;
+            this.slots[slotIdx].status = removedStatus;
+            this.toastMessage = 'ลบอุปกรณ์ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
+            this.showToast = true;
+            this.cdr.detectChanges();
+            setTimeout(() => { this.showToast = false; this.cdr.detectChanges(); }, 3000);
           }
         });
       }

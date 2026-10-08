@@ -224,15 +224,15 @@ export class FarmLayoutComponent implements OnInit {
     this.isSaving = true;
 
     this.api.put<any>('/farm-layout', { shape: this.shape }).subscribe({
-      next: () => this.savePositions(),
+      next: () => this.savePositions(true),
       error: (err) => {
         console.error('บันทึกรูปทรงผังฟาร์มล้มเหลว:', err);
-        this.savePositions(); // ยังพยายามบันทึกตำแหน่งต่อ แม้ผังรูปทรงจะบันทึกไม่สำเร็จ
+        this.savePositions(false); // ยังพยายามบันทึกตำแหน่งต่อ แต่จะไม่รายงานว่าสำเร็จ
       },
     });
   }
 
-  private savePositions() {
+  private savePositions(shapeSaved: boolean) {
     const positions = this.coops.map((c) => ({
       coop_id: c.coop_id,
       pos_x: c.pos_x ?? null,
@@ -242,6 +242,13 @@ export class FarmLayoutComponent implements OnInit {
     this.api.put<any>('/coops/positions', { positions }).subscribe({
       next: () => {
         this.isSaving = false;
+        if (!shapeSaved) {
+          // ตำแหน่งบันทึกแล้วแต่รูปทรงไม่ได้ - อยู่หน้านี้ต่อให้ลองบันทึกใหม่ ไม่เด้งไป
+          // หน้าแรกพร้อมข้อความสำเร็จที่ไม่จริง
+          this.toastMessage = 'บันทึกตำแหน่งแล้ว แต่บันทึกรูปทรงผังไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
+          this.flashToast();
+          return;
+        }
         this.toastMessage = 'บันทึกผังฟาร์มเรียบร้อย!';
         this.flashToast(() => this.router.navigate(['/home']));
       },

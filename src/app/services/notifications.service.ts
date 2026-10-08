@@ -62,17 +62,35 @@ export class NotificationsService {
    *  ใกล้ถึงกำหนดตรวจสุขภาพก่อนให้วัคซีน) - ใช้ร่วมกันทั้งหน้า "การแจ้งเตือน" เอง
    *  และแถบเมนู (hamburger) ที่ต้องรู้แค่จำนวนไว้ขึ้นตัวเลขแจ้งเตือน */
   load(): Observable<FarmNotification[]> {
+    // แหล่งข้อมูลที่โหลดไม่สำเร็จในรอบนี้ - ไม่ทำให้ทั้งรายการล้ม (แหล่งที่เหลือยังโชว์
+    // ได้) แต่ผู้เรียกเช็ค lastLoadFailed ได้ ไม่ให้ "โหลดไม่ได้" ถูกตีความเป็น
+    // "ไม่มีแจ้งเตือน"
+    const failed: string[] = [];
+    const safe = (name: string, path: string) =>
+      this.api.get<any[]>(path).pipe(
+        catchError((err) => {
+          console.error(`โหลด ${path} สำหรับแจ้งเตือนไม่สำเร็จ:`, err);
+          failed.push(name);
+          return of([] as any[]);
+        })
+      );
     return forkJoin({
-      foods: this.api.get<any[]>('/foods').pipe(catchError(() => of([]))),
-      coops: this.api.get<any[]>('/coops').pipe(catchError(() => of([]))),
-      alerts: this.api.get<any[]>('/vaccines/alerts').pipe(catchError(() => of([]))),
-      healths: this.api.get<any[]>('/healths').pipe(catchError(() => of([]))),
-      motion: this.api.get<any[]>('/motion-alerts').pipe(catchError(() => of([]))),
+      foods: safe('อาหาร', '/foods'),
+      coops: safe('คอก', '/coops'),
+      alerts: safe('วัคซีน', '/vaccines/alerts'),
+      healths: safe('สุขภาพ', '/healths'),
+      motion: safe('ความเคลื่อนไหว', '/motion-alerts'),
+      appointments: safe('นัดตรวจสุขภาพ', '/health-appointments'),
     }).pipe(
-      map(({ foods, coops, alerts, healths, motion }) =>
-        this.build(foods || [], coops || [], alerts || [], healths || [], motion || []))
+      map(({ foods, coops, alerts, healths, motion, appointments }) => {
+        this.lastLoadFailed = failed;
+        return this.build(foods || [], coops || [], alerts || [], healths || [], motion || [], appointments || []);
+      })
     );
   }
+
+  /** ชื่อแหล่งข้อมูลที่โหลดไม่สำเร็จในการ load() ครั้งล่าสุด (ว่าง = สำเร็จทั้งหมด) */
+  lastLoadFailed: string[] = [];
 
   /** บันทึกว่ารับทราบแจ้งเตือนความเคลื่อนไหวของคอกนี้แล้ว (ถึงเวลาตรวจจับล่าสุดที่ให้มา) */
   acknowledgeMotion(coopId: string, lastAt: number) {
@@ -85,14 +103,16 @@ export class NotificationsService {
     }
   }
 
-  private build(foods: any[], coops: any[], alerts: any[], healths: any[], motion: any[] = []): FarmNotification[] {
+  private build(foods: any[], coops: any[], alerts: any[], healths: any[], motion: any[] = [], appointments: any[] = []): FarmNotification[] {
     const notifications: FarmNotification[] = [];
     const today = new Date();
     const todayOnly = dateOnly(today);
 
     // 1. แจ้งเตือนปริมาณอาหาร (ใกล้หมด / หมดแล้ว)
     for (const row of foods) {
-      const current = Number(row?.quantity_current ?? 0);
+      // ไม่มีค่าปริมาณคงเหลือมาเลย (null) = ไม่รู้ ไม่ใช่ 0 - ข้ามไป ไม่เตือนว่าหมดผิดๆ
+      if (row?.quantity_current == null) continue;
+      const current = Number(row.quantity_current);
       const min = Number(row?.min_quantity ?? 0);
       const foodType = row?.food_type || 'อาหาร';
       const foodId = row?.food_id ?? 0;
@@ -131,6 +151,51 @@ export class NotificationsService {
       checkedHealthDates.add(`${coopId}_${dateKey(d)}`);
     }
 
+    // แจ้งเตือนตรวจสุขภาพ 1 รายการ - ใช้ร่วมกันทั้งนัดที่คำนวณจากวัคซีนและนัดที่ตั้งเอง
+    // id ผูกกับคอก+วันนัด จึงกันซ้ำเองถ้าสองแหล่งชี้วันเดียวกัน (vaccineName ว่าง =
+    // นัดที่ตั้งเอง ไม่ผูกกับวัคซีนตัวไหน)
+    const seenHealthIds = new Set<string>();
+    const pushHealthNotification = (coopId: string, coopName: string, checkDate: Date, vaccineName: string | null) => {
+      const daysUntilHealthCheck = Math.round((checkDate.getTime() - todayOnly.getTime()) / 86400000);
+      if (daysUntilHealthCheck > ADVANCE_DAYS) return;
+      if (checkedHealthDates.has(`${coopId}_${dateKey(checkDate)}`)) return;
+      const id = `health_${coopId}_${dateKey(checkDate)}`;
+      if (seenHealthIds.has(id)) return;
+      seenHealthIds.add(id);
+
+      const forWhat = vaccineName ? `ก่อนให้${vaccineName}` : '';
+      let title: string;
+      if (daysUntilHealthCheck < 0) {
+        title = vaccineName
+          ? `‼️ เลยกำหนดตรวจสุขภาพที่${coopName}${forWhat}มา ${-daysUntilHealthCheck} วันแล้ว`
+          : `‼️ เลยกำหนดตรวจสุขภาพที่${coopName}มา ${-daysUntilHealthCheck} วันแล้ว`;
+      } else if (daysUntilHealthCheck === 0) {
+        title = `‼️ วันนี้ถึงกำหนดตรวจสุขภาพที่${coopName}${forWhat}`;
+      } else if (daysUntilHealthCheck === 1) {
+        title = `🩺 พรุ่งนี้ถึงกำหนดตรวจสุขภาพที่${coopName}${forWhat}`;
+      } else {
+        title = `🩺 อีก ${daysUntilHealthCheck} วันถึงกำหนดตรวจสุขภาพที่${coopName}${forWhat}`;
+      }
+
+      notifications.push({
+        id,
+        type: 'health',
+        title,
+        urgent: daysUntilHealthCheck <= 0,
+        daysUntil: daysUntilHealthCheck,
+        coopId,
+        coopName,
+      });
+    };
+
+    // 3a. นัดตรวจสุขภาพที่ผู้ใช้ตั้งเอง (หน้า "นัดตรวจสุขภาพ" โหมดกำหนดเอง)
+    for (const m of appointments) {
+      const coopId = m?.coop_id != null ? String(m.coop_id) : null;
+      const d = m?.appointment_date ? new Date(m.appointment_date) : null;
+      if (!coopId || !d || isNaN(d.getTime())) continue;
+      pushHealthNotification(coopId, coopNames.get(coopId) || `คอก ${coopId}`, dateOnly(d), null);
+    }
+
     // 3 + 4. แจ้งเตือนวัคซีน และแจ้งเตือนตรวจสุขภาพ (ก่อนให้วัคซีน 1 วันเสมอ)
     for (const a of alerts) {
       if (a?.is_completed === true) continue;
@@ -146,31 +211,7 @@ export class NotificationsService {
       // --- แจ้งเตือนตรวจสุขภาพ (1 วันก่อนวันให้วัคซีนเสมอ) ---
       const healthCheckDate = new Date(dueOnly);
       healthCheckDate.setDate(healthCheckDate.getDate() - 1);
-      const daysUntilHealthCheck = Math.round((healthCheckDate.getTime() - todayOnly.getTime()) / 86400000);
-      const alreadyChecked = checkedHealthDates.has(`${coopId}_${dateKey(healthCheckDate)}`);
-
-      if (!alreadyChecked && daysUntilHealthCheck <= ADVANCE_DAYS) {
-        let healthTitle: string;
-        if (daysUntilHealthCheck < 0) {
-          healthTitle = `‼️ เลยกำหนดตรวจสุขภาพที่${coopName}ก่อนให้${vaccineName}มา ${-daysUntilHealthCheck} วันแล้ว`;
-        } else if (daysUntilHealthCheck === 0) {
-          healthTitle = `‼️ วันนี้ถึงกำหนดตรวจสุขภาพที่${coopName}ก่อนให้${vaccineName}`;
-        } else if (daysUntilHealthCheck === 1) {
-          healthTitle = `🩺 พรุ่งนี้ถึงกำหนดตรวจสุขภาพที่${coopName}ก่อนให้${vaccineName}`;
-        } else {
-          healthTitle = `🩺 อีก ${daysUntilHealthCheck} วันถึงกำหนดตรวจสุขภาพที่${coopName}ก่อนให้${vaccineName}`;
-        }
-
-        notifications.push({
-          id: `health_${coopId}_${dateKey(healthCheckDate)}`,
-          type: 'health',
-          title: healthTitle,
-          urgent: daysUntilHealthCheck <= 0,
-          daysUntil: daysUntilHealthCheck,
-          coopId,
-          coopName,
-        });
-      }
+      pushHealthNotification(coopId, coopName, healthCheckDate, vaccineName);
 
       // --- แจ้งเตือนให้วัคซีน ---
       const daysUntilVaccine = Math.round((dueOnly.getTime() - todayOnly.getTime()) / 86400000);
