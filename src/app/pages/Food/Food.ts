@@ -194,12 +194,14 @@ export class FoodComponent {
       return;
     }
     this.isDeducting = true;
-    this.api.post<{ message: string; deducted: number }>('/foodstocks/force-deduct', {
+    this.api.post<{ message: string; deducted: number; shortfall?: number }>('/foodstocks/force-deduct', {
       food_type: this.selectedDeductType
     }).subscribe({
       next: (res) => {
         this.isDeducting = false;
-        this.flashToast(res.message);
+        // backend ตอบ 200 เสมอแม้ตัดไม่สำเร็จเพราะสต็อกไม่พอ (shortfall > 0) -
+        // ต้องเช็คฟิลด์นี้เอง ไม่งั้น toast จะขึ้นเขียวทั้งที่จริงๆ ไม่ได้ตัดอะไรเลย
+        this.flashToast(res.message, (res.shortfall ?? 0) > 0 ? 'error' : 'success');
         this.selectedDeductType = null;
         this.loadAll();
       },
