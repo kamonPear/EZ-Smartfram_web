@@ -188,6 +188,12 @@
         <button type="button" [class.active]="chartMode === 'year'" (click)="setChartMode('year')">รายปี</button>
       </div>
 
+      <div class="chart-nav">
+        <button type="button" (click)="prevChartPage()" aria-label="ย้อนหลัง">&lsaquo;</button>
+        <span>{{ chartRangeLabel }}</span>
+        <button type="button" (click)="nextChartPage()" [disabled]="chartOffset === 0" aria-label="ถัดไป">&rsaquo;</button>
+      </div>
+
       <!-- คลิกแท่งเพื่อดูรายละเอียดของช่วงนั้น (วัน/เดือน/ปี) - เมาส์ชี้เพื่อดูยอด
            แยกตามคอกก่อนคลิก -->
       <div class="egg-chart" [class.egg-chart-year]="chartMode === 'year'" *ngIf="!isLoadingHistory">
@@ -259,6 +265,7 @@
     *ngIf="isCalendarOpen"
     title="วันที่เก็บไข่"
     [selectedDate]="collectDate"
+    [maxDate]="today"
     [markers]="dayMarkers"
     (daySelected)="onDaySelected($event)"
     (closed)="closeCalendar()">

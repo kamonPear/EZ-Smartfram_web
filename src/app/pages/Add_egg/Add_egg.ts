@@ -35,6 +35,8 @@ const THAI_MONTH_SHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 
 })
 export class AddEggComponent {
 
+  // วันที่เก็บไข่เลือกได้ไม่เกินวันนี้ (ไข่ที่ลงวันอนาคตจะไม่ขึ้นในกราฟ/ยอดวันนี้)
+  readonly today = new Date();
   collectDate: Date | null = new Date();
   isCalendarOpen: boolean = false;
   dayMarkers: Map<string, DayMarker> | null = null;
@@ -60,6 +62,9 @@ export class AddEggComponent {
   eggRecords: EggRecord[] = [];
   isLoadingHistory = false;
   chartMode: ChartMode = 'day';
+  // เลื่อนดูกราฟย้อนหลังเป็น "หน้า" (0 = ช่วงล่าสุดถึงวันนี้, 1 = ช่วงก่อนหน้า 1 ชุด ...)
+  // ขนาดหน้าตามโหมด: 14 วัน / 12 เดือน / 5 ปี
+  chartOffset = 0;
 
   // คลิกแท่งกราฟเพื่อดูรายละเอียดของช่วงนั้น (วัน/เดือน/ปี) และเมาส์ชี้เพื่อดู
   // ยอดแยกตามคอกแบบป็อบอัพเล็กๆ - เก็บแค่ "key" ของแท่งไว้ ไม่เก็บ object ตรงๆ
@@ -136,8 +141,36 @@ export class AddEggComponent {
 
   setChartMode(mode: ChartMode) {
     this.chartMode = mode;
+    this.chartOffset = 0;
     // เปลี่ยนโหมดแล้ว key ของแท่งที่เคยเลือกไว้ไม่มีอยู่ในชุดใหม่ ต้องล้างทิ้ง
     this.selectedBarKey = null;
+  }
+
+  prevChartPage() {
+    this.chartOffset++;
+    this.selectedBarKey = null;
+    this.cdr.detectChanges();
+  }
+
+  nextChartPage() {
+    if (this.chartOffset === 0) return;
+    this.chartOffset--;
+    this.selectedBarKey = null;
+    this.cdr.detectChanges();
+  }
+
+  // ข้อความบอกช่วงที่กราฟกำลังแสดง เช่น "23 ก.ย. 2569 - 6 ต.ค. 2569"
+  get chartRangeLabel(): string {
+    const bars = this.chartBars;
+    if (!bars.length) return '';
+    const first = bars[0].bucketStart;
+    const last = bars[bars.length - 1].bucketStart;
+    if (this.chartMode === 'year') return `${first.getFullYear() + 543} - ${last.getFullYear() + 543}`;
+    if (this.chartMode === 'month') {
+      return `${THAI_MONTH_SHORT[first.getMonth()]} ${first.getFullYear() + 543} - ${THAI_MONTH_SHORT[last.getMonth()]} ${last.getFullYear() + 543}`;
+    }
+    const fmt = (d: Date) => `${d.getDate()} ${THAI_MONTH_SHORT[d.getMonth()]} ${d.getFullYear() + 543}`;
+    return `${fmt(first)} - ${fmt(last)}`;
   }
 
   selectBar(bar: ChartBar) {
@@ -285,12 +318,12 @@ export class AddEggComponent {
 
     for (let i = 13; i >= 0; i--) {
       const d = new Date(today);
-      d.setDate(d.getDate() - i);
+      d.setDate(d.getDate() - i - this.chartOffset * 14);
       bars.push({
         key: formatDateKey(d),
         label: String(d.getDate()),
         value: this.totalForDate(d),
-        isCurrent: i === 0,
+        isCurrent: this.chartOffset === 0 && i === 0,
         bucketStart: d,
       });
     }
@@ -303,12 +336,12 @@ export class AddEggComponent {
     const now = new Date();
 
     for (let i = 11; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const d = new Date(now.getFullYear(), now.getMonth() - i - this.chartOffset * 12, 1);
       bars.push({
         key: `${d.getFullYear()}-${d.getMonth()}`,
         label: THAI_MONTH_SHORT[d.getMonth()],
         value: this.totalForMonth(d.getFullYear(), d.getMonth()),
-        isCurrent: i === 0,
+        isCurrent: this.chartOffset === 0 && i === 0,
         bucketStart: d,
       });
     }
@@ -321,12 +354,12 @@ export class AddEggComponent {
     const now = new Date();
 
     for (let i = 4; i >= 0; i--) {
-      const y = now.getFullYear() - i;
+      const y = now.getFullYear() - i - this.chartOffset * 5;
       bars.push({
         key: String(y),
         label: String(y + 543),
         value: this.totalForYear(y),
-        isCurrent: i === 0,
+        isCurrent: this.chartOffset === 0 && i === 0,
         bucketStart: new Date(y, 0, 1),
       });
     }
@@ -432,6 +465,11 @@ export class AddEggComponent {
   saveEgg() {
     if (!this.coopId || !this.eggCount || this.eggCount < 1 || !this.collectDate) {
       this.flashToast('กรุณาเลือกคอก จำนวนไข่ และวันที่เก็บไข่ให้ครบถ้วน', 'error');
+      return;
+    }
+
+    if (formatDateKey(this.collectDate) > formatDateKey(new Date())) {
+      this.flashToast('ไม่สามารถเลือกวันที่เก็บไข่ในอนาคตได้', 'error');
       return;
     }
 

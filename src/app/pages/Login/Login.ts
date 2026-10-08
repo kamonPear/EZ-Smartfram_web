@@ -6,9 +6,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 
-// หน้าล็อกอิน - ไม่มีลิงก์ "สมัครสมาชิก"/"ลืมรหัสผ่าน" ตั้งใจ เพราะแอดมินเป็นคน
-// สร้างบัญชีให้ผู้ใช้เองนอกระบบ (ดู AUTH_CONTRACT.md) หน้านี้จึงมีแค่ฟอร์ม
-// ชื่อผู้ใช้/รหัสผ่านล้วนๆ
+// หน้าล็อกอิน - ไม่มีลิงก์ "สมัครสมาชิก" ตั้งใจ เพราะแอดมินเป็นคนสร้างบัญชีให้
+// ผู้ใช้เองนอกระบบ (ดู AUTH_CONTRACT.md) และไม่มีระบบรีเซ็ตรหัสผ่านเอง ผู้ใช้ที่
+// ลืมรหัสผ่านต้องโทรติดต่อแอดมินตามเบอร์ที่โชว์ใต้ฟอร์ม
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -20,6 +20,13 @@ export class LoginComponent {
   username = '';
   password = '';
   showPassword = false;
+
+  // เบอร์ติดต่อแอดมินสำหรับผู้ใช้ที่ลืมรหัสผ่าน - กดลิงก์ใต้ฟอร์มแล้วค่อยโชว์
+  showContact = false;
+  readonly contactPhones = [
+    { name: 'คุณแพร', phone: '062-457-3255' },
+    { name: 'คุณออย', phone: '082-661-8867' },
+  ];
 
   isSubmitting = false;
   errorMessage = '';
@@ -45,6 +52,10 @@ export class LoginComponent {
     // หน้า login ไม่มี username ให้ผูกธีมด้วย (ยังไม่ login) รีเซ็ตกลับค่าเริ่มต้น
     // เสมอ กันธีมของบัญชีก่อนหน้า (ที่เพิ่ง logout มา) ค้างโชว์อยู่ที่หน้านี้
     this.theme.resetToDefault();
+  }
+
+  toggleContact() {
+    this.showContact = !this.showContact;
   }
 
   togglePasswordVisibility() {

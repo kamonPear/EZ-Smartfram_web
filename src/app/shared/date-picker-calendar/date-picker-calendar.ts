@@ -21,6 +21,10 @@ export class DatePickerCalendar implements OnChanges {
   // ลอยกลางจอแบบเดิม ไม่มีฉากหลังมืด/ปุ่มปิด อยู่ติดกับเนื้อหาข้างๆ ตลอดเวลา
   @Input() inline = false;
 
+  // วันที่มากที่สุดที่เลือกได้ (ถ้าระบุ) - วันหลังจากนี้จะกดไม่ได้ เช่น ฟอร์มเก็บไข่
+  // ไม่ให้เลือกวันในอนาคต
+  @Input() maxDate: Date | null = null;
+
   @Output() daySelected = new EventEmitter<Date>();
   @Output() closed = new EventEmitter<void>();
 
@@ -102,8 +106,13 @@ export class DatePickerCalendar implements OnChanges {
     this.cdr.detectChanges();
   }
 
+  isBeyondMax(day: Date | null): boolean {
+    if (!day || !this.maxDate) return false;
+    return formatDateKey(day) > formatDateKey(this.maxDate);
+  }
+
   selectDay(day: Date | null) {
-    if (!day) return;
+    if (!day || this.isBeyondMax(day)) return;
     // โหมดดูอย่างเดียว: คลิกวันที่แค่กาง/ยุบรายละเอียดของวันนั้นในป็อบอัพเดิม
     // ไม่ได้เลือกวันที่เข้าฟอร์ม (ไม่ emit daySelected / ไม่ปิดป็อบอัพ)
     if (this.viewOnly) {

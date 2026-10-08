@@ -117,6 +117,16 @@ export class NotificationsComponent {
       return;
     }
 
+    if (n.type === 'motion') {
+      // จำว่ารับทราบแล้ว เหตุการณ์ที่รวมอยู่ในแจ้งเตือนนี้จะไม่ขึ้นซ้ำอีก (ขึ้นใหม่เฉพาะ
+      // เมื่อมีการตรวจจับครั้งใหม่หลังจากนี้)
+      if (n.coopId && n.motionLastAt) {
+        this.notificationsService.acknowledgeMotion(n.coopId, n.motionLastAt);
+      }
+      this.removeLocal(n);
+      return;
+    }
+
     // type === 'food': ไม่มี endpoint สำหรับ "รับทราบ" สต็อกอาหาร แค่ปิดออกจาก
     // หน้าจอตอนนี้เท่านั้น (จะกลับมาเตือนใหม่ถ้ายังใกล้หมดอยู่ตอนโหลดหน้าใหม่)
     this.removeLocal(n);
@@ -124,6 +134,7 @@ export class NotificationsComponent {
 
   private removeLocal(n: FarmNotification) {
     this.notifications = this.notifications.filter(x => x !== n);
+    this.notificationsService.changed$.next();
     this.cdr.detectChanges();
   }
 

@@ -296,7 +296,8 @@
 /* ---------- แจ้งเตือนล่าสุด ---------- */
 .alerts-section {
   width: 100%;
-  margin-bottom: 30px;
+  max-width: 1220px;
+  margin: 40px auto 30px;
 }
 
 .alert-card {
@@ -307,10 +308,18 @@
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
 }
 
+.alert-empty {
+  margin: 0;
+  padding: 22px 0;
+  text-align: center;
+  color: var(--text-muted, rgba(var(--fg-rgb), 0.6));
+  font-size: 0.92rem;
+}
+
 .alert-row {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  gap: 14px;
   padding: 16px 0;
   border-bottom: 1px solid var(--border-subtle);
 
@@ -333,6 +342,7 @@
   &.is-vaccine { background: rgba(255, 167, 38, 0.15); color: #FFA726; }
   &.is-health { background: rgba(255, 167, 38, 0.15); color: #FFA726; }
   &.is-food { background: rgba(66, 165, 245, 0.15); color: #42A5F5; }
+  &.is-motion { background: rgba(114, 213, 114, 0.15); color: var(--accent-green-bright, #72d572); }
 }
 
 .alert-row.is-urgent .alert-icon {

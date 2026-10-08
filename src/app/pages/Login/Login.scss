@@ -177,6 +177,69 @@
   width: 100%;
 }
 
+.forgot-section {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.forgot-link {
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--accent-green-bright);
+  }
+}
+
+.contact-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 16px;
+  background: rgba(var(--fg-rgb), 0.06);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: 16px;
+
+  .contact-title {
+    margin: 0 0 2px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: rgba(var(--fg-rgb), 0.6);
+  }
+
+  .contact-phone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-radius: 30px;
+    background: rgba(114, 213, 114, 0.12);
+    color: var(--accent-green-bright);
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+
+    .contact-name {
+      font-weight: 500;
+      color: var(--text-title);
+    }
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
 @media (max-width: 480px) {
   .login-card {
     padding: 32px 22px;

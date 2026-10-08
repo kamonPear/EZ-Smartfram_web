@@ -39,6 +39,12 @@ export class SidebarComponent implements OnInit {
     this.themeService.load();
     // แสดงจำนวนแจ้งเตือนเป็นตัวเลขบนเมนู "การแจ้งเตือน" ให้เห็นตั้งแต่ยังไม่กด
     // เข้าไปดู - ไซด์บาร์อยู่ทุกหน้าเลยโหลดได้บ่อยพอที่จะถือว่าเป็นค่าล่าสุดเสมอ
+    this.loadNotificationCount();
+    // กดรับทราบ/เสร็จสิ้นที่หน้าแจ้งเตือนแล้วตัวเลขบนเมนูต้องลดตามทันที
+    this.notificationsService.changed$.subscribe(() => this.loadNotificationCount());
+  }
+
+  private loadNotificationCount() {
     this.notificationsService.load().subscribe({
       next: (list) => {
         this.notificationCount = list.length;

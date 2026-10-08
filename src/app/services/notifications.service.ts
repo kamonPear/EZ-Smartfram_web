@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { forkJoin, map, Observable, of, catchError } from 'rxjs';
+import { forkJoin, map, Observable, of, catchError, Subject } from 'rxjs';
 import { ApiService } from './api.service';
 
 export type NotificationType = 'food' | 'vaccine' | 'health' | 'motion';
@@ -17,6 +17,22 @@ export interface FarmNotification {
   method?: string;
   chickenAge?: number;
   description?: string;
+  // เฉพาะ type === 'motion' - เวลา (ms) ของการตรวจจับล่าสุดที่รวมอยู่ในแจ้งเตือนนี้
+  // ใช้ตอนกด "รับทราบ" เพื่อจำว่ารับทราบถึงเหตุการณ์ไหนแล้ว
+  motionLastAt?: number;
+}
+
+// จำว่าผู้ใช้กด "รับทราบ" แจ้งเตือนความเคลื่อนไหวของแต่ละคอกถึงเวลาไหนแล้ว (เก็บใน
+// เบราว์เซอร์นี้) - เหตุการณ์ที่เกิดก่อนหรือเท่ากับเวลานั้นจะไม่ถูกนับ/แจ้งซ้ำอีก แต่
+// ถ้ามีการตรวจจับใหม่หลังจากนั้นจะแจ้งเตือนขึ้นมาใหม่ตามปกติ
+const MOTION_ACK_KEY = 'ez_motion_ack';
+
+function loadMotionAcks(): Record<string, number> {
+  try {
+    return JSON.parse(localStorage.getItem(MOTION_ACK_KEY) || '{}') || {};
+  } catch {
+    return {};
+  }
 }
 
 // เตือนล่วงหน้า 2 วันก่อนถึงกำหนด (ทั้งวัคซีนและตรวจสุขภาพ) ไปจนถึงเลยกำหนดแล้ว
@@ -38,6 +54,10 @@ function dateOnly(d: Date): Date {
 export class NotificationsService {
   constructor(private api: ApiService) {}
 
+  // ยิงทุกครั้งที่รายการแจ้งเตือนเปลี่ยนจากฝั่งผู้ใช้ (กดรับทราบ/เสร็จสิ้น) ให้ส่วนที่
+  // แสดงจำนวนแจ้งเตือนค้างอยู่ (เช่นตัวเลขบนเมนูข้าง) โหลดค่าใหม่
+  readonly changed$ = new Subject<void>();
+
   /** โหลดรายการแจ้งเตือนทั้งหมดของฟาร์ม (อาหารใกล้หมด/หมด, ใกล้ถึงกำหนดให้วัคซีน,
    *  ใกล้ถึงกำหนดตรวจสุขภาพก่อนให้วัคซีน) - ใช้ร่วมกันทั้งหน้า "การแจ้งเตือน" เอง
    *  และแถบเมนู (hamburger) ที่ต้องรู้แค่จำนวนไว้ขึ้นตัวเลขแจ้งเตือน */
@@ -52,6 +72,17 @@ export class NotificationsService {
       map(({ foods, coops, alerts, healths, motion }) =>
         this.build(foods || [], coops || [], alerts || [], healths || [], motion || []))
     );
+  }
+
+  /** บันทึกว่ารับทราบแจ้งเตือนความเคลื่อนไหวของคอกนี้แล้ว (ถึงเวลาตรวจจับล่าสุดที่ให้มา) */
+  acknowledgeMotion(coopId: string, lastAt: number) {
+    try {
+      const acks = loadMotionAcks();
+      acks[coopId] = Math.max(acks[coopId] || 0, lastAt);
+      localStorage.setItem(MOTION_ACK_KEY, JSON.stringify(acks));
+    } catch {
+      // เขียน localStorage ไม่ได้ (โหมดส่วนตัว ฯลฯ) - ยอมให้แจ้งเตือนกลับมาตอนโหลดใหม่
+    }
   }
 
   private build(foods: any[], coops: any[], alerts: any[], healths: any[], motion: any[] = []): FarmNotification[] {
@@ -174,11 +205,13 @@ export class NotificationsService {
     // แจ้งเตือนต่อคอก (ไม่ใช่ 1 อันต่อครั้งตรวจจับ เพราะอาจมีหลายสิบครั้ง/วัน) โชว์
     // จำนวนครั้งรวมกับเวลาที่ตรวจจับล่าสุด ข้อมูลดิบมาจาก /api/motion-alerts
     // (เรียงล่าสุดมาก่อนอยู่แล้วจาก backend)
+    const motionAcks = loadMotionAcks();
     const motionByCoop = new Map<string, { coopName: string; count: number; lastAt: Date }>();
     for (const m of motion) {
       const coopId = m?.coop_id != null ? String(m.coop_id) : null;
       const ts = m?.timestamp ? new Date(m.timestamp) : null;
       if (!coopId || !ts || isNaN(ts.getTime())) continue;
+      if (ts.getTime() <= (motionAcks[coopId] || 0)) continue;
       const coopName = m?.coop_name || coopNames.get(coopId) || `คอก ${coopId}`;
       const existing = motionByCoop.get(coopId);
       if (existing) {
@@ -198,6 +231,7 @@ export class NotificationsService {
         daysUntil: -1,
         coopId,
         coopName: info.coopName,
+        motionLastAt: info.lastAt.getTime(),
       });
     }
 

@@ -66,7 +66,8 @@
       [class.selected]="isSelected(day)"
       [class.today]="isToday(day)"
       [attr.title]="tooltipFor(day) || null"
-      [disabled]="!day"
+      [class.beyond-max]="isBeyondMax(day)"
+      [disabled]="!day || isBeyondMax(day)"
       (click)="selectDay(day)">
       <span class="day-number">{{ day ? day.getDate() : '' }}</span>
       <span class="day-markers" *ngIf="markerFor(day) as marker">
