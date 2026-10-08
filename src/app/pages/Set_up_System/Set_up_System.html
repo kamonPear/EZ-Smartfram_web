@@ -134,7 +134,6 @@
               class="icon-choice"
               *ngFor="let choice of iconChoices"
               [class.selected]="editIcon === choice.src"
-              [title]="choice.label"
               (click)="selectEditIcon(choice.src)"
             >
               <img [src]="choice.src" [alt]="choice.label">
