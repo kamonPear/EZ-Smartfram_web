@@ -1,6 +1,7 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { ApiService } from '../../services/api.service';
 
@@ -37,7 +38,7 @@ interface HistoryEntry {
 @Component({
   selector: 'app-food',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './Food.html',
   styleUrls: ['./Food.scss']
 })
@@ -209,6 +210,68 @@ export class FoodComponent {
         this.isDeducting = false;
         console.error('ตัดสต็อกไม่สำเร็จ:', err);
         this.flashToast('ตัดสต็อกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
+      }
+    });
+  }
+
+  // ---------- อัปเดตสต็อก (แก้ยอดคงเหลือให้ตรงของจริง) ----------
+  // ต่างจาก "เข้าสต็อก" ที่บวกเพิ่มเป็นล็อตและมีประวัติ - อันนี้ตั้งยอดคงเหลือใหม่ตรงๆ
+  // (PUT /foods?id=) ใช้ตอนนับของจริงแล้วยอดในระบบไม่ตรง
+  selectedUpdateType: string | null = null;
+  updateQuantity: number | string | null = null;
+  isUpdatingStock = false;
+  updateSuccessMessage = '';
+
+  private stockOfType(foodType: string | null): FoodStock | null {
+    if (foodType === FOOD_TYPE_SMALL) return this.smallStock;
+    if (foodType === FOOD_TYPE_LARGE) return this.largeStock;
+    return null;
+  }
+
+  get hasSelectedUpdateStock(): boolean {
+    return !!this.stockOfType(this.selectedUpdateType);
+  }
+
+  selectUpdateType(foodType: string) {
+    this.selectedUpdateType = foodType;
+    this.updateSuccessMessage = '';
+    const stock = this.stockOfType(foodType);
+    // พรีเติมยอดปัจจุบันให้แก้ต่อได้เลย
+    this.updateQuantity = stock ? stock.quantity_current : null;
+  }
+
+  updateStock() {
+    if (!this.selectedUpdateType) {
+      this.flashToast('กรุณาเลือกประเภทอาหารก่อนอัปเดตสต็อก', 'error');
+      return;
+    }
+    const stock = this.stockOfType(this.selectedUpdateType);
+    if (!stock) {
+      this.flashToast(`ยังไม่มีสต็อกอาหาร${this.selectedUpdateType} กรุณาเข้าสต็อกก่อน`, 'error');
+      return;
+    }
+    const raw = this.updateQuantity;
+    const qty = Number(raw);
+    if (raw === null || raw === '' || !isFinite(qty) || qty < 0) {
+      this.flashToast('กรุณากรอกยอดคงเหลือ (กก.) ให้ถูกต้อง', 'error');
+      return;
+    }
+    this.isUpdatingStock = true;
+    this.api.put(`/foods?id=${stock.food_id}`, { quantity_current: qty }).subscribe({
+      next: () => {
+        this.isUpdatingStock = false;
+        const message = `อัปเดตสต็อกอาหาร${this.selectedUpdateType}เป็น ${this.formatAmount(qty)} กก. สำเร็จแล้ว`;
+        this.flashToast(message, 'success');
+        // ข้อความในการ์ดค้างไว้จนกว่าจะเลือกประเภทใหม่ (toast ด้านล่างหายเร็วและเห็นยาก)
+        this.updateSuccessMessage = message;
+        this.selectedUpdateType = null;
+        this.updateQuantity = null;
+        this.loadAll();
+      },
+      error: (err) => {
+        this.isUpdatingStock = false;
+        console.error('อัปเดตสต็อกไม่สำเร็จ:', err);
+        this.flashToast('อัปเดตสต็อกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
       }
     });
   }

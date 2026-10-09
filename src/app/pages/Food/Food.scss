@@ -294,6 +294,13 @@
     font-weight: 600;
     margin: 4px 0 8px;
   }
+
+  &.is-success {
+    color: var(--accent-green-bright);
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
 }
 
 .food-type-chips {
@@ -321,6 +328,38 @@
     background: rgba(245, 166, 35, 0.12);
     color: #F5A623;
   }
+}
+
+.update-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1.3px solid var(--border-subtle);
+  background: var(--bg-panel);
+
+  &:focus-within { border-color: #F5A623; }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    padding: 11px 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text-title);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+}
+
+.update-input-suffix {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .secondary-action-btn {

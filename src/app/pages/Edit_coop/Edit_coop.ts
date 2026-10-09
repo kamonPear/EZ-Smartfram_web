@@ -260,16 +260,20 @@ export class EditCoopComponent implements OnInit {
       };
       this.submitRecord('vaccine', '/vaccines', payload);
     } else if (this.openRecordModal === 'egg') {
-      if (!this.eggForm.numberEgg || this.eggForm.numberEgg < 1) {
+      // ไม่กรอกจำนวนไข่ (ช่องว่าง) = คงค่าเดิม ไม่ส่ง number_egg ไป backend จะไม่แตะค่านี้
+      // แต่ถ้ากรอกมาแล้วต้องเป็นจำนวนเต็มตั้งแต่ 1 ขึ้นไป
+      const rawCount = this.eggForm.numberEgg as number | string | null;
+      const keepOriginal = rawCount === null || rawCount === undefined || rawCount === '';
+      if (!keepOriginal && (!Number.isInteger(Number(rawCount)) || Number(rawCount) < 1)) {
         alert('กรุณากรอกจำนวนไข่ให้ถูกต้อง');
         return;
       }
-      const payload = {
+      const payload: any = {
         coop_id: Number(this.coopId),
-        number_egg: this.eggForm.numberEgg,
         note: this.eggForm.note,
         date_collect_egg: toBackendDateOnly(this.recordDate)
       };
+      if (!keepOriginal) payload.number_egg = Number(rawCount);
       this.submitRecord('egg', '/eggs', payload);
     }
   }

@@ -463,8 +463,14 @@ export class AddEggComponent {
   }
 
   saveEgg() {
-    if (!this.coopId || !this.eggCount || this.eggCount < 1 || !this.collectDate) {
-      this.flashToast('กรุณาเลือกคอก จำนวนไข่ และวันที่เก็บไข่ให้ครบถ้วน', 'error');
+    // ช่องจำนวนไข่ว่าง หรือกรอก 0 (หรือค่าติดลบ) - แจ้งเตือนเฉพาะจุดและไม่บันทึก
+    if (!this.eggCount || this.eggCount < 1) {
+      this.flashToast('กรุณากรอกจำนวนไข่ไก่', 'error');
+      return;
+    }
+
+    if (!this.coopId || !this.collectDate) {
+      this.flashToast('กรุณาเลือกคอกและวันที่เก็บไข่ให้ครบถ้วน', 'error');
       return;
     }
 

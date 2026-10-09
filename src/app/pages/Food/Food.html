@@ -196,6 +196,53 @@
         </button>
       </div>
 
+      <!-- อัปเดตสต็อก (แก้ยอดคงเหลือ) -->
+      <div class="card">
+        <div class="card-title-row">
+          <div class="card-title-left">
+            <div class="card-title-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20h9"/>
+                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+              </svg>
+            </div>
+            <h2>อัปเดตสต็อกอาหาร</h2>
+          </div>
+        </div>
+
+        <p class="deduct-hint">แก้ยอดคงเหลือให้ตรงกับของจริงที่นับได้ เลือกประเภทแล้วกรอกยอดใหม่ (กก.)</p>
+        <div class="food-type-chips">
+          <button
+            type="button"
+            class="food-type-chip"
+            *ngFor="let type of [FOOD_TYPE_SMALL, FOOD_TYPE_LARGE]"
+            [class.selected]="selectedUpdateType === type"
+            (click)="selectUpdateType(type)"
+          >
+            {{ type }}
+          </button>
+        </div>
+
+        <p class="deduct-hint is-success" *ngIf="updateSuccessMessage">✓ {{ updateSuccessMessage }}</p>
+
+        <p class="deduct-hint is-warning" *ngIf="selectedUpdateType && !hasSelectedUpdateStock">
+          ยังไม่มีสต็อกอาหาร{{ selectedUpdateType }} กรุณาเข้าสต็อกก่อน
+        </p>
+
+        <div class="update-input" *ngIf="selectedUpdateType && hasSelectedUpdateStock">
+          <input type="number" min="0" step="any" [(ngModel)]="updateQuantity" placeholder="ยอดคงเหลือใหม่">
+          <span class="update-input-suffix">กก.</span>
+        </div>
+
+        <button type="button" class="secondary-action-btn" [disabled]="isUpdatingStock || !selectedUpdateType || !hasSelectedUpdateStock" (click)="updateStock()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"/>
+            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+          </svg>
+          {{ isUpdatingStock ? 'กำลังอัปเดต...' : (selectedUpdateType ? 'อัปเดตสต็อก' + selectedUpdateType : 'อัปเดตสต็อก') }}
+        </button>
+      </div>
+
       <!-- เข้าสต็อกอาหาร -->
       <div class="card">
         <div class="card-title-row">
