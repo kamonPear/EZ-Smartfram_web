@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, Subject, tap } from 'rxjs';
 import { API_BASE_URL } from '../app.config';
 
 export interface AuthUser {
@@ -35,6 +35,11 @@ export class AuthService {
   private base = API_BASE_URL;
   private token: string | null = null;
   private user: AuthUser | null = null;
+
+  // ยิงทุกครั้งที่ออกจากระบบ (กดเอง หรือโดนเด้งเพราะ token หมดอายุ) - service ที่เป็น
+  // singleton และจำข้อมูลของผู้ใช้ไว้ในหน่วยความจำ ต้อง subscribe แล้วล้างทิ้ง ไม่งั้นผู้ใช้
+  // คนถัดไปที่ login ในแท็บเดิมจะเห็นข้อมูลของคนก่อนหน้าวูบหนึ่งระหว่างรอโหลดข้อมูลของตัวเอง
+  readonly loggedOut$ = new Subject<void>();
 
   constructor(private http: HttpClient) {
     this.restoreSession();
@@ -93,6 +98,7 @@ export class AuthService {
     } catch {
       // ไม่ต้องทำอะไรถ้าเคลียร์ไม่ได้
     }
+    this.loggedOut$.next();
   }
 
   getToken(): string | null {

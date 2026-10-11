@@ -17,7 +17,7 @@
         <h2 class="section-title">ค่ามาตรฐานของฟาร์ม</h2>
         <span class="threshold-edit-hint">⚙️ ตั้งค่า</span>
       </div>
-      <div class="threshold-gauges-row" *ngIf="!thresholds.isLoaded() || thresholds.isConfigured()">
+      <div class="threshold-gauges-row" *ngIf="thresholds.isLoaded() && thresholds.isConfigured()">
         <div class="threshold-gauge">
           <div class="gauge-ring" [style.background]="gaugeBackground(thresholds.temperature(), 50, '#4FD3E8')">
             <div class="gauge-center">
@@ -37,6 +37,11 @@
       </div>
       <!-- ยังไม่เคยตั้งค่ามาตรฐานของฟาร์มเลย (ไม่มีแถวใน backend) - บอกตรงๆ แทนที่
            จะโชว์ค่า default ปลอมๆ ซึ่งทำให้ดูเหมือนมีคนตั้งค่าไว้แล้ว -->
+      <!-- ระหว่างรอโหลดค่าจาก backend ห้ามโชว์เกจ 0°/0 PPM (ดูเหมือนมีคนตั้งค่าเป็น 0 ไว้)
+           และห้ามเขียนว่า "ยังไม่ได้ตั้งค่า" ด้วย เพราะยังไม่รู้ผล - โชว์แค่ข้อความกำลังโหลด -->
+      <div class="threshold-not-configured" *ngIf="!thresholds.isLoaded()">
+        <span>กำลังโหลดค่ามาตรฐานของฟาร์ม...</span>
+      </div>
       <div class="threshold-not-configured" *ngIf="thresholds.isLoaded() && !thresholds.isConfigured()">
         <span>ยังไม่ได้ตั้งค่ามาตรฐานของฟาร์ม</span>
         <span class="threshold-not-configured-hint">แตะเพื่อตั้งค่า</span>

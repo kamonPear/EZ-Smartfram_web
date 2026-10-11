@@ -185,6 +185,10 @@ export class DataCoopComponent implements OnInit, OnDestroy {
       const index = device.slot_index;
       if (index != null && index >= 0 && index < 21) {
         this.slots[index].device = device;
+        if (device.pos_x != null && device.pos_y != null) {
+          this.slots[index].x = device.pos_x;
+          this.slots[index].y = device.pos_y;
+        }
       }
     }
   }
@@ -527,6 +531,10 @@ export class DataCoopComponent implements OnInit, OnDestroy {
 
   goToDeviceStatus() {
     this.router.navigate(['/device-status'], { queryParams: { coop: this.selectedCoop } });
+  }
+
+  goToSetup() {
+    this.router.navigate(['/setup'], { queryParams: { coop: this.selectedCoop } });
   }
 
   goToHealthCheck() {

@@ -8,6 +8,9 @@ export interface Device {
   icon: string;
   device_type?: string;
   slot_index?: number;
+  // ตำแหน่งที่วางจริงบนผังคอก (% ของแคนวาส) - null/ไม่มี = วางไว้ก่อนมีการเก็บพิกัด ใช้ตำแหน่งกริดจาก slot_index แทน
+  pos_x?: number | null;
+  pos_y?: number | null;
   current_status: string;
   last_update?: string;
   value?: number | null;

@@ -104,6 +104,11 @@ export class AddFoodComponent {
     this.expiryDate = d;
   }
 
+  // ปริมาณใกล้หมดต้องไม่เกินปริมาณที่นำเข้า - ถ้าเกิน อาหารก็ "ใกล้หมด" ตั้งแต่วันแรกที่เข้าสต็อก ไม่สมเหตุสมผล
+  get isThresholdTooHigh(): boolean {
+    return this.threshold != null && this.amount != null && this.threshold > this.amount;
+  }
+
   onAmountChange() {
     this.recalculateExpiryDate();
   }
@@ -166,6 +171,14 @@ export class AddFoodComponent {
     }
     if (this.amount == null || this.amount <= 0) {
       this.flashToast('กรุณากรอกปริมาณที่นำเข้าให้มากกว่า 0', 'error');
+      return;
+    }
+    if (this.threshold != null && this.threshold < 0) {
+      this.flashToast('ปริมาณใกล้หมดต้องไม่ติดลบ', 'error');
+      return;
+    }
+    if (this.isThresholdTooHigh) {
+      this.flashToast('ปริมาณใกล้หมดต้องไม่เกินปริมาณที่นำเข้า', 'error');
       return;
     }
     if (!this.expiryDate) {

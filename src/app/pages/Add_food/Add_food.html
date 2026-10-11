@@ -72,9 +72,10 @@
 
         <div class="input-pill">
           <span class="input-pill-icon">⚠️</span>
-          <input type="number" [(ngModel)]="threshold" (ngModelChange)="onThresholdChange()" placeholder="กำหนดปริมาณใกล้หมด" min="0">
+          <input type="number" [(ngModel)]="threshold" (ngModelChange)="onThresholdChange()" placeholder="กำหนดปริมาณใกล้หมด" min="0" [attr.max]="amount">
           <span class="input-pill-suffix">กก.</span>
         </div>
+        <p class="field-warning" *ngIf="isThresholdTooHigh">ปริมาณใกล้หมดต้องไม่เกินปริมาณที่นำเข้า ({{ amount }} กก.)</p>
 
         <div class="input-pill input-pill-clickable" [class.active]="activeField === 'expiry'" (click)="selectDateField('expiry')">
           <span class="input-pill-icon">

@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { ApiService } from './api.service';
+import { AuthService } from './auth.service';
 
 // ค่ามาตรฐานอุณหภูมิ/แอมโมเนียของฟาร์ม - ใช้คู่กันกับหน้า Farm_thresholds
 // ย้ายจาก localStorage มาเก็บที่ backend แล้ว (เดิมเว็บ/แอปมือถือต่างคนต่างเก็บใน
@@ -25,7 +26,19 @@ export class FarmThresholdService {
   isConfigured = signal(false);
   isLoaded = signal(false);
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, auth: AuthService) {
+    // ออกจากระบบแล้วต้องล้างค่าของผู้ใช้เดิมทิ้ง - signal เหล่านี้อยู่ข้ามการเปลี่ยนหน้า
+    // และ isLoaded ค้างเป็น true ถ้าไม่ล้าง หน้าแรกของผู้ใช้คนใหม่จะโชว์ค่าของคนก่อนหน้า
+    // ทันทีที่เปิด จนกว่า load() จะตอบกลับมา
+    auth.loggedOut$.subscribe(() => this.reset());
+  }
+
+  private reset() {
+    this.temperature.set(0);
+    this.ammonia.set(0);
+    this.isConfigured.set(false);
+    this.isLoaded.set(false);
+  }
 
   load() {
     this.api.get<FarmThresholdResponse>('/farm-threshold').subscribe({

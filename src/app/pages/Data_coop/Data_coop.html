@@ -23,7 +23,10 @@
             <h3 class="section-title">อุปกรณ์ / เซนเซอร์</h3>
             <span class="device-summary-text">ออนไลน์ {{ deviceOnlineCount }} / {{ devicesList.length }} ตัว</span>
           </div>
-          <button class="section-action-btn" (click)="goToDeviceStatus()">ดูสถานะอุปกรณ์</button>
+          <div class="device-link-actions">
+            <button class="section-action-btn" (click)="goToSetup()">จัดวางเซนเซอร์</button>
+            <button class="section-action-btn" (click)="goToDeviceStatus()">ดูสถานะอุปกรณ์</button>
+          </div>
         </div>
 
         <div class="mini-canvas">

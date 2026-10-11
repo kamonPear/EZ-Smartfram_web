@@ -33,7 +33,7 @@
       </div>
       <!-- ลบชนิดอุปกรณ์ทิ้งจนหมดแล้วจริงๆ (ไม่ใช่กำลังโหลด) - บอกตรงๆ แทนที่จะโชว์
            ถาดว่างเฉยๆ ชวนให้คิดว่าโหลดไม่ขึ้น -->
-      <p class="palette-empty" *ngIf="availableSensors.length === 0">ยังไม่มีชนิดอุปกรณ์เลย กด "+ เพิ่มอุปกรณ์" ด้านบนเพื่อเริ่มต้น</p>
+      <p class="palette-empty" *ngIf="typesLoaded && availableSensors.length === 0">ยังไม่มีชนิดอุปกรณ์เลย กด "+ เพิ่มอุปกรณ์" ด้านบนเพื่อเริ่มต้น</p>
     </aside>
 
     <div class="farm-canvas" (dragover)="onCanvasDragOver($event)" (drop)="onCanvasDrop($event)">

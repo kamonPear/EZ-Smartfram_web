@@ -22,11 +22,18 @@
     color: var(--text-primary);
     font-weight: 700;
     font-size: 0.95rem;
+    // ชื่อคอกยาวติดกันไม่มีเว้นวรรค (เช่น 1000000...) ต้องตัดบรรทัดเองได้ ไม่งั้นล้น
+    // ออกนอกการ์ดทั้งกรอบ - min-width: 0 ให้ flex item หดได้ต่ำกว่าความกว้างเนื้อหา
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .hover-card-amount {
     color: var(--text-secondary);
     font-size: 0.75rem;
+    flex-shrink: 0;
+    white-space: nowrap;
   }
 }
 

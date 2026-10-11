@@ -104,7 +104,12 @@
         </div>
         <span class="marker-label">{{ coop.name_coop || ('คอกที่ ' + coop.coop_id) }}</span>
 
-        <div class="hover-anchor" *ngIf="hoveredCoopId === coop.coop_id">
+        <div
+          class="hover-anchor"
+          [class.anchor-below]="(coop.pos_y ?? 50) < 40"
+          [class.anchor-left]="(coop.pos_x ?? 50) < 25"
+          [class.anchor-right]="(coop.pos_x ?? 50) > 75"
+          *ngIf="hoveredCoopId === coop.coop_id">
           <app-coop-hover-card [coop]="coop"></app-coop-hover-card>
         </div>
 

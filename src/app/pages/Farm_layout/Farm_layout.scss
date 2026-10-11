@@ -246,7 +246,10 @@
   box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.3);
   position: relative;
   z-index: 1;
-  overflow: hidden;
+  // visible (ไม่ใช่ hidden) - ป็อบอัพสรุปคอก (.hover-anchor) ลอยเหนือหมุดและกว้าง 260px
+  // ถ้าตัดที่ขอบแคนวาส คอกที่วางชิดขอบบน/ซ้าย/ขวาจะเห็นป็อบอัพแหว่งหรือหายไปเลย
+  // หมุดยังลากออกนอกแคนวาสไม่ได้อยู่แล้วเพราะ cdkDragBoundary
+  overflow: visible;
 
   .shape-boundary {
     position: absolute;
@@ -367,6 +370,27 @@
   // อ่านอย่างเดียว ไม่มีอะไรให้กด - pointer-events: none กันไม่ให้ป็อบอัพแย่ง
   // hover จากหมุด/การ์ดด้านล่างเวลาป็อบอัพเกยตัวทริกเกอร์ (ทำให้กระพริบรัวๆ)
   pointer-events: none;
+
+  // คอกที่วางไว้ครึ่งบนของผัง - ป็อบอัพเด้งลงใต้หมุดแทน ไม่งั้นลอยพ้นขอบบนของแคนวาส
+  &.anchor-below {
+    bottom: auto;
+    top: 100%;
+    margin-bottom: 0;
+    margin-top: 10px;
+  }
+
+  // คอกชิดซ้าย/ขวา - ชิดขอบป็อบอัพกับหมุดแทนการกึ่งกลาง ไม่งั้นป็อบอัพกว้าง 260px
+  // ล้นออกนอกแคนวาสไปทับ/ซ่อนหลังรายการคอกด้านซ้าย
+  &.anchor-left {
+    left: 0;
+    transform: none;
+  }
+
+  &.anchor-right {
+    left: auto;
+    right: 0;
+    transform: none;
+  }
 }
 
 /* --- แถบเครื่องมือด้านล่าง --- */

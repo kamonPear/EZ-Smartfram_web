@@ -104,6 +104,10 @@ export class DeviceStatusComponent implements OnInit, OnDestroy {
       const index = device.slot_index;
       if (index !== undefined && index !== null && index >= 0 && index < 21) {
         this.slots[index].device = { name: device.name, icon: device.icon, label: this.labels.get(device) ?? device.name };
+        if (device.pos_x != null && device.pos_y != null) {
+          this.slots[index].x = device.pos_x;
+          this.slots[index].y = device.pos_y;
+        }
         this.slots[index].status = device.current_status === 'Online' ? 'normal' : 'offline';
       }
     });

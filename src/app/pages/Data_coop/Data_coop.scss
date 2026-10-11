@@ -80,6 +80,12 @@
   margin: 0 0 12px;
 }
 
+.device-link-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .device-link-row {
   display: flex;
   align-items: center;

@@ -15,17 +15,11 @@ export class SetUpSystem implements OnInit {
 
   deviceIconSrc = deviceIconSrc;
 
-  // ค่าตั้งต้นโชว์ไว้ก่อนระหว่างรอโหลดจริง (กันถาดว่างวูบๆ) - ต้องตรงกับ 7 แบบที่
-  // backend seed ให้ user ทุกคนจริงๆ เท่านั้น (ดู defaultDeviceTypes ใน
-  // handlers/device_type.go ฝั่ง backend) ไม่ใช่ทุกตัวใน DEVICE_ICON_CHOICES ทั้งหมด
-  // (อันนั้นมีตัวเลือกไอคอนเผื่อเพิ่มเองด้วย เอามาทำ placeholder ตรงนี้ไม่ได้ ไม่งั้น
-  // ชนิดที่ยังไม่มีจริงในระบบจะโผล่ในถาดก่อนโหลดเสร็จ คลิกแล้วไม่มี id ให้จัดการ)
-  private static readonly SEEDED_DEFAULT_LABELS = ['ESP 32', 'MQ-135', 'PIR MOTION', 'DHT22', 'MC-38', 'พัดลม', 'หลอดไฟ'];
-  readonly builtInSensors = DEVICE_ICON_CHOICES
-    .filter((c) => SetUpSystem.SEEDED_DEFAULT_LABELS.includes(c.label))
-    .map((c) => ({ name: c.label, icon: c.src }));
-
-  availableSensors: { id?: number; name: string; icon: string }[] = [...this.builtInSensors];
+  // เริ่มจากถาดว่างจนกว่าโหลดชนิดอุปกรณ์ของ user จาก backend เสร็จ - ไม่มีค่าตั้งต้น
+  // ฝังไว้แล้ว เพราะ user ใหม่ต้องเพิ่มชนิดอุปกรณ์เองทั้งหมด (ไม่ให้ชนิดที่ user
+  // ไม่ได้เพิ่มโผล่ขึ้นมาเอง)
+  availableSensors: { id?: number; name: string; icon: string }[] = [];
+  typesLoaded = false;
 
   readonly iconChoices = DEVICE_ICON_CHOICES;
 
@@ -95,6 +89,7 @@ export class SetUpSystem implements OnInit {
     this.api.get<{ id: number; name: string; icon: string }[]>('/device-types').subscribe({
       next: (rows) => {
         this.availableSensors = rows || [];
+        this.typesLoaded = true;
         this.cdr.detectChanges();
       },
       error: (err) => console.error('โหลดชนิดอุปกรณ์ไม่สำเร็จ:', err),
@@ -204,6 +199,12 @@ export class SetUpSystem implements OnInit {
                   icon: dbDevice.icon
                 };
                 this.slots[idx].status = 'working';
+                // ตำแหน่งที่วางจริงที่เคยบันทึกไว้ (เปอร์เซ็นต์ของแคนวาส) - อุปกรณ์เก่าที่ยัง
+                // ไม่เคยบันทึกพิกัดจะเป็น null แล้วใช้ตำแหน่งกริดตาม slot_index ต่อไป
+                if (dbDevice.pos_x != null && dbDevice.pos_y != null) {
+                  this.slots[idx].x = dbDevice.pos_x;
+                  this.slots[idx].y = dbDevice.pos_y;
+                }
               } 
               // กรณีส่งมาเป็นรูปแบบ Object device ย่อยแบบเดิม
               else if (dbDevice.device) {
@@ -257,9 +258,9 @@ export class SetUpSystem implements OnInit {
     if (this.draggedSlotId !== null) {
       const currentSlot = this.slots.find(s => s.id === this.draggedSlotId);
       if (currentSlot && currentSlot.device) {
-        // ระบบหลังบ้านเก็บแค่ "ช่องที่" (slot_index) ไม่มีตำแหน่ง x/y จริงๆ
-        // เลยต้องย้ายอุปกรณ์ไปอยู่ในช่องว่างที่ตำแหน่งเริ่มต้นใกล้จุดที่ลากมาปล่อยที่สุด
-        // เพื่อให้ตำแหน่งยังใกล้เคียงเดิมได้แม้หลัง reload / กลับเข้ามาดูใหม่
+        // slot_index ยังเป็นตัวระบุอุปกรณ์ (บอร์ดส่ง coop_id + slot_index มาจับคู่) จึงต้อง
+        // ย้ายอุปกรณ์ไปอยู่ในช่องว่างที่ใกล้จุดปล่อยที่สุด ส่วนตำแหน่งที่แสดงจริง (x/y)
+        // backend เก็บให้แยกต่างหากเป็น pos_x/pos_y จึงอยู่ตรงจุดที่วางแม้ reload
         const target = this.findNearestEmptySlot(x, y);
         if (target) {
           target.device = currentSlot.device;
