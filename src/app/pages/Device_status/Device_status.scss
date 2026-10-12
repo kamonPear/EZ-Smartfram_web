@@ -120,21 +120,21 @@
     z-index: 3;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 14px 6px 6px;
-    border-radius: 24px;
+    gap: 6px;
+    padding: 4px 10px 4px 4px;
+    border-radius: 20px;
     color: var(--text-title);
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.72rem;
     white-space: nowrap;
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-    border: 2px solid rgba(var(--fg-rgb), 0.25);
+    border: 1.5px solid rgba(var(--fg-rgb), 0.25);
     transition: box-shadow 0.2s ease, transform 0.15s ease, filter 0.2s ease;
 
     .slot-icon {
-      width: 30px;
-      height: 30px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       background: rgba(var(--fg-rgb), 0.9);
       display: flex;
@@ -142,7 +142,7 @@
       justify-content: center;
       flex-shrink: 0;
 
-      img { width: 20px; height: 20px; object-fit: contain; }
+      img { width: 15px; height: 15px; object-fit: contain; }
     }
 
     &:hover {
@@ -378,5 +378,16 @@
 
   .sensor-table-panel {
     width: 100%;
+  }
+}
+
+/* --- โหมดฝังในป็อบอัพของหน้าข้อมูลคอกไก่ --- */
+.device-status-container.is-embedded {
+  min-height: 0;
+  background-color: transparent;
+  padding: 0;
+
+  .canvas-wrapper {
+    padding: 20px 24px;
   }
 }

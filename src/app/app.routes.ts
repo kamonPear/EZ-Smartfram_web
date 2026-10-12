@@ -23,6 +23,8 @@ import { FoodComponent } from './pages/Food/Food';
 import { AddFoodComponent } from './pages/Add_food/Add_food';
 import { FoodTypeSummaryComponent } from './pages/Food_type_summary/Food_type_summary';
 import { CoopListComponent } from './pages/Coop_list/Coop_list';
+import { SearchPageComponent } from './pages/Search/Search';
+import { BackupPageComponent } from './pages/Backup/Backup';
 import { AddDeviceTypeComponent } from './pages/Add_device_type/Add_device_type';
 import { authGuard } from './services/auth.guard';
 
@@ -66,6 +68,10 @@ export const routes: Routes = [
       { path: 'chicken-sensor', component: ChickensensorSystemComponent },
 
       { path: 'device-summary', component: DeviceSummaryComponent },
+
+      { path: 'search', component: SearchPageComponent },
+
+      { path: 'backup', component: BackupPageComponent },
 
       { path: 'notifications', component: NotificationsComponent },
 

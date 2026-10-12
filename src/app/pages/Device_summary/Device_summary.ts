@@ -5,6 +5,7 @@ import { forkJoin } from 'rxjs';
 import { ApiService } from '../../services/api.service';
 import { Device, Coop } from '../../shared/coop-summary.util';
 import { deviceIconSrc } from '../../shared/device-icon.util';
+import { SiteSearchComponent } from '../../components/site-search/site-search.component';
 
 interface DeviceGroup {
   name: string;
@@ -20,7 +21,7 @@ interface DeviceGroup {
 @Component({
   selector: 'app-device-summary',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, SiteSearchComponent],
   templateUrl: './Device_summary.html',
   styleUrls: ['./Device_summary.scss']
 })

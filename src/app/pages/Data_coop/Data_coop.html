@@ -24,8 +24,8 @@
             <span class="device-summary-text">ออนไลน์ {{ deviceOnlineCount }} / {{ devicesList.length }} ตัว</span>
           </div>
           <div class="device-link-actions">
-            <button class="section-action-btn" (click)="goToSetup()">จัดวางเซนเซอร์</button>
-            <button class="section-action-btn" (click)="goToDeviceStatus()">ดูสถานะอุปกรณ์</button>
+            <button class="section-action-btn" (click)="openDevicePopup('setup')">จัดวางเซนเซอร์</button>
+            <button class="section-action-btn" (click)="openDevicePopup('status')">ดูสถานะอุปกรณ์</button>
           </div>
         </div>
 
@@ -62,7 +62,7 @@
             <h3 class="section-title">กราฟเก็บไข่</h3>
             <span class="device-summary-text">วันนี้เก็บได้ {{ todayEggTotal }} ฟอง</span>
           </div>
-          <button class="section-action-btn" (click)="goToAddEgg()">บันทึกไข่</button>
+          <button class="section-action-btn" (click)="openDevicePopup('egg')">บันทึกไข่</button>
         </div>
 
         <div class="mini-egg-chart">
@@ -143,7 +143,7 @@
       <div class="card panel-card">
         <div class="device-link-row">
           <h3 class="section-title">รายการตรวจสุขภาพ</h3>
-          <button class="section-action-btn" (click)="goToHealthCheck()">ตรวจสุขภาพ</button>
+          <button class="section-action-btn" (click)="openDevicePopup('health')">ตรวจสุขภาพ</button>
         </div>
 
         <p class="health-appointment-hint" [class.is-due]="!appt.isFuture" *ngIf="healthAppointment as appt; else noAppt">
@@ -176,7 +176,7 @@
       <div class="card panel-card">
         <div class="device-link-row">
           <h3 class="section-title">วัคซีนที่ให้</h3>
-          <button class="section-action-btn" (click)="goToGiveVaccine()">ให้วัคซีน</button>
+          <button class="section-action-btn" (click)="openDevicePopup('vaccine')">ให้วัคซีน</button>
         </div>
 
         <div class="record-list is-scrollable" *ngIf="vaccineChecklist.length > 0">
@@ -201,5 +201,25 @@
     [viewOnly]="true"
     (closed)="closeCalendar()">
   </app-date-picker-calendar>
+
+  <!-- ป็อบอัพอุปกรณ์: จัดวางเซนเซอร์ / ดูสถานะอุปกรณ์ -->
+  <div class="device-manager-overlay" *ngIf="devicePopup" (click)="closeDevicePopup()">
+    <div class="device-manager-modal" [class.is-wide]="devicePopup === 'status'" [class.is-compact]="devicePopup === 'egg' || devicePopup === 'health' || devicePopup === 'vaccine'" (click)="$event.stopPropagation()">
+      <div class="device-manager-header">
+        <h3>
+          {{ popupTitle }}
+          <span *ngIf="selectedCoopName" class="device-manager-coop">({{ selectedCoopName }})</span>
+        </h3>
+        <button type="button" class="device-manager-close" (click)="closeDevicePopup()" aria-label="ปิด">&times;</button>
+      </div>
+      <div class="device-manager-body">
+        <app-set-up-system *ngIf="devicePopup === 'setup'" [embeddedCoopId]="selectedCoop" (saved)="onDevicesSaved()"></app-set-up-system>
+        <app-device-status *ngIf="devicePopup === 'status'" [embeddedCoopId]="selectedCoop"></app-device-status>
+        <ng-container *ngIf="popupComponent && popupInjector">
+          <ng-container *ngComponentOutlet="popupComponent; injector: popupInjector"></ng-container>
+        </ng-container>
+      </div>
+    </div>
+  </div>
 
 </div>

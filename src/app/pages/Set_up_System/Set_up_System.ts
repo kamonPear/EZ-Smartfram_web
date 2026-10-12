@@ -1,9 +1,10 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { deviceIconSrc, DEVICE_ICON_CHOICES } from '../../shared/device-icon.util';
+import { legacyGridPosition } from '../../shared/coop-summary.util';
 @Component({
   selector: 'app-set-up-system',
   standalone: true,
@@ -12,6 +13,15 @@ import { deviceIconSrc, DEVICE_ICON_CHOICES } from '../../shared/device-icon.uti
   styleUrls: ['./Set_up_System.scss']
 })
 export class SetUpSystem implements OnInit {
+
+  // ใช้ฝังในป็อบอัพของหน้าแก้ไขคอก (Edit_coop) - ส่ง id คอกมาตรงๆ แทนการอ่านจาก URL
+  // และไม่เด้งไปหน้าอื่นตอนบันทึก (ยิง saved ให้หน้าที่ครอบอยู่ปิดป็อบอัพเอง)
+  @Input() embeddedCoopId: string | number | null = null;
+  @Output() saved = new EventEmitter<void>();
+
+  get isEmbedded(): boolean {
+    return this.embeddedCoopId !== null && this.embeddedCoopId !== undefined;
+  }
 
   deviceIconSrc = deviceIconSrc;
 
@@ -68,9 +78,13 @@ export class SetUpSystem implements OnInit {
       };
     });
 
-    // อ่านค่า URL ว่ากดมาจากคอกไหน
+    // อ่านค่า URL ว่ากดมาจากคอกไหน (โหมดฝังในป็อบอัพใช้ embeddedCoopId แทน)
+    if (this.isEmbedded) {
+      this.selectedCoop = String(this.embeddedCoopId);
+      this.fetchCoopData();
+    }
     this.route.queryParams.subscribe(params => {
-      if (params['coop']) {
+      if (!this.isEmbedded && params['coop']) {
         this.selectedCoop = params['coop'];
         this.fetchCoopData(); // 🌟 2. สั่งดึงข้อมูลอุปกรณ์ของคอกนี้
       }
@@ -185,32 +199,41 @@ export class SetUpSystem implements OnInit {
 
         if (fetchedDevices && fetchedDevices.length > 0) {
           
-          fetchedDevices.forEach((dbDevice: any) => {
-            // หาเลขช่อง (รองรับทั้ง key ชื่อ slot_index แบบ Go และ id แบบดั้งเดิม)
-            const idx = dbDevice.slot_index ?? dbDevice.id;
+          // เลขอุปกรณ์ (slot_index) เป็นเลขรันต่อคอกที่ backend ออกให้ ไม่ใช่เลขช่องบนกริดอีกแล้ว - ใส่อุปกรณ์
+          // ลงช่องว่างของกริดเรียงตามเลข ส่วนตำแหน่งที่แสดงใช้พิกัดที่บันทึกไว้ (ถ้ายังไม่มีใช้ตำแหน่งกริดเดิมตามเลข)
+          const sorted = [...fetchedDevices].sort((a: any, b: any) => (a.slot_index ?? a.id ?? 0) - (b.slot_index ?? b.id ?? 0));
+          let cell = 0;
+          sorted.forEach((dbDevice: any) => {
+            while (cell < this.slots.length && this.slots[cell].device) cell++;
+            if (cell >= this.slots.length) return; // เกิน 21 ตัวที่ผังรองรับ
+            const slot = this.slots[cell];
 
-            // ถ้าระบุช่องถูกต้อง (อยู่ในช่วง 0-20) ให้นำข้อมูลอุปกรณ์ไปใส่ในช่องนั้น
-            if (idx !== undefined && idx >= 0 && idx < 21) {
-              
-              // กรณี Database ส่งค่ามาเป็น name และ icon ตรงๆ (แบบโครงสร้าง GORM ของคุณ)
-              if (dbDevice.name && dbDevice.icon) {
-                this.slots[idx].device = {
-                  name: dbDevice.name,
-                  icon: dbDevice.icon
-                };
-                this.slots[idx].status = 'working';
-                // ตำแหน่งที่วางจริงที่เคยบันทึกไว้ (เปอร์เซ็นต์ของแคนวาส) - อุปกรณ์เก่าที่ยัง
-                // ไม่เคยบันทึกพิกัดจะเป็น null แล้วใช้ตำแหน่งกริดตาม slot_index ต่อไป
-                if (dbDevice.pos_x != null && dbDevice.pos_y != null) {
-                  this.slots[idx].x = dbDevice.pos_x;
-                  this.slots[idx].y = dbDevice.pos_y;
+            // กรณี Database ส่งค่ามาเป็น name และ icon ตรงๆ (แบบโครงสร้าง GORM ของคุณ)
+            if (dbDevice.name && dbDevice.icon) {
+              slot.device = {
+                name: dbDevice.name,
+                icon: dbDevice.icon,
+                // เลขที่ backend ออกให้ - ส่งกลับไปตอนบันทึกเพื่อให้รู้ว่าเป็นตัวเดิม (คงเลขเดิม)
+                slot_index: dbDevice.slot_index
+              };
+              slot.status = 'working';
+              if (dbDevice.pos_x != null && dbDevice.pos_y != null) {
+                slot.x = dbDevice.pos_x;
+                slot.y = dbDevice.pos_y;
+              } else {
+                const fallback = legacyGridPosition(dbDevice.slot_index);
+                if (fallback) {
+                  slot.x = fallback.x;
+                  slot.y = fallback.y;
                 }
-              } 
-              // กรณีส่งมาเป็นรูปแบบ Object device ย่อยแบบเดิม
-              else if (dbDevice.device) {
-                this.slots[idx].device = { ...dbDevice.device };
-                this.slots[idx].status = dbDevice.status || 'working';
               }
+              cell++;
+            }
+            // กรณีส่งมาเป็นรูปแบบ Object device ย่อยแบบเดิม
+            else if (dbDevice.device) {
+              slot.device = { ...dbDevice.device };
+              slot.status = dbDevice.status || 'working';
+              cell++;
             }
           });
         }
@@ -334,8 +357,10 @@ export class SetUpSystem implements OnInit {
 
       // 2. ยิง API ไปลบในฐานข้อมูล (Backend) - ถ้าล้มเหลวคืนอุปกรณ์กลับเข้าช่องเดิม
       // และแจ้งผู้ใช้ ไม่ให้หน้าจอบอกว่าลบแล้วทั้งที่ยังอยู่ใน DB
-      if (this.selectedCoop) {
-        this.api.delete<any>(`/devices?coop_id=${this.selectedCoop}&slot_index=${slotIdx}`).subscribe({
+      // ลบในฐานข้อมูลด้วยเลขอุปกรณ์ที่ backend ออกให้ (ไม่ใช่เลขช่องบนกริด) - อุปกรณ์ที่เพิ่งลากมาวางและยังไม่เคย
+      // บันทึกไม่มีเลข จึงไม่มีอะไรให้ลบในฐานข้อมูล แค่เอาออกจากหน้าจอ
+      if (this.selectedCoop && removed?.slot_index != null) {
+        this.api.delete<any>(`/devices?coop_id=${this.selectedCoop}&slot_index=${removed.slot_index}`).subscribe({
           next: (res) => {
             console.log('✅ ลบข้อมูลใน Database สำเร็จ:', res);
           },
@@ -384,6 +409,10 @@ export class SetUpSystem implements OnInit {
           this.showToast = false; 
           this.cdr.detectChanges();
 
+          if (this.isEmbedded) {
+            this.saved.emit();
+            return;
+          }
           this.router.navigate(['/data-coop'], {
             state: { 
               slotsData: this.slots, 

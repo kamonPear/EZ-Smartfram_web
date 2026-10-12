@@ -6,6 +6,7 @@ import { ApiService } from '../../services/api.service';
 import { Coop, deviceSummary } from '../../shared/coop-summary.util';
 import { CoopHoverCard } from '../../shared/coop-hover-card/coop-hover-card';
 import { deviceIconSrc } from '../../shared/device-icon.util';
+import { SiteSearchComponent } from '../../components/site-search/site-search.component';
 
 // หน้า "คอกไก่ทั้งหมด" - แยกออกมาจากหน้าแรก (Home_pages1) เพื่อให้การ์ดสถิติ
 // "คอกทั้งหมด"/"ไก่ทั้งหมด" กดแล้วไปเป็นลิสต์เต็มจอจริงๆ แทนที่จะแค่เลื่อนจอ
@@ -13,7 +14,7 @@ import { deviceIconSrc } from '../../shared/device-icon.util';
 @Component({
   selector: 'app-coop-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, CoopHoverCard],
+  imports: [CommonModule, RouterModule, CoopHoverCard, SiteSearchComponent],
   templateUrl: './Coop_list.html',
   styleUrls: ['./Coop_list.scss']
 })

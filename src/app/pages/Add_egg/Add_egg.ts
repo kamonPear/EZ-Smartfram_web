@@ -97,6 +97,35 @@ export class AddEggComponent {
     this.loadEggHistory();
   }
 
+  // ไก่ต้องอายุครบ 5 เดือน (นับจากวันเกิดไก่) ก่อนถึงจะบันทึกการเก็บไข่ได้ - ตรงกับ
+  // กฎฝั่ง backend (MinEggAgeMonths) ที่ปฏิเสธซ้ำอีกชั้น
+  readonly minEggAgeMonths = 5;
+
+  // วันแรกที่คอกที่เลือกอยู่บันทึกไข่ได้ (วันเกิดไก่ + 5 เดือน) null = ไม่รู้วันเกิด
+  get eggStartDate(): Date | null {
+    const coop = this.coops.find(c => c.coop_id === this.coopId);
+    if (!coop?.birthday) return null;
+    const birth = new Date(coop.birthday);
+    if (isNaN(birth.getTime())) return null;
+    const start = new Date(birth);
+    start.setMonth(start.getMonth() + this.minEggAgeMonths);
+    return start;
+  }
+
+  // เลือกคอก+วันที่แล้ว แต่ไก่ยังอายุไม่ถึง 5 เดือนในวันนั้น
+  get isTooYoung(): boolean {
+    const start = this.eggStartDate;
+    if (!start || !this.collectDate) return false;
+    return formatDateKey(this.collectDate) < formatDateKey(start);
+  }
+
+  get tooYoungMessage(): string {
+    const start = this.eggStartDate;
+    return start
+      ? `ไก่ยังอายุไม่ถึง ${this.minEggAgeMonths} เดือน เก็บไข่ได้ตั้งแต่วันที่ ${this.formatDate(start)}`
+      : '';
+  }
+
   get selectedCoopName(): string {
     const coop = this.coops.find(c => c.coop_id === this.coopId);
     return coop ? coop.name_coop : '';
@@ -470,6 +499,11 @@ export class AddEggComponent {
 
     if (!this.coopId || !this.collectDate) {
       this.flashToast('กรุณาเลือกคอกและวันที่เก็บไข่ให้ครบถ้วน', 'error');
+      return;
+    }
+
+    if (this.isTooYoung) {
+      this.flashToast(this.tooYoungMessage, 'error');
       return;
     }
 

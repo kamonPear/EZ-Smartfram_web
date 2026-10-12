@@ -78,6 +78,7 @@
             <span class="input-pill-value" [class.placeholder]="!collectDate">{{ collectDate ? formatDate(collectDate) : 'วันที่เก็บไข่' }}</span>
             <span class="input-pill-action">เลือกวันที่</span>
           </div>
+          <p class="field-warning" *ngIf="isTooYoung">{{ tooYoungMessage }}</p>
 
           <div class="input-pill">
             <span class="input-pill-icon">
@@ -104,7 +105,7 @@
         </svg>
         ยกเลิก
       </button>
-      <button class="btn-confirm" [disabled]="isSaving" (click)="saveEgg()">
+      <button class="btn-confirm" [disabled]="isSaving || isTooYoung" (click)="saveEgg()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="20 6 9 17 4 12"/>
         </svg>

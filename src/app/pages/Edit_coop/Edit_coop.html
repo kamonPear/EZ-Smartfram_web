@@ -103,7 +103,7 @@
               </svg>
             </div>
             <h2>อุปกรณ์ / เซนเซอร์</h2>
-            <button class="section-action-btn" (click)="goToSetup()">จัดการอุปกรณ์</button>
+            <button class="section-action-btn" (click)="openDeviceManager()">จัดการอุปกรณ์</button>
           </div>
 
           <div class="record-list" [class.is-scrollable]="devices.length > 4" *ngIf="devices.length > 0">
@@ -243,6 +243,19 @@
     (daySelected)="onDaySelected($event)"
     (closed)="closeCalendar()">
   </app-date-picker-calendar>
+
+  <!-- ป็อบอัพจัดการอุปกรณ์ - ลากอุปกรณ์วางลงผังคอก แล้วกดบันทึก -->
+  <div class="device-manager-overlay" *ngIf="showDeviceManager" (click)="closeDeviceManager()">
+    <div class="device-manager-modal" (click)="$event.stopPropagation()">
+      <div class="device-manager-header">
+        <h3>จัดการอุปกรณ์ <span *ngIf="coopName" class="device-manager-coop">({{ coopName }})</span></h3>
+        <button type="button" class="device-manager-close" (click)="closeDeviceManager()" aria-label="ปิด">&times;</button>
+      </div>
+      <div class="device-manager-body">
+        <app-set-up-system [embeddedCoopId]="coopId" (saved)="onDevicesSaved()"></app-set-up-system>
+      </div>
+    </div>
+  </div>
 
   <!-- Add/Edit health/vaccine/egg record modal -->
   <div class="custom-modal-overlay" *ngIf="openRecordModal">

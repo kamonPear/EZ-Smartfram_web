@@ -1,13 +1,18 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, Injector, Type } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
+import { RouterModule, ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { ApiService } from '../../services/api.service';
-import { Subscription, interval } from 'rxjs';
-import { Device, EggRecord, HealthRecord, VaccineRecord, formatThaiDate, formatChickenAge } from '../../shared/coop-summary.util';
+import { Subscription, interval, of } from 'rxjs';
+import { Device, EggRecord, HealthRecord, VaccineRecord, formatThaiDate, formatChickenAge, legacyGridPosition } from '../../shared/coop-summary.util';
 import { deviceIconSrc } from '../../shared/device-icon.util';
 import { DayMarker, loadCalendarMarkers, formatDateKey } from '../../shared/calendar-markers.util';
 import { HealthAppointmentService, HealthAppointment } from '../../services/health-appointment.service';
 import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picker-calendar';
+import { SetUpSystem } from '../Set_up_System/Set_up_System';
+import { DeviceStatusComponent } from '../Device_status/Device_status';
+import { AddEggComponent } from '../Add_egg/Add_egg';
+import { AddHealthComponent } from '../Add_health/Add_health';
+import { GiveVaccineComponent } from '../Give_vaccine/Give_vaccine';
 
 interface SlotPreview {
   id: number;
@@ -41,7 +46,7 @@ interface VaccineChecklistItem extends PendingVaccine {
 @Component({
   selector: 'app-data-coop',
   standalone: true,
-  imports: [CommonModule, RouterModule, DatePickerCalendar],
+  imports: [CommonModule, RouterModule, DatePickerCalendar, SetUpSystem, DeviceStatusComponent],
   templateUrl: './Data_coop.html',
   styleUrls: ['./Data_coop.scss']
 })
@@ -103,7 +108,8 @@ export class DataCoopComponent implements OnInit, OnDestroy {
     private router: Router,
     private api: ApiService,
     private healthAppointmentService: HealthAppointmentService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private injector: Injector
   ) {}
 
   ngOnInit() {
@@ -181,16 +187,25 @@ export class DataCoopComponent implements OnInit, OnDestroy {
       };
     });
 
-    for (const device of this.devicesList) {
-      const index = device.slot_index;
-      if (index != null && index >= 0 && index < 21) {
-        this.slots[index].device = device;
+    // เลขอุปกรณ์ (slot_index) เป็นเลขรันต่อคอก ไม่ใช่เลขช่องกริดอีกแล้ว - ใส่อุปกรณ์ลงช่องว่างเรียงตามเลข
+    // ตำแหน่งที่แสดงใช้พิกัดที่บันทึกไว้ (ถ้ายังไม่มีใช้ตำแหน่งกริดเดิมตามเลข)
+    [...this.devicesList]
+      .sort((a, b) => (a.slot_index ?? 0) - (b.slot_index ?? 0))
+      .slice(0, this.slots.length)
+      .forEach((device, i) => {
+        const slot = this.slots[i];
+        slot.device = device;
         if (device.pos_x != null && device.pos_y != null) {
-          this.slots[index].x = device.pos_x;
-          this.slots[index].y = device.pos_y;
+          slot.x = device.pos_x;
+          slot.y = device.pos_y;
+        } else {
+          const fallback = legacyGridPosition(device.slot_index);
+          if (fallback) {
+            slot.x = fallback.x;
+            slot.y = fallback.y;
+          }
         }
-      }
-    }
+      });
   }
 
   get filledSlotCount(): number {
@@ -529,23 +544,65 @@ export class DataCoopComponent implements OnInit, OnDestroy {
     return v.isCompleted ? 'is-done' : this.vaccineStatusClass(v);
   }
 
-  goToDeviceStatus() {
-    this.router.navigate(['/device-status'], { queryParams: { coop: this.selectedCoop } });
+  // ป็อบอัพซ้อนทับหน้านี้ - ฝังหน้าเดิม (ที่เคยเป็นปุ่มพาไปหน้าอื่น) ไว้ในกรอบ ไม่ต้องออกจากหน้า
+  // ข้อมูลคอก: จัดวางเซนเซอร์ / ดูสถานะอุปกรณ์ / บันทึกไข่ / ตรวจสุขภาพ / ให้วัคซีน
+  devicePopup: 'setup' | 'status' | 'egg' | 'health' | 'vaccine' | null = null;
+  popupInjector: Injector | null = null;
+
+  private static readonly POPUP_TITLES: Record<string, string> = {
+    setup: 'จัดวางเซนเซอร์',
+    status: 'สถานะอุปกรณ์',
+    egg: 'บันทึกไข่',
+    health: 'ตรวจสุขภาพ',
+    vaccine: 'ให้วัคซีน',
+  };
+
+  get popupTitle(): string {
+    return this.devicePopup ? DataCoopComponent.POPUP_TITLES[this.devicePopup] : '';
   }
 
-  goToSetup() {
-    this.router.navigate(['/setup'], { queryParams: { coop: this.selectedCoop } });
+  // หน้าบันทึกไข่/ตรวจสุขภาพ/ให้วัคซีนอ่านคอกจาก URL (?coop_id=) และตอนบันทึกเสร็จบางหน้าสั่ง
+  // Location.back() - ในป็อบอัพไม่มี URL ให้อ่านและห้ามถอยหน้าเบราว์เซอร์ จึงสร้าง injector
+  // ที่ส่งค่า coop_id ให้เอง และให้ back() = ปิดป็อบอัพแทน
+  get popupComponent(): Type<unknown> | null {
+    switch (this.devicePopup) {
+      case 'egg': return AddEggComponent;
+      case 'health': return AddHealthComponent;
+      case 'vaccine': return GiveVaccineComponent;
+      default: return null;
+    }
   }
 
-  goToHealthCheck() {
-    this.router.navigate(['/add-health'], { queryParams: { coop_id: this.selectedCoop } });
+  openDevicePopup(kind: 'setup' | 'status' | 'egg' | 'health' | 'vaccine') {
+    this.devicePopup = kind;
+    if (kind === 'egg' || kind === 'health' || kind === 'vaccine') {
+      const params = convertToParamMap({ coop_id: String(this.selectedCoop) });
+      const fakeRoute = { snapshot: { queryParamMap: params, queryParams: { coop_id: String(this.selectedCoop) } }, queryParamMap: of(params), queryParams: of({ coop_id: String(this.selectedCoop) }) };
+      const fakeLocation = { back: () => this.closeDevicePopup() };
+      this.popupInjector = Injector.create({
+        parent: this.injector,
+        providers: [
+          { provide: ActivatedRoute, useValue: fakeRoute as unknown as ActivatedRoute },
+          { provide: Location, useValue: fakeLocation as unknown as Location },
+        ],
+      });
+    } else {
+      this.popupInjector = null;
+    }
+    this.cdr.detectChanges();
   }
 
-  goToGiveVaccine() {
-    this.router.navigate(['/give-vaccine'], { queryParams: { coop_id: this.selectedCoop } });
+  // ปิดป็อบอัพแล้วโหลดข้อมูลคอกใหม่ (ไข่/สุขภาพ/วัคซีน/อุปกรณ์ที่เพิ่งบันทึกในป็อบอัพจะขึ้นในหน้านี้ทันที)
+  closeDevicePopup() {
+    this.devicePopup = null;
+    this.popupInjector = null;
+    this.fetchCoopDetails();
+    this.cdr.detectChanges();
   }
 
-  goToAddEgg() {
-    this.router.navigate(['/add-egg'], { queryParams: { coop_id: this.selectedCoop } });
+  // บันทึกผังอุปกรณ์แล้ว - ปิดป็อบอัพ (และโหลดข้อมูลคอกใหม่)
+  onDevicesSaved() {
+    this.closeDevicePopup();
   }
+
 }

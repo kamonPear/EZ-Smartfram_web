@@ -150,3 +150,11 @@ export function formatChickenAge(birthday: string | Date | undefined | null): st
   if (days > 0 || parts.length === 0) parts.push(`${days} วัน`);
   return parts.join(' ');
 }
+
+// ตำแหน่งสำรองของอุปกรณ์ที่ยังไม่เคยบันทึกพิกัดจริง (pos_x/pos_y เป็น null) - เดิมระบบวางตามเลขช่องบน
+// กริด 7x3 จึงคงตำแหน่งนั้นไว้ให้อุปกรณ์เก่า (ส่งเป็นเปอร์เซ็นต์ของแคนวาส) คืน null ถ้าไม่มีเลขอุปกรณ์
+export function legacyGridPosition(slotIndex: number | null | undefined): { x: number; y: number } | null {
+  if (slotIndex === null || slotIndex === undefined || isNaN(Number(slotIndex)) || Number(slotIndex) < 0) return null;
+  const n = Number(slotIndex);
+  return { x: (((n % 7) + 0.5) / 7) * 100, y: (((Math.floor(n / 7) % 3) + 0.5) / 3) * 100 };
+}

@@ -1,5 +1,5 @@
-<div class="device-status-container">
-  <header class="header-section">
+<div class="device-status-container" [class.is-embedded]="isEmbedded">
+  <header class="header-section" *ngIf="!isEmbedded">
     <div class="header-content">
       <div class="logo-container clickable-logo" routerLink="/home">
         <img src="assets/images/logo.png" alt="Farm Logo">
