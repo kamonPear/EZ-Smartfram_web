@@ -1,6 +1,6 @@
-<div class="setup-container">
+<div class="setup-container" [class.is-embedded]="isEmbedded">
   
-  <header class="header-section">
+  <header class="header-section" *ngIf="!isEmbedded">
     <div class="header-content">
       <div class="logo-container clickable-logo" routerLink="/">
         <img src="assets/images/logo.png" alt="Farm Logo">

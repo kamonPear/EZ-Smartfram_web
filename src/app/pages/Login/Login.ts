@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
+import { CONTACT_PHONES } from '../../shared/contact-info';
 
 // หน้าล็อกอิน - ไม่มีลิงก์ "สมัครสมาชิก" ตั้งใจ เพราะแอดมินเป็นคนสร้างบัญชีให้
 // ผู้ใช้เองนอกระบบ (ดู AUTH_CONTRACT.md) และไม่มีระบบรีเซ็ตรหัสผ่านเอง ผู้ใช้ที่
@@ -23,10 +24,7 @@ export class LoginComponent {
 
   // เบอร์ติดต่อแอดมินสำหรับผู้ใช้ที่ลืมรหัสผ่าน - กดลิงก์ใต้ฟอร์มแล้วค่อยโชว์
   showContact = false;
-  readonly contactPhones = [
-    { name: 'คุณแพร', phone: '062-457-3255' },
-    { name: 'คุณออย', phone: '082-661-8867' },
-  ];
+  readonly contactPhones = CONTACT_PHONES;
 
   isSubmitting = false;
   errorMessage = '';

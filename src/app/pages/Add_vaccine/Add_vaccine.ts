@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { SiteSearchComponent } from '../../components/site-search/site-search.component';
 
 interface MedicineSchedule {
   id: number;
@@ -34,7 +35,7 @@ interface MatchingCoopsResponse {
 @Component({
   selector: 'app-add-vaccine',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, SiteSearchComponent],
   templateUrl: './Add_vaccine.html',
   styleUrls: ['./Add_vaccine.scss']
 })

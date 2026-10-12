@@ -7,6 +7,7 @@ import { Device, EggRecord, HealthRecord, VaccineRecord, toBackendDateOnly, form
 import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picker-calendar';
 import { DayMarker, loadCalendarMarkers } from '../../shared/calendar-markers.util';
 import { deviceIconSrc } from '../../shared/device-icon.util';
+import { SetUpSystem } from '../Set_up_System/Set_up_System';
 
 type RecordKind = 'health' | 'vaccine' | 'egg';
 
@@ -15,7 +16,7 @@ const VACCINE_METHODS = ['พ่น', 'ฉีด', 'หยอดปาก', 'ผ
 @Component({
   selector: 'app-edit-coop',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, DatePickerCalendar],
+  imports: [CommonModule, RouterModule, FormsModule, DatePickerCalendar, SetUpSystem],
   templateUrl: './Edit_coop.html',
   styleUrls: ['./Edit_coop.scss']
 })
@@ -98,8 +99,24 @@ export class EditCoopComponent implements OnInit {
     });
   }
 
-  goToSetup() {
-    this.router.navigate(['/setup'], { queryParams: { coop: this.coopId } });
+  // ป็อบอัพจัดการอุปกรณ์ - ซ้อนทับหน้านี้ ใช้หน้าจัดวางระบบเซนเซอร์ตัวเดียวกับหน้า /setup
+  // ไม่ต้องออกจากหน้าแก้ไขคอก
+  showDeviceManager = false;
+
+  openDeviceManager() {
+    this.showDeviceManager = true;
+    this.cdr.detectChanges();
+  }
+
+  closeDeviceManager() {
+    this.showDeviceManager = false;
+    this.cdr.detectChanges();
+  }
+
+  // บันทึกผังอุปกรณ์แล้ว - ปิดป็อบอัพ และโหลดรายการอุปกรณ์ของคอกนี้ใหม่ให้ตรงกับที่เพิ่งบันทึก
+  onDevicesSaved() {
+    this.showDeviceManager = false;
+    this.loadCoop();
   }
 
   selectDateField(field: 'birth' | 'received') {

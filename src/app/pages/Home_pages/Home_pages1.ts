@@ -11,17 +11,58 @@ import { FarmNotification, NotificationsService } from '../../services/notificat
 import { DayMarker, loadCalendarMarkers } from '../../shared/calendar-markers.util';
 import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picker-calendar';
 import { FarmThresholdService } from '../../services/farm-threshold.service';
+import { SiteSearchComponent } from '../../components/site-search/site-search.component';
+
 
 type FarmShape = 'circle' | 'triangle' | 'square';
+
+// QR จำลอง (ยังไม่ใช่ลิงก์โหลดแอปจริง) - วาดโมดูลแบบ QR: ตัวจับตำแหน่ง 3 มุม + จุดสุ่มแบบคงที่ (ค่าเดิมทุกครั้ง)
+// พอมีลิงก์โหลดแอปจริงแล้ว ให้เปลี่ยนไปใช้รูป QR จริงแทน (ดู qrcodeImage ใน popup)
+const QR_SIZE = 25;
+
+function buildMockQrCells(): { x: number; y: number }[] {
+  const cells: { x: number; y: number }[] = [];
+  const inFinder = (x: number, y: number) => {
+    const corners = [[0, 0], [QR_SIZE - 7, 0], [0, QR_SIZE - 7]];
+    return corners.some(([cx, cy]) => x >= cx - 1 && x <= cx + 7 && y >= cy - 1 && y <= cy + 7);
+  };
+  let seed = 20260101;
+  const rand = () => {
+    seed = (seed * 1664525 + 1013904223) % 4294967296;
+    return seed / 4294967296;
+  };
+  for (let y = 0; y < QR_SIZE; y++) {
+    for (let x = 0; x < QR_SIZE; x++) {
+      if (inFinder(x, y)) continue;
+      if (rand() < 0.5) cells.push({ x, y });
+    }
+  }
+  // ตัวจับตำแหน่ง: กรอบนอก 7x7 + จุดกลาง 3x3 (ช่องว่าง 1 ช่องรอบๆ ถูกข้ามไว้แล้วข้างบน)
+  for (const [cx, cy] of [[0, 0], [QR_SIZE - 7, 0], [0, QR_SIZE - 7]]) {
+    for (let dy = 0; dy < 7; dy++) {
+      for (let dx = 0; dx < 7; dx++) {
+        const ring = dx === 0 || dx === 6 || dy === 0 || dy === 6;
+        const core = dx >= 2 && dx <= 4 && dy >= 2 && dy <= 4;
+        if (ring || core) cells.push({ x: cx + dx, y: cy + dy });
+      }
+    }
+  }
+  return cells;
+}
 
 @Component({
   selector: 'app-home-pages1',
   standalone: true,
-  imports: [CommonModule, RouterModule, DragDropModule, CoopHoverCard, DatePickerCalendar],
+  imports: [CommonModule, RouterModule, DragDropModule, CoopHoverCard, DatePickerCalendar, SiteSearchComponent],
   templateUrl: './Home_pages1.html',
   styleUrls: ['./Home_pages1.scss']
 })
 export class HomePages1 implements OnInit, OnDestroy {
+
+  // ป็อบอัพ QR โหลดแอป (จำลอง)
+  showAppQr = false;
+  readonly qrSize = QR_SIZE;
+  readonly qrCells = buildMockQrCells();
 
   deviceIconSrc = deviceIconSrc;
   coops: Coop[] = [];

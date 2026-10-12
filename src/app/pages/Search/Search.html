@@ -1,0 +1,49 @@
+<div class="search-container">
+  <header class="header-section">
+    <div class="header-content">
+      <div class="logo-container clickable-logo" routerLink="/">
+        <img src="assets/images/logo.png" alt="Farm Logo">
+      </div>
+      <div class="title-group">
+        <h1>ค้นหา</h1>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-search">
+    <app-search-box
+      [query]="query"
+      (queryChange)="onQueryChange($event)"
+      placeholder="ค้นหาคอก อุปกรณ์ ไข่ วัคซีน สุขภาพ อาหาร การแจ้งเตือน หรือเมนู">
+    </app-search-box>
+  </div>
+
+  <main class="content-area">
+    <p class="loading-hint" *ngIf="isLoading">กำลังโหลดข้อมูลสำหรับค้นหา...</p>
+
+    <ng-container *ngIf="!isLoading">
+      <p class="search-hint" *ngIf="!hasQuery">
+        พิมพ์เพื่อค้นหาได้ทุกอย่างบนเว็บ เช่น ชื่อคอก ชื่ออุปกรณ์ ชื่อวัคซีน วันที่ (เช่น 12/10/2569) หรือชื่อเมนู
+      </p>
+
+      <p class="search-summary" *ngIf="hasQuery && totalResults > 0">พบ {{ totalResults }} รายการ</p>
+      <p class="search-empty" *ngIf="hasQuery && totalResults === 0">ไม่พบผลการค้นหา "{{ query }}"</p>
+
+      <section class="result-group" *ngFor="let group of groups">
+        <h2 class="group-title">
+          {{ group.name }}
+          <span class="group-count">{{ group.items.length }}</span>
+        </h2>
+
+        <button type="button" class="result-row" *ngFor="let item of visibleItems(group)" (click)="open(item)">
+          <span class="result-title">{{ item.title }}</span>
+          <span class="result-subtitle" *ngIf="item.subtitle">{{ item.subtitle }}</span>
+        </button>
+
+        <button type="button" class="show-more-btn" *ngIf="hiddenCount(group) > 0" (click)="toggleGroup(group)">
+          {{ isExpanded(group) ? 'แสดงน้อยลง' : 'แสดงอีก ' + hiddenCount(group) + ' รายการ' }}
+        </button>
+      </section>
+    </ng-container>
+  </main>
+</div>

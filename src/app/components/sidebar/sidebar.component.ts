@@ -4,13 +4,14 @@ import { Router, RouterModule } from '@angular/router';
 import { ThemeService } from '../../services/theme.service';
 import { NotificationsService } from '../../services/notifications.service';
 import { AuthService } from '../../services/auth.service';
+import { CONTACT_PHONES, telHref } from '../../shared/contact-info';
 
 interface MenuItem {
   label: string;
   icon?: string;
   // ไม่มีรูป PNG ที่เหมาะกับเมนูนี้ในชุด assets ปัจจุบัน ใช้ไอคอน SVG ฝังตรงๆ
   // แทน (คล้ายไอคอนโหมดมืด/สว่างด้านล่าง) กันไม่ต้องเพิ่มไฟล์รูปใหม่
-  svgIcon?: 'health' | 'notification' | 'food' | 'device-status' | 'device-place';
+  svgIcon?: 'health' | 'notification' | 'food' | 'device-status' | 'device-place' | 'search' | 'backup';
   route?: string;
   action?: string;
 }
@@ -24,6 +25,15 @@ interface MenuItem {
 })
 export class SidebarComponent implements OnInit {
   isOpen = signal(false);
+
+  // ติดต่อเรา - กดแถว "ติดต่อเรา" ในเมนูเพื่อกางรายชื่อ/เบอร์โทร
+  readonly contactPhones = CONTACT_PHONES;
+  telHref = telHref;
+  showContact = signal(false);
+
+  toggleContact() {
+    this.showContact.update(v => !v);
+  }
   notificationCount = 0;
 
   constructor(
@@ -70,6 +80,7 @@ export class SidebarComponent implements OnInit {
   // เป็นครั้งคราวไว้ท้ายสุด
   menuItems: MenuItem[] = [
     { label: 'หน้าหลัก',                  icon: 'assets/images/logo.png',    route: '/home' },
+    { label: 'ค้นหา',                      svgIcon: 'search',                 route: '/search' },
     { label: 'การแจ้งเตือน',              svgIcon: 'notification',           route: '/notifications' },
     // ✅ เดิมลิงก์ไปหน้า "ระบบเซนเซอร์" ที่ให้เลือกคอกก่อนถึงจะเห็นอุปกรณ์ - เปลี่ยน
     // เป็นหน้าสรุปอุปกรณ์รวมทั้งฟาร์มเลย (ไม่ต้องเลือกคอก) ให้ตรงกับแอปมือถือ
@@ -98,6 +109,8 @@ export class SidebarComponent implements OnInit {
     // เลย - ตอนกดจากตรงนี้ตรงๆจึงเจอหน้าคนละเรื่องและพังเพราะไม่มี coop context
     // ชื่อเมนูก็เปลี่ยนให้ตรงกับหัวข้อของหน้าจริง ("ตั้งค่ามาตรฐานของฟาร์ม")
     { label: 'ตั้งค่ามาตรฐานของฟาร์ม',     icon: 'assets/images/temp.png',    route: '/farm-thresholds' },
+    // สำรองข้อมูลฟาร์มเก็บเป็นไฟล์ในเครื่อง - ทำเป็นครั้งคราว จึงอยู่ท้ายสุดของเมนู
+    { label: 'สำรองข้อมูล (Backup)',      svgIcon: 'backup',                 route: '/backup' },
   ];
 
   currentUsername(): string | null {

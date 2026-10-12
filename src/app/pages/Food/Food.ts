@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { ApiService } from '../../services/api.service';
+import { SiteSearchComponent } from '../../components/site-search/site-search.component';
 
 // ประเภทอาหารที่รองรับ - ผูกกับช่วงอายุไก่ที่กินอาหารประเภทนั้น (ตรงกับฝั่ง backend
 // models.FoodTypeSmallPellet/FoodTypeLargePellet เป๊ะ)
@@ -38,7 +39,7 @@ interface HistoryEntry {
 @Component({
   selector: 'app-food',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, SiteSearchComponent],
   templateUrl: './Food.html',
   styleUrls: ['./Food.scss']
 })

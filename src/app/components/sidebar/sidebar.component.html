@@ -45,6 +45,15 @@
           <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
           <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
         </svg>
+        <svg *ngIf="item.svgIcon === 'backup'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 16.2A4.5 4.5 0 0 0 17.5 8h-1.8A7 7 0 1 0 4 14.9"/>
+          <polyline points="8 17 12 21 16 17"/>
+          <line x1="12" y1="12" x2="12" y2="21"/>
+        </svg>
+        <svg *ngIf="item.svgIcon === 'search'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
         <svg *ngIf="item.svgIcon === 'food'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
           <path d="m3.3 7 8.7 5 8.7-5"/>
@@ -81,6 +90,24 @@
       <span class="theme-switch-knob"></span>
     </span>
   </button>
+
+  <!-- ติดต่อเรา: กดเพื่อกางรายชื่อ/เบอร์โทร (กดเบอร์เพื่อโทรบนมือถือได้) -->
+  <button class="theme-toggle-row contact-toggle-row" type="button" (click)="toggleContact()" [attr.aria-expanded]="showContact()">
+    <div class="nav-icon theme-toggle-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/>
+      </svg>
+    </div>
+    <span class="nav-label">ติดต่อเรา</span>
+    <span class="contact-chevron" [class.open]="showContact()">&#9662;</span>
+  </button>
+  <div class="contact-list" *ngIf="showContact()">
+    <p class="contact-hint">โทรติดต่อสอบถามการใช้งาน/ปัญหาระบบ</p>
+    <a class="contact-item" *ngFor="let c of contactPhones" [href]="telHref(c.phone)">
+      <span class="contact-name">{{ c.name }}</span>
+      <span class="contact-phone">{{ c.phone }}</span>
+    </a>
+  </div>
 
   <div class="sidebar-footer">
     <div class="sidebar-user" *ngIf="currentUsername() as username">

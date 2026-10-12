@@ -21,11 +21,12 @@
 
 .coop-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 40px;
 }
 
 .coop-card {
+  min-width: 0; /* ให้การ์ดหดได้ ไม่ถูกชื่อคอกยาวติดกันดันคอลัมน์กว้างกว่าคอลัมน์อื่น */
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -164,13 +165,13 @@
 /* ปรับแต่งสำหรับมือถือ */
 @media (max-width: 992px) {
   .coop-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 600px) {
   .coop-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

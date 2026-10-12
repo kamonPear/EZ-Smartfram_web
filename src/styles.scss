@@ -299,3 +299,118 @@ select {
     box-shadow: 0 10px 20px rgba(114, 213, 114, 0.5);
   }
 }
+
+/* --- ช่องค้นหาของแต่ละหน้า (app-search-box) --- */
+.page-search {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 0 16px;
+  margin: 0 auto 18px;
+  box-sizing: border-box;
+}
+
+.search-no-result {
+  text-align: center;
+  color: var(--text-secondary);
+  font-family: 'Kanit', sans-serif;
+  padding: 24px 0;
+}
+
+/* --- ป็อบอัพจัดการ/ดูอุปกรณ์ (ฝังหน้าจัดวางระบบเซนเซอร์หรือหน้าสถานะอุปกรณ์) ใช้ร่วมกันหลายหน้า --- */
+/* z-index ต่ำกว่า 1000 ของป็อบอัพยืนยัน/แก้ไขชนิดอุปกรณ์ที่อยู่ข้างใน เพื่อให้มันซ้อนขึ้นมาเหนือป็อบอัพนี้ได้ */
+.device-manager-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 950;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.device-manager-modal {
+  display: flex;
+  flex-direction: column;
+  width: min(1100px, 100%);
+  max-height: 100%;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.device-manager-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-subtle);
+
+  h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    color: var(--text-primary);
+  }
+
+  .device-manager-coop {
+    color: var(--accent-green-bright, #72d572);
+  }
+}
+
+.device-manager-close {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}
+
+.device-manager-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* หน้าเต็มที่ฝังในป็อบอัพ (บันทึกไข่ / ตรวจสุขภาพ / ให้วัคซีน): ซ่อนหัวหน้า (โลโก้+ชื่อหน้า) เพราะป็อบอัพมี
+   หัวของตัวเองแล้ว และยกเลิกความสูงเต็มจอ/พื้นหลังเต็มหน้าของหน้านั้นๆ */
+.device-manager-body {
+  .header-section { display: none !important; }
+  .add-egg-container,
+  .add-health-container,
+  .give-vaccine-container {
+    min-height: 0 !important;
+    background-color: transparent !important;
+  }
+}
+
+/* ป็อบอัพขนาดเล็ก (บันทึกไข่ / ตรวจสุขภาพ / ให้วัคซีน): แคบลง ตัดขอบ/พื้นหลังชั้นนอกของหน้าที่ฝังอยู่
+   ให้เนื้อหาพอดีกรอบ ไม่ต้องเลื่อนไกล */
+.device-manager-modal.is-compact {
+  width: min(560px, 100%);
+  max-height: min(86vh, 100%);
+
+  .device-manager-header { padding: 12px 20px; }
+  .device-manager-header h3 { font-size: 1.05rem; }
+
+  .device-manager-body .content-area {
+    margin: 0 !important;
+    padding: 14px 16px !important;
+    max-width: none !important;
+    background-color: transparent !important;
+    border-radius: 0 !important;
+  }
+}
+
+/* ป็อบอัพสถานะอุปกรณ์: กว้างขึ้นให้ผังอุปกรณ์ (ยืดตามความกว้าง) ดูโล่งขึ้น ตารางเซ็นเซอร์ข้างๆ ยังกว้างเท่าเดิม */
+.device-manager-modal.is-wide {
+  width: min(1500px, 100%);
+}

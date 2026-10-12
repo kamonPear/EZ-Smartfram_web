@@ -1,9 +1,9 @@
-import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription, interval } from 'rxjs';
 import { ApiService } from '../../services/api.service';
-import { Device, isActuatorDevice } from '../../shared/coop-summary.util';
+import { Device, isActuatorDevice, legacyGridPosition } from '../../shared/coop-summary.util';
 import { deviceIconSrc } from '../../shared/device-icon.util';
 
 interface SlotData {
@@ -26,6 +26,13 @@ export class DeviceStatusComponent implements OnInit, OnDestroy {
 
   deviceIconSrc = deviceIconSrc;
 
+  // ใช้ฝังในป็อบอัพของหน้าข้อมูลคอกไก่ - ส่ง id คอกมาตรงๆ แทนการอ่านจาก URL
+  @Input() embeddedCoopId: string | number | null = null;
+
+  get isEmbedded(): boolean {
+    return this.embeddedCoopId !== null && this.embeddedCoopId !== undefined;
+  }
+
   coopId: string | null = null;
   coopName: string | null = null;
   isLoading = true;
@@ -46,7 +53,7 @@ export class DeviceStatusComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.coopId = this.route.snapshot.queryParamMap.get('coop');
+    this.coopId = this.isEmbedded ? String(this.embeddedCoopId) : this.route.snapshot.queryParamMap.get('coop');
     if (!this.coopId) {
       alert('ไม่พบคอกที่ต้องการดูสถานะอุปกรณ์');
       this.router.navigate(['/home']);
@@ -100,17 +107,26 @@ export class DeviceStatusComponent implements OnInit, OnDestroy {
       };
     });
 
-    this.devices.forEach(device => {
-      const index = device.slot_index;
-      if (index !== undefined && index !== null && index >= 0 && index < 21) {
-        this.slots[index].device = { name: device.name, icon: device.icon, label: this.labels.get(device) ?? device.name };
+    // เลขอุปกรณ์ (slot_index) เป็นเลขรันต่อคอก ไม่ใช่เลขช่องกริดอีกแล้ว - ใส่อุปกรณ์ลงช่องว่างเรียงตามเลข
+    // ตำแหน่งที่แสดงใช้พิกัดที่บันทึกไว้ (ถ้ายังไม่มีใช้ตำแหน่งกริดเดิมตามเลข)
+    [...this.devices]
+      .sort((a, b) => (a.slot_index ?? 0) - (b.slot_index ?? 0))
+      .slice(0, this.slots.length)
+      .forEach((device, i) => {
+        const slot = this.slots[i];
+        slot.device = { name: device.name, icon: device.icon, label: this.labels.get(device) ?? device.name };
         if (device.pos_x != null && device.pos_y != null) {
-          this.slots[index].x = device.pos_x;
-          this.slots[index].y = device.pos_y;
+          slot.x = device.pos_x;
+          slot.y = device.pos_y;
+        } else {
+          const fallback = legacyGridPosition(device.slot_index);
+          if (fallback) {
+            slot.x = fallback.x;
+            slot.y = fallback.y;
+          }
         }
-        this.slots[index].status = device.current_status === 'Online' ? 'normal' : 'offline';
-      }
-    });
+        slot.status = device.current_status === 'Online' ? 'normal' : 'offline';
+      });
   }
 
   // ถ้าคอกมีอุปกรณ์ชื่อเดียวกันหลายตัว ให้ต่อท้ายด้วยลำดับ (#1, #2, ...) ตามลำดับ

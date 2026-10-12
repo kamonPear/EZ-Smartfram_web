@@ -7,6 +7,7 @@ import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picke
 import { DayMarker, formatDateKey, loadCalendarMarkers } from '../../shared/calendar-markers.util';
 import { HealthAppointmentService, HealthAppointment } from '../../services/health-appointment.service';
 import { Coop } from '../../shared/coop-summary.util';
+import { SiteSearchComponent } from '../../components/site-search/site-search.component';
 
 type Mode = 'auto' | 'manual';
 
@@ -40,7 +41,7 @@ interface CoopAppointmentItem {
 @Component({
   selector: 'app-health-appointments',
   standalone: true,
-  imports: [CommonModule, RouterModule, DatePickerCalendar],
+  imports: [CommonModule, RouterModule, DatePickerCalendar, SiteSearchComponent],
   templateUrl: './Health_appointments.html',
   styleUrls: ['./Health_appointments.scss']
 })

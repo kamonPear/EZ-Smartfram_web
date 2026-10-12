@@ -1,0 +1,106 @@
+.search-container {
+  font-family: 'Kanit', sans-serif;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-app);
+}
+
+.content-area {
+  background-color: var(--bg-panel);
+  margin: 30px auto;
+  padding: 30px 40px;
+  border-radius: 20px;
+  max-width: 760px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .content-area {
+    margin: 16px;
+    padding: 20px 16px;
+  }
+}
+
+.loading-hint,
+.search-hint,
+.search-empty {
+  text-align: center;
+  color: rgba(var(--fg-rgb), 0.55);
+  padding: 24px 0;
+  margin: 0;
+}
+
+.search-summary {
+  margin: 0 0 14px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.result-group {
+  margin-bottom: 22px;
+}
+
+.group-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  padding-left: 10px;
+  border-left: 4px solid var(--accent-green-bright, #72d572);
+}
+
+.group-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background-color: rgba(var(--fg-rgb), 0.1);
+  color: var(--text-secondary);
+}
+
+.result-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text-primary);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    border-color: var(--accent-green-bright, #72d572);
+    transform: translateY(-1px);
+  }
+
+  .result-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  .result-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    overflow-wrap: anywhere;
+  }
+}
+
+.show-more-btn {
+  background: transparent;
+  border: none;
+  color: var(--accent-green-bright, #72d572);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 2px;
+}

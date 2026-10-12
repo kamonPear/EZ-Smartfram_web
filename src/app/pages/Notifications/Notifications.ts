@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { FarmNotification, NotificationsService } from '../../services/notifications.service';
+import { SiteSearchComponent } from '../../components/site-search/site-search.component';
 
 // รวมการแจ้งเตือนทั้งฟาร์มไว้ที่เดียว (อาหารใกล้หมด/หมด, ใกล้ถึงกำหนดวัคซีน,
 // ใกล้ถึงกำหนดตรวจสุขภาพก่อนให้วัคซีน) - พอร์ตตรรกะเดียวกับ Notifications_.dart
@@ -10,7 +11,7 @@ import { FarmNotification, NotificationsService } from '../../services/notificat
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, SiteSearchComponent],
   templateUrl: './Notifications.html',
   styleUrls: ['./Notifications.scss']
 })

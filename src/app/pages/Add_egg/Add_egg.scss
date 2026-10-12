@@ -761,3 +761,10 @@
     padding: 24px 18px;
   }
 }
+
+.field-warning {
+  color: var(--danger-grad-end, #e53935);
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin: -6px 0 0 4px;
+}

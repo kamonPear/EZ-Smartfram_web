@@ -10,6 +10,10 @@
     </div>
   </header>
 
+  <div class="page-search">
+    <app-site-search></app-site-search>
+  </div>
+
   <main class="content-area">
 
     <div class="summary-bar" *ngIf="!isLoading">
@@ -43,7 +47,7 @@
             <span class="device-dot" [class.online]="isOnline(d)"></span>
             <div class="device-row-info">
               <span class="device-row-coop">{{ d.name_coop }}</span>
-              <span class="device-row-slot" *ngIf="d.slot_index != null">ช่องที่ {{ d.slot_index }}</span>
+              <span class="device-row-slot" *ngIf="d.slot_index != null">หมายเลข {{ d.slot_index }}</span>
             </div>
             <span class="device-row-status" [class.online]="isOnline(d)">{{ isOnline(d) ? 'ทำงานอยู่' : 'ออฟไลน์' }}</span>
           </div>
