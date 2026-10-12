@@ -50,6 +50,11 @@ export class HealthAppointmentsComponent {
   appointments: Appointment[] = [];
 
   coops: Coop[] = [];
+  // แยกต่างหากจาก isLoading (ของโหมดอัตโนมัติ) - โหมดกำหนดเองเดิมไม่มีสถานะโหลด
+  // เลย ทำให้ขึ้น "ยังไม่มีคอกไก่ในระบบ" ทันทีตั้งแต่เพิ่งเปิดหน้า ก่อนที่ /coops
+  // จะโหลดเสร็จด้วยซ้ำ (เห็นชัดเวลา backend เพิ่งตื่นจาก Render แพลนฟรี ใช้เวลา
+  // 30-50 วินาที) ทำให้ดูเหมือนไม่มีคอกทั้งที่จริงมีอยู่ แค่ยังโหลดไม่เสร็จ
+  isLoadingCoops = true;
   manualCoopId: number | null = null;
   isCalendarOpen = false;
   // รายการที่กำลังถูกกด "เปลี่ยนวันที่" อยู่ (เปิดปฏิทินค้างรออยู่) - null แปลว่า
@@ -89,10 +94,12 @@ export class HealthAppointmentsComponent {
     this.api.get<Coop[]>('/coops').subscribe({
       next: (coops) => {
         this.coops = coops || [];
+        this.isLoadingCoops = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('โหลดรายชื่อคอกไม่สำเร็จ:', err);
+        this.isLoadingCoops = false;
         this.cdr.detectChanges();
       }
     });
