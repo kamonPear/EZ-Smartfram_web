@@ -23,8 +23,6 @@ import { FoodComponent } from './pages/Food/Food';
 import { AddFoodComponent } from './pages/Add_food/Add_food';
 import { FoodTypeSummaryComponent } from './pages/Food_type_summary/Food_type_summary';
 import { CoopListComponent } from './pages/Coop_list/Coop_list';
-import { SearchPageComponent } from './pages/Search/Search';
-import { BackupPageComponent } from './pages/Backup/Backup';
 import { AddDeviceTypeComponent } from './pages/Add_device_type/Add_device_type';
 import { authGuard } from './services/auth.guard';
 
@@ -69,9 +67,11 @@ export const routes: Routes = [
 
       { path: 'device-summary', component: DeviceSummaryComponent },
 
-      { path: 'search', component: SearchPageComponent },
+      // โหลดแบบ lazy (แยกไฟล์ ดึงเมื่อเปิดหน้านั้นเท่านั้น) - หน้า Backup มีตัวสร้างไฟล์ SQL/Excel/PDF ที่ใหญ่
+      // ไม่ควรรวมอยู่ในไฟล์หลักที่ทุกคนต้องโหลดตั้งแต่เปิดเว็บ (ไฟล์หลักเกินงบ 1MB ของ production build)
+      { path: 'search', loadComponent: () => import('./pages/Search/Search').then((m) => m.SearchPageComponent) },
 
-      { path: 'backup', component: BackupPageComponent },
+      { path: 'backup', loadComponent: () => import('./pages/Backup/Backup').then((m) => m.BackupPageComponent) },
 
       { path: 'notifications', component: NotificationsComponent },
 
