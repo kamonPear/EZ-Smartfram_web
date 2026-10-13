@@ -176,6 +176,16 @@
   // หลายรอบต่อวินาที ถ้า transition ครอบคลุม transform ด้วย มันจะมี easing หน่วง
   // ตามหลังเมาส์แทนที่จะขยับตามจริงทันที ลากแล้วเลยรู้สึกไม่สมูท/หน่วงเป็นยาง
   transition: border-color 0.2s ease, background-color 0.2s ease;
+  // ให้การ์ดหดได้และตัดชื่อคอกที่ยาวเป็น "..." แทนการล้นทะลุกรอบ (ชื่อเต็มดูได้เมื่อเอาเมาส์ชี้)
+  min-width: 0;
+
+  > span {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
   .palette-icon {
     width: 42px;
@@ -304,6 +314,10 @@
       padding: 2px 8px;
       border-radius: 10px;
       white-space: nowrap;
+      // ชื่อคอกยาวติดกันไม่ให้ป้ายยืดล้นผัง - ตัดเป็น "..."
+      max-width: 130px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .unplace-btn {

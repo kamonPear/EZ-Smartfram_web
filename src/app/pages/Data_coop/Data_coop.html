@@ -6,7 +6,7 @@
         <img src="assets/images/logo.png" alt="Farm Logo">
       </div>
       <div class="title-group">
-        <h1>ข้อมูลคอกไก่ <span *ngIf="selectedCoop" style="color: #4CAF50;">({{ selectedCoopName || ('คอกที่ ' + selectedCoop) }})</span></h1>
+        <h1>ข้อมูลคอกไก่ <span *ngIf="selectedCoopName" style="color: #4CAF50;">({{ selectedCoopName }})</span></h1>
       </div>
     </div>
   </header>
@@ -43,7 +43,7 @@
           >
             <img *ngIf="slot.device" [src]="deviceIconSrc(slot.device)" [alt]="slot.device.name">
             <span class="mini-slot-tooltip" *ngIf="hoveredSlotId === slot.id">
-              {{ slot.device ? (slot.device.name + (slot.device.current_status === 'Online' ? ' · ออนไลน์' : ' · ออฟไลน์')) : 'วางอุปกรณ์เพิ่มได้ตรงนี้' }}
+              {{ slot.device ? (slot.device.name + (slot.device.slot_index != null ? ' · หมายเลข ' + slot.device.slot_index : '') + (slot.device.current_status === 'Online' ? ' · ออนไลน์' : ' · ออฟไลน์')) : 'วางอุปกรณ์เพิ่มได้ตรงนี้' }}
             </span>
           </div>
           <span class="mini-zone mini-zone--door">ประตู</span>

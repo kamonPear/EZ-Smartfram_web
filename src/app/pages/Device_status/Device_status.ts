@@ -8,7 +8,7 @@ import { deviceIconSrc } from '../../shared/device-icon.util';
 
 interface SlotData {
   id: number;
-  device: { name: string; icon: string; label: string } | null;
+  device: { name: string; icon: string; label: string; slot_index?: number } | null;
   status: 'normal' | 'offline';
   showStatus?: boolean;
   x: number; // ตำแหน่งแนวนอน (%) บนแคนวาส คำนวณจากช่อง 7x3 ให้ตรงกับหน้าจัดวางระบบ
@@ -114,7 +114,7 @@ export class DeviceStatusComponent implements OnInit, OnDestroy {
       .slice(0, this.slots.length)
       .forEach((device, i) => {
         const slot = this.slots[i];
-        slot.device = { name: device.name, icon: device.icon, label: this.labels.get(device) ?? device.name };
+        slot.device = { name: device.name, icon: device.icon, label: this.labels.get(device) ?? device.name, slot_index: device.slot_index };
         if (device.pos_x != null && device.pos_y != null) {
           slot.x = device.pos_x;
           slot.y = device.pos_y;

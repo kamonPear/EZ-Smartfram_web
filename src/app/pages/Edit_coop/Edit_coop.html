@@ -235,15 +235,6 @@
     </ng-container>
   </main>
 
-  <app-date-picker-calendar
-    *ngIf="activeField"
-    [title]="activeField === 'birth' ? 'วันเกิดไก่' : activeField === 'received' ? 'วันที่รับเข้าเลี้ยง' : 'วันที่บันทึก'"
-    [selectedDate]="activeFieldDate"
-    [markers]="dayMarkers"
-    (daySelected)="onDaySelected($event)"
-    (closed)="closeCalendar()">
-  </app-date-picker-calendar>
-
   <!-- ป็อบอัพจัดการอุปกรณ์ - ลากอุปกรณ์วางลงผังคอก แล้วกดบันทึก -->
   <div class="device-manager-overlay" *ngIf="showDeviceManager" (click)="closeDeviceManager()">
     <div class="device-manager-modal" (click)="$event.stopPropagation()">
@@ -267,58 +258,90 @@
 
       <div class="field-stack modal-field-stack">
         <ng-container *ngIf="openRecordModal === 'health'">
-          <div class="input-pill">
-            <input type="number" [(ngModel)]="healthForm.healthy" placeholder="จำนวนไก่สุขภาพดี" min="0">
-            <span class="input-pill-suffix">ตัว</span>
+          <div class="modal-field">
+            <label class="modal-field-label">จำนวนไก่สุขภาพดี</label>
+            <div class="input-pill">
+              <input type="number" [(ngModel)]="healthForm.healthy" placeholder="จำนวนไก่สุขภาพดี" min="0">
+              <span class="input-pill-suffix">ตัว</span>
+            </div>
           </div>
-          <div class="input-pill">
-            <input type="number" [(ngModel)]="healthForm.poorHealth" placeholder="จำนวนไก่ป่วย" min="0">
-            <span class="input-pill-suffix">ตัว</span>
+          <div class="modal-field">
+            <label class="modal-field-label">จำนวนไก่ป่วย</label>
+            <div class="input-pill">
+              <input type="number" [(ngModel)]="healthForm.poorHealth" placeholder="จำนวนไก่ป่วย" min="0">
+              <span class="input-pill-suffix">ตัว</span>
+            </div>
           </div>
-          <div class="input-pill">
-            <input type="text" [(ngModel)]="healthForm.note" placeholder="หมายเหตุ (ถ้ามี)">
+          <div class="modal-field">
+            <label class="modal-field-label">หมายเหตุ</label>
+            <div class="input-pill">
+              <input type="text" [(ngModel)]="healthForm.note" placeholder="หมายเหตุ (ถ้ามี)">
+            </div>
           </div>
         </ng-container>
 
         <ng-container *ngIf="openRecordModal === 'vaccine'">
-          <div class="input-pill">
-            <input type="text" [(ngModel)]="vaccineForm.name" placeholder="ชื่อวัคซีน">
+          <div class="modal-field">
+            <label class="modal-field-label">ชื่อวัคซีน/ยา</label>
+            <div class="input-pill">
+              <input type="text" [(ngModel)]="vaccineForm.name" placeholder="ชื่อวัคซีน">
+            </div>
           </div>
-          <div class="input-pill">
-            <select class="input-pill-select" [(ngModel)]="vaccineForm.method">
-              <option value="" disabled>เลือกวิธีให้ยา</option>
-              <option *ngFor="let m of vaccineMethods" [value]="m">{{ m }}</option>
-            </select>
+          <div class="modal-field">
+            <label class="modal-field-label">วิธีให้ยา</label>
+            <div class="input-pill">
+              <select class="input-pill-select" [(ngModel)]="vaccineForm.method">
+                <option value="" disabled>เลือกวิธีให้ยา</option>
+                <!-- ค่าเดิมที่บันทึกไว้แต่ไม่อยู่ในรายการวิธีมาตรฐาน (เช่น "-") - แสดงตามที่บันทึกไว้ ไม่ให้ช่องว่างเปล่า -->
+                <option *ngIf="vaccineForm.method && !vaccineMethods.includes(vaccineForm.method)" [value]="vaccineForm.method">{{ vaccineForm.method }}</option>
+                <option *ngFor="let m of vaccineMethods" [value]="m">{{ m }}</option>
+              </select>
+            </div>
           </div>
-          <div class="input-pill">
-            <input type="text" [(ngModel)]="vaccineForm.recommendedAge" placeholder="ช่วงอายุที่แนะนำ (ถ้ามี)">
+          <div class="modal-field">
+            <label class="modal-field-label">ช่วงอายุที่แนะนำ</label>
+            <div class="input-pill">
+              <input type="text" [(ngModel)]="vaccineForm.recommendedAge" placeholder="ช่วงอายุที่แนะนำ (ถ้ามี)">
+            </div>
           </div>
-          <div class="input-pill">
-            <input type="text" [(ngModel)]="vaccineForm.note" placeholder="หมายเหตุ (ถ้ามี)">
+          <div class="modal-field">
+            <label class="modal-field-label">หมายเหตุ</label>
+            <div class="input-pill">
+              <input type="text" [(ngModel)]="vaccineForm.note" placeholder="หมายเหตุ (ถ้ามี)">
+            </div>
           </div>
         </ng-container>
 
         <ng-container *ngIf="openRecordModal === 'egg'">
-          <div class="input-pill">
-            <input type="number" [(ngModel)]="eggForm.numberEgg" placeholder="จำนวนไข่ (เว้นว่าง = คงค่าเดิม)" min="1">
-            <span class="input-pill-suffix">ฟอง</span>
+          <div class="modal-field">
+            <label class="modal-field-label">จำนวนไข่</label>
+            <div class="input-pill">
+              <input type="number" [(ngModel)]="eggForm.numberEgg" placeholder="จำนวนไข่ (เว้นว่าง = คงค่าเดิม)" min="1">
+              <span class="input-pill-suffix">ฟอง</span>
+            </div>
           </div>
-          <div class="input-pill">
-            <input type="text" [(ngModel)]="eggForm.note" placeholder="หมายเหตุ (ถ้ามี)">
+          <div class="modal-field">
+            <label class="modal-field-label">หมายเหตุ</label>
+            <div class="input-pill">
+              <input type="text" [(ngModel)]="eggForm.note" placeholder="หมายเหตุ (ถ้ามี)">
+            </div>
           </div>
         </ng-container>
 
-        <div class="input-pill input-pill-clickable" [class.active]="activeField === 'record'" (click)="openRecordCalendar()">
-          <span class="input-pill-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="17" rx="2"/>
-              <line x1="3" y1="9" x2="21" y2="9"/>
-              <line x1="8" y1="2" x2="8" y2="6"/>
-              <line x1="16" y1="2" x2="16" y2="6"/>
-            </svg>
-          </span>
-          <span class="input-pill-value" [class.placeholder]="!recordDate">{{ recordDate ? formatDate(recordDate) : 'วันที่บันทึก' }}</span>
-          <span class="input-pill-action">เลือกวันที่</span>
+        <div class="modal-field">
+          <label class="modal-field-label">วันที่บันทึก</label>
+          <div class="input-pill input-pill-clickable" [class.active]="activeField === 'record'" (click)="openRecordCalendar()">
+            <span class="input-pill-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="17" rx="2"/>
+                <line x1="3" y1="9" x2="21" y2="9"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+              </svg>
+            </span>
+            <span class="input-pill-value" [class.placeholder]="!recordDate">{{ recordDate ? formatDate(recordDate) : 'วันที่บันทึก' }}</span>
+            <span class="input-pill-action">เลือกวันที่</span>
+          </div>
         </div>
       </div>
 
@@ -330,4 +353,15 @@
       </div>
     </div>
   </div>
+  <!-- ปฏิทินเลือกวันที่ - ต้องอยู่หลังหน้าต่างแก้ไขบันทึกเสมอ (ชั้นเดียวกัน z-index 1000 ตัวที่มาทีหลังอยู่ด้านบน)
+       ไม่งั้นกด "เลือกวันที่" ในหน้าต่างแก้ไขแล้วปฏิทินไปโผล่ซ่อนอยู่ด้านหลัง -->
+  <app-date-picker-calendar
+    *ngIf="activeField"
+    [title]="activeField === 'birth' ? 'วันเกิดไก่' : activeField === 'received' ? 'วันที่รับเข้าเลี้ยง' : 'วันที่บันทึก'"
+    [selectedDate]="activeFieldDate"
+    [markers]="dayMarkers"
+    (daySelected)="onDaySelected($event)"
+    (closed)="closeCalendar()">
+  </app-date-picker-calendar>
+
 </div>

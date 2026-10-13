@@ -60,7 +60,7 @@
           <div class="palette-icon">
             <img src="assets/images/coopchicken.png" [alt]="coop.name_coop">
           </div>
-          <span>{{ coop.name_coop || ('คอกที่ ' + coop.coop_id) }}</span>
+          <span [attr.title]="coop.name_coop || null">{{ coop.name_coop || ('คอกที่ ' + coop.coop_id) }}</span>
 
           <div class="hover-anchor" *ngIf="hoveredCoopId === coop.coop_id">
             <app-coop-hover-card [coop]="coop"></app-coop-hover-card>
