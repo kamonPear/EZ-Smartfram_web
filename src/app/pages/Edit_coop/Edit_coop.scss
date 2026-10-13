@@ -456,3 +456,17 @@
     }
   }
 }
+
+/* --- ป้ายชื่อช่องในหน้าต่างแก้ไขบันทึก (สุขภาพ/วัคซีน/ไข่) --- */
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-field-label {
+  padding-left: 8px;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+}

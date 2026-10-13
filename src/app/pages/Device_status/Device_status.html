@@ -47,7 +47,7 @@
         <span class="slot-text">{{ slot.device!.label }}</span>
 
         <div class="status-tooltip" *ngIf="slot.showStatus">
-          สถานะ: <span [ngClass]="slot.status + '-text'">{{ getStatusLabel(slot.status) }}</span>
+          <ng-container *ngIf="slot.device?.slot_index != null">หมายเลข {{ slot.device?.slot_index }} · </ng-container>สถานะ: <span [ngClass]="slot.status + '-text'">{{ getStatusLabel(slot.status) }}</span>
         </div>
       </div>
 
