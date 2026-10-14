@@ -338,7 +338,7 @@
     </section>
   </main>
 
-  <!-- ป็อบอัพ QR โหลดแอป (QR จำลอง) -->
+  <!-- ป็อบอัพ QR โหลดแอป -->
   <div class="qr-popup-overlay" *ngIf="showAppQr" (click)="showAppQr = false">
     <div class="qr-popup" (click)="$event.stopPropagation()">
       <button type="button" class="qr-popup-close" (click)="showAppQr = false" aria-label="ปิด">&times;</button>
@@ -346,13 +346,8 @@
       <p class="qr-popup-sub">สแกน QR Code ด้วยมือถือเพื่อโหลดแอป</p>
 
       <div class="qr-box">
-        <svg [attr.viewBox]="'-2 -2 ' + (qrSize + 4) + ' ' + (qrSize + 4)" shape-rendering="crispEdges" role="img" aria-label="QR Code จำลองสำหรับโหลดแอป">
-          <rect [attr.x]="-2" [attr.y]="-2" [attr.width]="qrSize + 4" [attr.height]="qrSize + 4" fill="#ffffff"/>
-          <rect *ngFor="let c of qrCells" [attr.x]="c.x" [attr.y]="c.y" width="1" height="1" fill="#111111"/>
-        </svg>
+        <img src="assets/images/ezsmartfarm_qr.png" alt="QR Code สำหรับโหลดแอป EZ-SmartFarm">
       </div>
-
-      <p class="qr-popup-note">QR จำลอง - ยังไม่ใช่ลิงก์โหลดแอปจริง</p>
     </div>
   </div>
 
