@@ -1279,17 +1279,11 @@
     background: #ffffff;
     border-radius: 12px;
 
-    svg {
+    img {
       display: block;
       width: 100%;
       height: auto;
     }
-  }
-
-  .qr-popup-note {
-    margin: 14px 0 0;
-    color: var(--text-secondary);
-    font-size: 0.8rem;
   }
 
   .qr-popup-close {
