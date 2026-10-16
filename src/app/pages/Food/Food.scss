@@ -569,3 +569,65 @@
   from { opacity: 0; transform: scale(0.94) translateY(6px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
+
+.age-rule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 46vh;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  padding-right: 2px;
+}
+
+.age-rule-row {
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.age-rule-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+
+  select {
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    color: var(--text-title);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.92rem;
+
+    &:focus { outline: none; border-color: #F5A623; }
+  }
+}
+
+.age-rule-remove {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:hover { color: #e5484d; border-color: #e5484d; }
+}
+
+.age-rule-add {
+  width: 100%;
+  padding: 10px;
+  border-radius: 50px;
+  border: 1px dashed #F5A623;
+  background: rgba(245, 166, 35, 0.08);
+  color: #F5A623;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
