@@ -109,6 +109,16 @@ export class FoodTypeSummaryComponent {
     return row ? row.kg_given : null;
   }
 
+  // ผลรวมยอดล่าสุดของทุกคอกในประเภทที่เลือก (คอกที่ยังไม่มีประวัตินับเป็น 0)
+  get totalActualKg(): number {
+    return this.coopsForSelectedType.reduce(
+      (sum, c) => sum + (this.actualKgFor(c.coop_id, this.selectedFoodType) ?? 0), 0);
+  }
+
+  get totalChickens(): number {
+    return this.coopsForSelectedType.reduce((sum, c) => sum + (c.amount || 0), 0);
+  }
+
   selectFoodType(type: string) {
     this.selectedFoodType = type;
   }
