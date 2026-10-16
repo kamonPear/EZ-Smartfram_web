@@ -14,7 +14,9 @@ function ageRangeText(min: number, max: number): string {
 }
 
 export function foodTypeAgeHint(foodType: string | null, cfg: FoodAgeConfig | null = null): string {
-  const c = cfg ?? { small_min_weeks: 0, small_max_weeks: 14, large_min_weeks: 14, large_max_weeks: 0 };
+  // ยังไม่ได้ตั้งเงื่อนไข -> ไม่โชว์ช่วงอายุตายตัว
+  if (!cfg || !cfg.configured) return 'เลือกประเภทอาหารให้ตรงกับช่วงอายุไก่ (ตั้งช่วงอายุได้ที่หน้าคลังอาหาร)';
+  const c = cfg;
   if (foodType === FOOD_TYPE_SMALL) return 'สำหรับไก่อายุ ' + ageRangeText(c.small_min_weeks, c.small_max_weeks);
   if (foodType === FOOD_TYPE_LARGE) return 'สำหรับไก่อายุ ' + ageRangeText(c.large_min_weeks, c.large_max_weeks);
   return 'เลือกประเภทอาหารให้ตรงกับช่วงอายุไก่';
