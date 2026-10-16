@@ -213,6 +213,12 @@
             </div>
             <h2>เข้าสต็อกอาหาร</h2>
           </div>
+          <button type="button" class="icon-btn" title="ตั้งเงื่อนไขอายุไก่กับประเภทอาหาร" aria-label="ตั้งเงื่อนไขอายุไก่กับประเภทอาหาร" (click)="openAgeConfig()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
+            </svg>
+          </button>
         </div>
 
         <button type="button" class="primary-action-btn" routerLink="/add-food">
@@ -226,6 +232,46 @@
       </div>
     </ng-container>
   </main>
+
+  <!-- ป็อบอัพตั้งเงื่อนไขช่วงอายุไก่ -> ประเภทอาหาร -->
+  <div class="custom-modal-overlay" *ngIf="showAgeConfig" (click)="closeAgeConfig()">
+    <div class="custom-modal" (click)="$event.stopPropagation()">
+      <h3>เงื่อนไขอายุไก่กับประเภทอาหาร</h3>
+      <p class="modal-hint">กำหนดว่าไก่อายุกี่สัปดาห์ (นับจากวันเกิดของแต่ละคอก) ให้กินอาหารประเภทไหน ช่วงอายุนับรวมค่าเริ่มต้น ไม่รวมค่าสิ้นสุด</p>
+
+      <div class="age-config-group">
+        <span class="age-config-label">{{ FOOD_TYPE_SMALL }}</span>
+        <div class="age-config-inputs">
+          <span>อายุ</span>
+          <input type="number" min="0" step="1" [(ngModel)]="ageForm.small_min_weeks">
+          <span>ถึง</span>
+          <input type="number" min="1" step="1" [(ngModel)]="ageForm.small_max_weeks">
+          <span>สัปดาห์</span>
+        </div>
+      </div>
+
+      <div class="age-config-group">
+        <span class="age-config-label">{{ FOOD_TYPE_LARGE }}</span>
+        <div class="age-config-inputs">
+          <span>อายุ</span>
+          <input type="number" min="0" step="1" [(ngModel)]="ageForm.large_min_weeks">
+          <span>ถึง</span>
+          <input type="number" min="0" step="1" [(ngModel)]="ageForm.large_max_weeks">
+          <span>สัปดาห์</span>
+        </div>
+        <small class="age-config-note">ใส่ 0 ที่ช่อง "ถึง" = ไม่จำกัดอายุ</small>
+      </div>
+
+      <p class="modal-error" *ngIf="ageConfigError">{{ ageConfigError }}</p>
+
+      <div class="modal-actions">
+        <button type="button" class="modal-btn-cancel" (click)="closeAgeConfig()">ยกเลิก</button>
+        <button type="button" class="modal-btn-save" [disabled]="isSavingAgeConfig" (click)="saveAgeConfig()">
+          {{ isSavingAgeConfig ? 'กำลังบันทึก...' : 'บันทึก' }}
+        </button>
+      </div>
+    </div>
+  </div>
 
   <div class="toast-notification" [class.is-error]="toastType === 'error'" *ngIf="showToast">
     <span>{{ toastMessage }}</span>

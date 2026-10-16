@@ -5,13 +5,18 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picker-calendar';
 import { formatDateKey } from '../../shared/calendar-markers.util';
-import { FOOD_TYPE_SMALL, FOOD_TYPE_LARGE } from '../Food/Food';
+import { FOOD_TYPE_SMALL, FOOD_TYPE_LARGE, FoodAgeConfig } from '../Food/Food';
 
 type DateField = 'import' | 'expiry' | null;
 
-export function foodTypeAgeHint(foodType: string | null): string {
-  if (foodType === FOOD_TYPE_SMALL) return 'สำหรับไก่อายุ 0-14 สัปดาห์';
-  if (foodType === FOOD_TYPE_LARGE) return 'สำหรับไก่อายุตั้งแต่ 14 สัปดาห์ขึ้นไป';
+function ageRangeText(min: number, max: number): string {
+  return max === 0 ? `ตั้งแต่ ${min} สัปดาห์ขึ้นไป` : `${min}-${max} สัปดาห์`;
+}
+
+export function foodTypeAgeHint(foodType: string | null, cfg: FoodAgeConfig | null = null): string {
+  const c = cfg ?? { small_min_weeks: 0, small_max_weeks: 14, large_min_weeks: 14, large_max_weeks: 0 };
+  if (foodType === FOOD_TYPE_SMALL) return 'สำหรับไก่อายุ ' + ageRangeText(c.small_min_weeks, c.small_max_weeks);
+  if (foodType === FOOD_TYPE_LARGE) return 'สำหรับไก่อายุ ' + ageRangeText(c.large_min_weeks, c.large_max_weeks);
   return 'เลือกประเภทอาหารให้ตรงกับช่วงอายุไก่';
 }
 
@@ -28,7 +33,10 @@ export function foodTypeAgeHint(foodType: string | null): string {
 export class AddFoodComponent {
   readonly FOOD_TYPE_SMALL = FOOD_TYPE_SMALL;
   readonly FOOD_TYPE_LARGE = FOOD_TYPE_LARGE;
-  foodTypeAgeHint = foodTypeAgeHint;
+  ageConfig: FoodAgeConfig | null = null;
+  ageHint(type: string | null): string {
+    return foodTypeAgeHint(type, this.ageConfig);
+  }
 
   selectedFoodType: string | null = null;
   importDate: Date | null = new Date();
@@ -60,6 +68,10 @@ export class AddFoodComponent {
     private cdr: ChangeDetectorRef
   ) {
     this.loadDailyConsumption();
+    this.api.get<FoodAgeConfig>('/food-age-config').subscribe({
+      next: (cfg) => { this.ageConfig = cfg; this.cdr.detectChanges(); },
+      error: (err) => console.error('โหลดเงื่อนไขอายุไม่สำเร็จ:', err),
+    });
   }
 
   private loadDailyConsumption() {
