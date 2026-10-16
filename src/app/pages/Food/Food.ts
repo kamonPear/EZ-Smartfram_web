@@ -27,6 +27,13 @@ interface CoopFoodConsumption {
   estimated_kg_per_day: number;
 }
 
+export interface FoodAgeConfig {
+  small_min_weeks: number;
+  small_max_weeks: number;
+  large_min_weeks: number;
+  large_max_weeks: number;
+}
+
 interface HistoryEntry {
   kind: 'import' | 'distribute';
   foodType: string;
@@ -59,6 +66,12 @@ export class FoodComponent {
 
   // ประเภทที่เลือกไว้ก่อนกดตัดสต็อก (ต้องเลือกก่อนเสมอ เหมือนแอปมือถือ)
   selectedDeductType: string | null = null;
+
+  // เงื่อนไขช่วงอายุไก่ -> ประเภทอาหาร ที่เจ้าของฟาร์มตั้งเอง (max = 0 คือไม่จำกัด)
+  showAgeConfig = false;
+  isSavingAgeConfig = false;
+  ageConfigError = '';
+  ageForm: FoodAgeConfig = { small_min_weeks: 0, small_max_weeks: 14, large_min_weeks: 14, large_max_weeks: 0 };
 
   showToast = false;
   toastMessage = '';
@@ -273,6 +286,72 @@ export class FoodComponent {
         this.isUpdatingStock = false;
         console.error('อัปเดตสต็อกไม่สำเร็จ:', err);
         this.flashToast('อัปเดตสต็อกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
+      }
+    });
+  }
+
+  openAgeConfig() {
+    this.ageConfigError = '';
+    this.api.get<FoodAgeConfig>('/food-age-config').subscribe({
+      next: (cfg) => {
+        this.ageForm = {
+          small_min_weeks: cfg.small_min_weeks,
+          small_max_weeks: cfg.small_max_weeks,
+          large_min_weeks: cfg.large_min_weeks,
+          large_max_weeks: cfg.large_max_weeks,
+        };
+        this.showAgeConfig = true;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('โหลดเงื่อนไขอายุไม่สำเร็จ:', err);
+        this.flashToast('โหลดเงื่อนไขไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
+      }
+    });
+  }
+
+  closeAgeConfig() {
+    this.showAgeConfig = false;
+    this.cdr.detectChanges();
+  }
+
+  saveAgeConfig() {
+    const f = this.ageForm;
+    const nums = [f.small_min_weeks, f.small_max_weeks, f.large_min_weeks, f.large_max_weeks].map(Number);
+    if (nums.some(n => !Number.isInteger(n) || n < 0)) {
+      this.ageConfigError = 'กรุณากรอกอายุเป็นจำนวนเต็ม (สัปดาห์) ที่ไม่ติดลบ';
+      return;
+    }
+    const [sMin, sMax, lMin, lMax] = nums;
+    if (sMax <= sMin) {
+      this.ageConfigError = `อายุสิ้นสุดของ${FOOD_TYPE_SMALL}ต้องมากกว่าอายุเริ่มต้น`;
+      return;
+    }
+    if (lMax !== 0 && lMax <= lMin) {
+      this.ageConfigError = `อายุสิ้นสุดของ${FOOD_TYPE_LARGE}ต้องมากกว่าอายุเริ่มต้น (หรือใส่ 0 = ไม่จำกัด)`;
+      return;
+    }
+    if (!(sMax <= lMin || (lMax !== 0 && lMax <= sMin))) {
+      this.ageConfigError = 'ช่วงอายุของสองประเภทต้องไม่ซ้อนทับกัน';
+      return;
+    }
+
+    this.ageConfigError = '';
+    this.isSavingAgeConfig = true;
+    this.api.put<FoodAgeConfig>('/food-age-config', {
+      small_min_weeks: sMin, small_max_weeks: sMax, large_min_weeks: lMin, large_max_weeks: lMax,
+    }).subscribe({
+      next: () => {
+        this.isSavingAgeConfig = false;
+        this.showAgeConfig = false;
+        this.flashToast('บันทึกเงื่อนไขอายุไก่กับประเภทอาหารแล้ว');
+        this.loadAll();
+      },
+      error: (err) => {
+        this.isSavingAgeConfig = false;
+        console.error('บันทึกเงื่อนไขอายุไม่สำเร็จ:', err);
+        this.ageConfigError = (typeof err?.error === 'string' && err.error) || 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
+        this.cdr.detectChanges();
       }
     });
   }

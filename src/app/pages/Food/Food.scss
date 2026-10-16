@@ -422,3 +422,144 @@
     grid-template-columns: 1fr;
   }
 }
+
+.icon-btn {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+
+  svg { width: 20px; height: 20px; }
+
+  &:hover {
+    color: #F5A623;
+    border-color: #F5A623;
+    background: rgba(245, 166, 35, 0.1);
+  }
+}
+
+/* --- ป็อบอัพตั้งเงื่อนไขอายุไก่ --- */
+.custom-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.custom-modal {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  padding: 26px 28px;
+  border-radius: 20px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+  width: 440px;
+  max-width: 92vw;
+  animation: popIn 0.2s ease;
+
+  h3 {
+    margin: 0 0 8px;
+    color: var(--text-title);
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+}
+
+.modal-hint {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  margin: 0 0 18px;
+}
+
+.age-config-group {
+  margin-bottom: 16px;
+}
+
+.age-config-label {
+  display: block;
+  color: var(--text-title);
+  font-weight: 700;
+  font-size: 0.92rem;
+  margin-bottom: 8px;
+}
+
+.age-config-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+
+  input {
+    width: 70px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    color: var(--text-title);
+    font-family: inherit;
+    font-size: 0.95rem;
+    text-align: center;
+
+    &:focus { outline: none; border-color: #F5A623; }
+  }
+}
+
+.age-config-note {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-secondary);
+  font-size: 0.74rem;
+}
+
+.modal-error {
+  color: #e5484d;
+  font-size: 0.82rem;
+  margin: 0 0 12px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+
+  button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 50px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+}
+
+.modal-btn-cancel {
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.modal-btn-save {
+  border: none;
+  background: var(--accent-green-bright);
+  color: #fff;
+
+  &:disabled { opacity: 0.6; cursor: default; }
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.94) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
