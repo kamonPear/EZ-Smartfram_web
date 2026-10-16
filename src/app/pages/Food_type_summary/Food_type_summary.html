@@ -35,6 +35,14 @@
     <p class="loading-hint" *ngIf="isLoading">กำลังโหลดข้อมูล...</p>
 
     <ng-container *ngIf="!isLoading">
+      <div class="coop-row total-row" *ngIf="coopsForSelectedType.length > 0">
+        <div class="coop-row-info">
+          <span class="coop-row-name">รวมทุกคอก</span>
+          <span class="coop-row-sub">{{ coopsForSelectedType.length }} คอก • {{ totalChickens }} ตัว</span>
+        </div>
+        <span class="coop-row-actual has-value">{{ totalActualKg.toFixed(1) }} กก.</span>
+      </div>
+
       <p class="section-label">แยกตามคอก</p>
 
       <p class="empty-hint" *ngIf="coopsForSelectedType.length === 0">ยังไม่มีคอกที่กินอาหาร{{ selectedFoodType }}</p>
