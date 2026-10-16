@@ -32,6 +32,15 @@ export interface FoodAgeConfig {
   small_max_weeks: number;
   large_min_weeks: number;
   large_max_weeks: number;
+  configured?: boolean;
+}
+
+// ค่าในฟอร์มตั้งเงื่อนไข - เริ่มว่างเปล่า (null) ถ้าเจ้าของฟาร์มยังไม่เคยตั้งค่า
+interface AgeForm {
+  small_min_weeks: number | null;
+  small_max_weeks: number | null;
+  large_min_weeks: number | null;
+  large_max_weeks: number | null;
 }
 
 interface HistoryEntry {
@@ -71,7 +80,7 @@ export class FoodComponent {
   showAgeConfig = false;
   isSavingAgeConfig = false;
   ageConfigError = '';
-  ageForm: FoodAgeConfig = { small_min_weeks: 0, small_max_weeks: 14, large_min_weeks: 14, large_max_weeks: 0 };
+  ageForm: AgeForm = { small_min_weeks: null, small_max_weeks: null, large_min_weeks: null, large_max_weeks: null };
 
   showToast = false;
   toastMessage = '';
@@ -232,12 +241,15 @@ export class FoodComponent {
     this.ageConfigError = '';
     this.api.get<FoodAgeConfig>('/food-age-config').subscribe({
       next: (cfg) => {
-        this.ageForm = {
-          small_min_weeks: cfg.small_min_weeks,
-          small_max_weeks: cfg.small_max_weeks,
-          large_min_weeks: cfg.large_min_weeks,
-          large_max_weeks: cfg.large_max_weeks,
-        };
+        // ยังไม่เคยตั้งค่า -> ปล่อยช่องว่างให้กรอกเอง (ไม่เติมค่าให้)
+        this.ageForm = cfg.configured
+          ? {
+              small_min_weeks: cfg.small_min_weeks,
+              small_max_weeks: cfg.small_max_weeks,
+              large_min_weeks: cfg.large_min_weeks,
+              large_max_weeks: cfg.large_max_weeks,
+            }
+          : { small_min_weeks: null, small_max_weeks: null, large_min_weeks: null, large_max_weeks: null };
         this.showAgeConfig = true;
         this.cdr.detectChanges();
       },
@@ -255,7 +267,12 @@ export class FoodComponent {
 
   saveAgeConfig() {
     const f = this.ageForm;
-    const nums = [f.small_min_weeks, f.small_max_weeks, f.large_min_weeks, f.large_max_weeks].map(Number);
+    const raw = [f.small_min_weeks, f.small_max_weeks, f.large_min_weeks, f.large_max_weeks];
+    if (raw.some(v => v === null || (v as unknown) === '')) {
+      this.ageConfigError = 'กรุณากรอกอายุให้ครบทุกช่อง';
+      return;
+    }
+    const nums = raw.map(Number);
     if (nums.some(n => !Number.isInteger(n) || n < 0)) {
       this.ageConfigError = 'กรุณากรอกอายุเป็นจำนวนเต็ม (สัปดาห์) ที่ไม่ติดลบ';
       return;
