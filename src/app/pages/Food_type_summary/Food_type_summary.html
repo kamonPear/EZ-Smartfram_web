@@ -53,7 +53,7 @@
           <span class="coop-row-sub">อายุ {{ coop.age_weeks }} สัปดาห์ • {{ coop.amount }} ตัว</span>
           <span class="coop-row-sub">
             อยู่ในช่วงอายุ {{ ageRangeText(coop) }} จึงกิน{{ coop.food_type }}
-            • ตัวละ {{ coop.grams_per_bird }} กรัม/วัน = {{ coop.estimated_kg_per_day.toFixed(1) }} กก./วัน
+            • ตัวละ {{ coop.grams_per_bird }} กรัม/วัน = {{ formatKg(coop.estimated_kg_per_day) }} กก./วัน
           </span>
         </div>
 

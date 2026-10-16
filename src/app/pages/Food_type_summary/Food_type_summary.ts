@@ -123,6 +123,11 @@ export class FoodTypeSummaryComponent {
   }
 
   // เหตุผลที่คอกนี้กินอาหารประเภทนี้: อายุอยู่ในช่วงที่เจ้าของฟาร์มตั้งไว้ (max 0 = ไม่จำกัด)
+  // ประมาณการเป็น กก. แสดงสูงสุด 3 ตำแหน่ง (ไม่ปัดเหลือ 0.0) ตัดศูนย์ท้ายทิ้ง
+  formatKg(kg: number): string {
+    return String(Number(kg.toFixed(3)));
+  }
+
   ageRangeText(coop: CoopFoodConsumption): string {
     return coop.age_max_weeks === 0
       ? `ตั้งแต่ ${coop.age_min_weeks} สัปดาห์ขึ้นไป`

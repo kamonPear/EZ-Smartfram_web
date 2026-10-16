@@ -134,7 +134,14 @@ export class NotificationsComponent {
       return;
     }
 
-    // type === 'food': ไม่มี endpoint สำหรับ "รับทราบ" สต็อกอาหาร แค่ปิดออกจาก
+    // แจ้งเตือนเปลี่ยนประเภทอาหารตามอายุ: จำว่ารับทราบแล้วไว้ในเบราว์เซอร์ (ไม่ขึ้นซ้ำ)
+    if (n.id.startsWith('foodswitch_')) {
+      this.notificationsService.acknowledgeFoodSwitch(n.id);
+      this.removeLocal(n);
+      return;
+    }
+
+    // type === 'food' (สต็อกอาหาร): ไม่มี endpoint สำหรับ "รับทราบ" สต็อกอาหาร แค่ปิดออกจาก
     // หน้าจอตอนนี้เท่านั้น (จะกลับมาเตือนใหม่ถ้ายังใกล้หมดอยู่ตอนโหลดหน้าใหม่)
     this.removeLocal(n);
   }

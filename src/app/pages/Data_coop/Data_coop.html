@@ -20,12 +20,12 @@
       <div class="card panel-card">
         <div class="device-link-row">
           <div>
-            <h3 class="section-title">อุปกรณ์ / เซนเซอร์</h3>
+            <h3 class="section-title">เซนเซอร์</h3>
             <span class="device-summary-text">ออนไลน์ {{ deviceOnlineCount }} / {{ devicesList.length }} ตัว</span>
           </div>
           <div class="device-link-actions">
             <button class="section-action-btn" (click)="openDevicePopup('setup')">จัดวางเซนเซอร์</button>
-            <button class="section-action-btn" (click)="openDevicePopup('status')">ดูสถานะอุปกรณ์</button>
+            <button class="section-action-btn" (click)="openDevicePopup('status')">ดูสถานะเซนเซอร์</button>
           </div>
         </div>
 
@@ -43,7 +43,7 @@
           >
             <img *ngIf="slot.device" [src]="deviceIconSrc(slot.device)" [alt]="slot.device.name">
             <span class="mini-slot-tooltip" *ngIf="hoveredSlotId === slot.id">
-              {{ slot.device ? (slot.device.name + (slot.device.slot_index != null ? ' · หมายเลข ' + slot.device.slot_index : '') + (slot.device.current_status === 'Online' ? ' · ออนไลน์' : ' · ออฟไลน์')) : 'วางอุปกรณ์เพิ่มได้ตรงนี้' }}
+              {{ slot.device ? (slot.device.name + (slot.device.slot_index != null ? ' · หมายเลข ' + slot.device.slot_index : '') + (slot.device.current_status === 'Online' ? ' · ออนไลน์' : ' · ออฟไลน์')) : 'วางเซนเซอร์เพิ่มได้ตรงนี้' }}
             </span>
           </div>
           <span class="mini-zone mini-zone--door">ประตู</span>

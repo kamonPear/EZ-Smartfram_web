@@ -209,6 +209,30 @@ export class FoodComponent {
   // ต่อไป - กดปุ่มเดียวจบ
   isDeducting = false;
 
+  // กดปุ่ม "ตัดสต็อก" แล้วถามยืนยันก่อน (ตัดแล้วย้อนกลับไม่ได้) ตัดจริงต่อเมื่อกดยืนยัน
+  showDeductConfirm = false;
+
+  askDeductStock() {
+    if (!this.selectedDeductType) {
+      this.flashToast('กรุณาเลือกประเภทอาหารก่อนตัดสต็อก', 'error');
+      return;
+    }
+    if (this.isSelectedStockEmpty) {
+      this.flashToast(`สต็อกอาหาร${this.selectedDeductType}หมดแล้ว ไม่มีอะไรให้ตัด`, 'error');
+      return;
+    }
+    this.showDeductConfirm = true;
+  }
+
+  closeDeductConfirm() {
+    this.showDeductConfirm = false;
+  }
+
+  confirmDeductStock() {
+    this.showDeductConfirm = false;
+    this.forceDeductStock();
+  }
+
   forceDeductStock() {
     if (!this.selectedDeductType) {
       this.flashToast('กรุณาเลือกประเภทอาหารก่อนตัดสต็อก', 'error');

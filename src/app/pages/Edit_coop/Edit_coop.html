@@ -102,8 +102,8 @@
                 <path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/>
               </svg>
             </div>
-            <h2>อุปกรณ์ / เซนเซอร์</h2>
-            <button class="section-action-btn" (click)="openDeviceManager()">จัดการอุปกรณ์</button>
+            <h2>เซนเซอร์</h2>
+            <button class="section-action-btn" (click)="openDeviceManager()">จัดวางเซนเซอร์</button>
           </div>
 
           <div class="record-list" [class.is-scrollable]="devices.length > 4" *ngIf="devices.length > 0">
@@ -118,7 +118,7 @@
               </span>
             </div>
           </div>
-          <p class="record-empty" *ngIf="devices.length === 0">ยังไม่มีอุปกรณ์ในคอกนี้</p>
+          <p class="record-empty" *ngIf="devices.length === 0">ยังไม่มีเซนเซอร์ในคอกนี้</p>
         </div>
 
         <!-- ประวัติสุขภาพ -->
@@ -239,7 +239,7 @@
   <div class="device-manager-overlay" *ngIf="showDeviceManager" (click)="closeDeviceManager()">
     <div class="device-manager-modal" (click)="$event.stopPropagation()">
       <div class="device-manager-header">
-        <h3>จัดการอุปกรณ์ <span *ngIf="coopName" class="device-manager-coop">({{ coopName }})</span></h3>
+        <h3>จัดวางเซนเซอร์ <span *ngIf="coopName" class="device-manager-coop">({{ coopName }})</span></h3>
         <button type="button" class="device-manager-close" (click)="closeDeviceManager()" aria-label="ปิด">&times;</button>
       </div>
       <div class="device-manager-body">

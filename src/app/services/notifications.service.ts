@@ -35,6 +35,25 @@ function loadMotionAcks(): Record<string, number> {
   }
 }
 
+// แจ้งเตือน "ไก่เปลี่ยนช่วงอายุ ต้องเปลี่ยนประเภทอาหาร" ที่ผู้ใช้กด "รับทราบ" แล้ว (id ผูกกับ
+// คอก+ประเภทอาหารใหม่ จึงไม่ขึ้นซ้ำ แต่ถ้าเปลี่ยนช่วงถัดไปจะขึ้นเป็นแจ้งเตือนใหม่)
+const FOOD_SWITCH_ACK_KEY = 'ez_food_switch_ack';
+
+function loadFoodSwitchAcks(): string[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(FOOD_SWITCH_ACK_KEY) || '[]');
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
+}
+
+// สต็อกอาหารเหลือต่ำกว่านี้ (กก.) แจ้งเตือน "ใกล้หมดแล้ว" เสมอ ไม่ว่าจะตั้งขั้นต่ำไว้เท่าไร
+const FOOD_LOW_KG = 20;
+
+// เตือนล่วงหน้า/ค้างหลังเปลี่ยนช่วงอายุกี่วัน (ก่อนและหลังวันที่ไก่ถึงอายุขั้นต่ำของช่วงใหม่)
+const FOOD_SWITCH_WINDOW_DAYS = 3;
+
 // เตือนล่วงหน้า 2 วันก่อนถึงกำหนด (ทั้งวัคซีนและตรวจสุขภาพ) ไปจนถึงเลยกำหนดแล้ว
 // - พอร์ตมาจาก services/notifications_service.dart ของแอปมือถือ ให้ตรรกะตรงกัน
 const ADVANCE_DAYS = 2;
@@ -81,10 +100,11 @@ export class NotificationsService {
       healths: safe('สุขภาพ', '/healths'),
       motion: safe('ความเคลื่อนไหว', '/motion-alerts'),
       appointments: safe('นัดตรวจสุขภาพ', '/health-appointments'),
+      foodRules: safe('ตารางอาหารตามอายุ', '/food-age-rules'),
     }).pipe(
-      map(({ foods, coops, alerts, healths, motion, appointments }) => {
+      map(({ foods, coops, alerts, healths, motion, appointments, foodRules }) => {
         this.lastLoadFailed = failed;
-        return this.build(foods || [], coops || [], alerts || [], healths || [], motion || [], appointments || []);
+        return this.build(foods || [], coops || [], alerts || [], healths || [], motion || [], appointments || [], foodRules || []);
       })
     );
   }
@@ -103,7 +123,18 @@ export class NotificationsService {
     }
   }
 
-  private build(foods: any[], coops: any[], alerts: any[], healths: any[], motion: any[] = [], appointments: any[] = []): FarmNotification[] {
+  /** บันทึกว่ารับทราบแจ้งเตือนเปลี่ยนประเภทอาหารตามอายุนี้แล้ว */
+  acknowledgeFoodSwitch(id: string) {
+    try {
+      const acks = loadFoodSwitchAcks();
+      if (!acks.includes(id)) acks.push(id);
+      localStorage.setItem(FOOD_SWITCH_ACK_KEY, JSON.stringify(acks));
+    } catch {
+      // เขียน localStorage ไม่ได้ - ยอมให้แจ้งเตือนกลับมาตอนโหลดใหม่
+    }
+  }
+
+  private build(foods: any[], coops: any[], alerts: any[], healths: any[], motion: any[] = [], appointments: any[] = [], foodRules: any[] = []): FarmNotification[] {
     const notifications: FarmNotification[] = [];
     const today = new Date();
     const todayOnly = dateOnly(today);
@@ -125,11 +156,11 @@ export class NotificationsService {
           urgent: true,
           daysUntil: -999,
         });
-      } else if (current <= min) {
+      } else if (current < FOOD_LOW_KG || current <= min) {
         notifications.push({
           id: `food_${foodId}`,
           type: 'food',
-          title: `⚠️ อาหาร${foodType}ใกล้หมด (เหลือ ${current.toFixed(1)} กก.)`,
+          title: `⚠️ อาหาร${foodType}ใกล้หมดแล้ว (เหลือ ${current.toFixed(1)} กก.)`,
           urgent: false,
           daysUntil: -999,
         });
@@ -273,6 +304,59 @@ export class NotificationsService {
         coopId,
         coopName: info.coopName,
         motionLastAt: info.lastAt.getTime(),
+      });
+    }
+
+    // 6. แจ้งเตือนไก่เปลี่ยนช่วงอายุ -> ต้องเปลี่ยนประเภทอาหาร (ตามตารางอาหารตามอายุที่เจ้าของ
+    // ตั้งไว้) หาขอบช่วงที่ประเภทอาหารต่างจากช่วงก่อนหน้า แล้วเตือนล่วงหน้า/ค้างหลังถึงวันนั้น
+    // FOOD_SWITCH_WINDOW_DAYS วัน (วันถึงขอบช่วง = วันเกิด + min_weeks x 7 วัน)
+    const rules = foodRules
+      .map(r => ({ type: String(r?.food_type ?? ''), min: Number(r?.min_weeks ?? 0), max: Number(r?.max_weeks ?? 0) }))
+      .filter(r => r.type);
+    const ruleAt = (ageWeeks: number) =>
+      rules.find(r => ageWeeks >= r.min && (r.max === 0 || ageWeeks < r.max));
+    const foodSwitchAcks = new Set(loadFoodSwitchAcks());
+    for (const c of coops) {
+      const birthday = c?.birthday ? new Date(c.birthday) : null;
+      if (!birthday || isNaN(birthday.getTime())) continue;
+      const coopId = String(c?.coop_id ?? c?.id ?? '');
+      const coopName = coopNames.get(coopId) || `คอก ${coopId}`;
+      const birthOnly = dateOnly(birthday);
+
+      let best: { days: number; from: string; to: string } | null = null;
+      for (const r of rules) {
+        if (r.min <= 0) continue;
+        const prev = ruleAt(r.min - 1);
+        if (!prev || prev.type === r.type) continue;
+        const boundary = new Date(birthOnly);
+        boundary.setDate(boundary.getDate() + r.min * 7);
+        const days = Math.round((boundary.getTime() - todayOnly.getTime()) / 86400000);
+        if (days > FOOD_SWITCH_WINDOW_DAYS || days < -FOOD_SWITCH_WINDOW_DAYS) continue;
+        if (!best || Math.abs(days) < Math.abs(best.days)) best = { days, from: prev.type, to: r.type };
+      }
+      if (!best) continue;
+
+      const id = `foodswitch_${coopId}_${best.to}`;
+      if (foodSwitchAcks.has(id)) continue;
+
+      let title: string;
+      if (best.days < 0) {
+        title = `🌾 ${coopName}ถึงช่วงเปลี่ยนเป็นอาหาร${best.to}มา ${-best.days} วันแล้ว (จากเดิมอาหาร${best.from}) กรุณาเปลี่ยนอาหาร`;
+      } else if (best.days === 0) {
+        title = `🌾 วันนี้${coopName}ต้องเปลี่ยนจากอาหาร${best.from}เป็นอาหาร${best.to}`;
+      } else if (best.days === 1) {
+        title = `🌾 พรุ่งนี้${coopName}ต้องเปลี่ยนจากอาหาร${best.from}เป็นอาหาร${best.to}`;
+      } else {
+        title = `🌾 อีก ${best.days} วัน${coopName}ต้องเปลี่ยนจากอาหาร${best.from}เป็นอาหาร${best.to}`;
+      }
+      notifications.push({
+        id,
+        type: 'food',
+        title,
+        urgent: best.days <= 0,
+        daysUntil: best.days,
+        coopId,
+        coopName,
       });
     }
 
