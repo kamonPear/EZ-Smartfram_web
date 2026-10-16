@@ -33,9 +33,7 @@ export class AddFoodComponent {
   selectedFoodType: string | null = null;
   importDate: Date | null = new Date();
   amount: number | null = null;
-  threshold: number | null = null;
-  // คำนวณอัตโนมัติจากปริมาณ+ปริมาณใกล้หมด (เหมือนแอปมือถือ) แต่ยังแก้ไขเองได้
-  // ผ่านปฏิทินเผื่อต้องการแก้ไขวันที่คำนวณอัตโนมัติ
+  // คำนวณอัตโนมัติจากปริมาณที่นำเข้าและอัตรากินต่อวัน (ไม่มีช่องกรอกแล้ว)
   expiryDate: Date | null = null;
 
   activeField: DateField = null;
@@ -87,33 +85,21 @@ export class AddFoodComponent {
 
   private recalculateExpiryDate() {
     const amt = this.amount ?? 0;
-    if (amt <= 0 || this.threshold == null || !this.selectedFoodType) {
+    if (amt <= 0 || !this.selectedFoodType) {
       this.expiryDate = null;
       return;
     }
     const consumePerDay = this.dailyConsumptionByType[this.selectedFoodType]
       || this.fallbackConsumePerDay[this.selectedFoodType]
       || 20;
-    let daysLeft = 0;
-    if (amt > this.threshold) {
-      daysLeft = Math.ceil((amt - this.threshold) / consumePerDay);
-    }
+    const daysLeft = Math.ceil(amt / consumePerDay);
     const start = this.importDate ?? new Date();
     const d = new Date(start);
     d.setDate(d.getDate() + daysLeft);
     this.expiryDate = d;
   }
 
-  // ปริมาณใกล้หมดต้องไม่เกินปริมาณที่นำเข้า - ถ้าเกิน อาหารก็ "ใกล้หมด" ตั้งแต่วันแรกที่เข้าสต็อก ไม่สมเหตุสมผล
-  get isThresholdTooHigh(): boolean {
-    return this.threshold != null && this.amount != null && this.threshold > this.amount;
-  }
-
   onAmountChange() {
-    this.recalculateExpiryDate();
-  }
-
-  onThresholdChange() {
     this.recalculateExpiryDate();
   }
 
@@ -173,16 +159,8 @@ export class AddFoodComponent {
       this.flashToast('กรุณากรอกปริมาณที่นำเข้าให้มากกว่า 0', 'error');
       return;
     }
-    if (this.threshold != null && this.threshold < 0) {
-      this.flashToast('ปริมาณใกล้หมดต้องไม่ติดลบ', 'error');
-      return;
-    }
-    if (this.isThresholdTooHigh) {
-      this.flashToast('ปริมาณใกล้หมดต้องไม่เกินปริมาณที่นำเข้า', 'error');
-      return;
-    }
     if (!this.expiryDate) {
-      this.flashToast('กรุณาเลือกวันที่อาหารใกล้หมด', 'error');
+      this.flashToast('กรุณาเลือกประเภทอาหารและปริมาณที่นำเข้า', 'error');
       return;
     }
 
