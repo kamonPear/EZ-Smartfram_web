@@ -32,6 +32,8 @@ export interface FoodAgeConfig {
   small_max_weeks: number;
   large_min_weeks: number;
   large_max_weeks: number;
+  small_grams_per_bird: number;
+  large_grams_per_bird: number;
   configured?: boolean;
 }
 
@@ -41,6 +43,8 @@ interface AgeForm {
   small_max_weeks: number | null;
   large_min_weeks: number | null;
   large_max_weeks: number | null;
+  small_grams_per_bird: number | null;
+  large_grams_per_bird: number | null;
 }
 
 interface HistoryEntry {
@@ -80,7 +84,7 @@ export class FoodComponent {
   showAgeConfig = false;
   isSavingAgeConfig = false;
   ageConfigError = '';
-  ageForm: AgeForm = { small_min_weeks: null, small_max_weeks: null, large_min_weeks: null, large_max_weeks: null };
+  ageForm: AgeForm = this.emptyAgeForm();
 
   showToast = false;
   toastMessage = '';
@@ -237,6 +241,13 @@ export class FoodComponent {
     });
   }
 
+  private emptyAgeForm(): AgeForm {
+    return {
+      small_min_weeks: null, small_max_weeks: null, large_min_weeks: null, large_max_weeks: null,
+      small_grams_per_bird: null, large_grams_per_bird: null,
+    };
+  }
+
   openAgeConfig() {
     this.ageConfigError = '';
     this.api.get<FoodAgeConfig>('/food-age-config').subscribe({
@@ -248,8 +259,10 @@ export class FoodComponent {
               small_max_weeks: cfg.small_max_weeks,
               large_min_weeks: cfg.large_min_weeks,
               large_max_weeks: cfg.large_max_weeks,
+              small_grams_per_bird: cfg.small_grams_per_bird,
+              large_grams_per_bird: cfg.large_grams_per_bird,
             }
-          : { small_min_weeks: null, small_max_weeks: null, large_min_weeks: null, large_max_weeks: null };
+          : this.emptyAgeForm();
         this.showAgeConfig = true;
         this.cdr.detectChanges();
       },
@@ -267,12 +280,19 @@ export class FoodComponent {
 
   saveAgeConfig() {
     const f = this.ageForm;
-    const raw = [f.small_min_weeks, f.small_max_weeks, f.large_min_weeks, f.large_max_weeks];
+    const raw = [f.small_min_weeks, f.small_max_weeks, f.large_min_weeks, f.large_max_weeks,
+      f.small_grams_per_bird, f.large_grams_per_bird];
     if (raw.some(v => v === null || (v as unknown) === '')) {
-      this.ageConfigError = 'กรุณากรอกอายุให้ครบทุกช่อง';
+      this.ageConfigError = 'กรุณากรอกให้ครบทุกช่อง';
       return;
     }
-    const nums = raw.map(Number);
+    const all = raw.map(Number);
+    const nums = all.slice(0, 4);
+    const [sGrams, lGrams] = all.slice(4);
+    if (!(sGrams > 0) || !(lGrams > 0)) {
+      this.ageConfigError = 'ปริมาณอาหารต่อตัวต่อวัน (กรัม) ต้องมากกว่า 0';
+      return;
+    }
     if (nums.some(n => !Number.isInteger(n) || n < 0)) {
       this.ageConfigError = 'กรุณากรอกอายุเป็นจำนวนเต็ม (สัปดาห์) ที่ไม่ติดลบ';
       return;
@@ -295,6 +315,7 @@ export class FoodComponent {
     this.isSavingAgeConfig = true;
     this.api.put<FoodAgeConfig>('/food-age-config', {
       small_min_weeks: sMin, small_max_weeks: sMax, large_min_weeks: lMin, large_max_weeks: lMax,
+      small_grams_per_bird: sGrams, large_grams_per_bird: lGrams,
     }).subscribe({
       next: () => {
         this.isSavingAgeConfig = false;

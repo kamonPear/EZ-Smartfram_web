@@ -51,6 +51,10 @@
         <div class="coop-row-info">
           <span class="coop-row-name">{{ coop.name_coop }}</span>
           <span class="coop-row-sub">อายุ {{ coop.age_weeks }} สัปดาห์ • {{ coop.amount }} ตัว</span>
+          <span class="coop-row-sub">
+            อยู่ในช่วงอายุ {{ ageRangeText(coop) }} จึงกิน{{ coop.food_type }}
+            • ตัวละ {{ coop.grams_per_bird }} กรัม/วัน = {{ coop.estimated_kg_per_day.toFixed(1) }} กก./วัน
+          </span>
         </div>
 
         <span class="coop-row-actual" [class.has-value]="actualKgFor(coop.coop_id, selectedFoodType) !== null">
