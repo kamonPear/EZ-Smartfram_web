@@ -14,7 +14,7 @@
 
   <main class="canvas-wrapper">
     <aside class="sensor-palette">
-      <h3 class="palette-title">ลากอุปกรณ์ไปวางบนแคนวาส</h3>
+      <h3 class="palette-title">ลากเซนเซอร์ไปวางบนผังฟาร์ม</h3>
       <!-- ตั้งชื่อ+ไอคอนอุปกรณ์ที่ซื้อมาใหม่ไว้ล่วงหน้า แล้วจะมาโผล่ในถาดนี้เอง -->
       <a class="add-device-type-btn" routerLink="/add-device-type">+ เพิ่มอุปกรณ์</a>
       <div class="palette-list" *ngIf="availableSensors.length > 0">
@@ -70,7 +70,7 @@
       </div>
 
       <div class="canvas-empty-hint" *ngIf="placedSlots.length === 0">
-        ลากอุปกรณ์จากด้านซ้ายมาวางที่นี่
+        ลากเซนเซอร์จากด้านซ้ายมาวางที่นี่
       </div>
 
       <div class="zone-door">
@@ -86,8 +86,8 @@
 
   <div class="custom-modal-overlay" *ngIf="isModalOpen">
     <div class="custom-modal">
-      <h3>ยืนยันการลบอุปกรณ์</h3>
-      <p>คุณต้องการนำอุปกรณ์นี้ออกจากการจัดวางใช่หรือไม่?</p>
+      <h3>ยืนยันการลบเซนเซอร์</h3>
+      <p>คุณต้องการนำเซนเซอร์นี้ออกจากการจัดวางใช่หรือไม่?</p>
 
       <div class="modal-actions">
         <button class="btn-cancel" (click)="cancelRemove()">ยกเลิก</button>
@@ -104,12 +104,12 @@
 
       <!-- ยังโหลดข้อมูลจาก backend ไม่เสร็จ (ไม่มี id ให้แก้ไข/ลบ) -->
       <ng-container *ngIf="managingType.id == null">
-        <h3>กำลังโหลดข้อมูลอุปกรณ์</h3>
+        <h3>กำลังโหลดข้อมูลเซนเซอร์</h3>
         <div class="manage-type-preview">
           <img [src]="managingType.icon" [alt]="managingType.name">
           <span>{{ managingType.name }}</span>
         </div>
-        <p class="manage-type-hint">ยังโหลดข้อมูลอุปกรณ์นี้ไม่เสร็จ ปิดแล้วลองคลิกใหม่อีกครั้ง</p>
+        <p class="manage-type-hint">ยังโหลดข้อมูลเซนเซอร์นี้ไม่เสร็จ ปิดแล้วลองคลิกใหม่อีกครั้ง</p>
         <div class="modal-actions">
           <button class="btn-confirm" (click)="closeManageModal()">ปิด</button>
         </div>
@@ -118,12 +118,12 @@
       <!-- ชนิดที่เพิ่มเอง - แก้ไข/ลบได้ -->
       <ng-container *ngIf="managingType.id != null">
         <ng-container *ngIf="!showDeleteTypeConfirm; else deleteConfirmBlock">
-          <h3>แก้ไขอุปกรณ์</h3>
-          <p class="manage-type-hint">อุปกรณ์นี้ถูกเพิ่มไว้ด้วยชื่อ "{{ managingType.name }}" แก้ไขชื่อ/ไอคอน หรือลบทิ้งได้ที่นี่</p>
+          <h3>แก้ไขเซนเซอร์</h3>
+          <p class="manage-type-hint">เซนเซอร์นี้ถูกเพิ่มไว้ด้วยชื่อ "{{ managingType.name }}" แก้ไขชื่อ/ไอคอน หรือลบทิ้งได้ที่นี่</p>
 
           <div class="field-stack">
             <div class="input-pill">
-              <input type="text" [(ngModel)]="editName" placeholder="ชื่ออุปกรณ์ *" maxlength="100">
+              <input type="text" [(ngModel)]="editName" placeholder="ชื่อเซนเซอร์ *" maxlength="100">
             </div>
           </div>
 

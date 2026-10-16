@@ -5,12 +5,12 @@
         <img src="assets/images/logo.png" alt="Farm Logo">
       </div>
       <div class="title-group">
-        <h1>สถานะอุปกรณ์ <span *ngIf="coopName" class="coop-name">({{ coopName }})</span></h1>
+        <h1>สถานะเซนเซอร์<span *ngIf="coopName" class="coop-name">({{ coopName }})</span></h1>
       </div>
     </div>
   </header>
 
-  <p class="loading-hint" *ngIf="isLoading">กำลังโหลดข้อมูลอุปกรณ์...</p>
+  <p class="loading-hint" *ngIf="isLoading">กำลังโหลดข้อมูลเซนเซอร์...</p>
 
   <main class="canvas-wrapper" *ngIf="!isLoading">
 
@@ -52,7 +52,7 @@
       </div>
 
       <div class="canvas-empty-hint" *ngIf="placedSlots.length === 0">
-        ยังไม่มีอุปกรณ์ที่จัดวางไว้ในคอกนี้
+        ยังไม่มีเซนเซอร์ที่จัดวางไว้ในคอกนี้
       </div>
 
       <div class="zone-door">
@@ -90,7 +90,7 @@
         </ng-container>
 
         <ng-template #noDevice>
-          <div class="no-device-msg">ยังไม่มีอุปกรณ์ในคอกนี้</div>
+          <div class="no-device-msg">ยังไม่มีเซนเซอร์ในคอกนี้</div>
         </ng-template>
       </div>
     </div>

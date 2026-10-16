@@ -551,7 +551,7 @@ export class DataCoopComponent implements OnInit, OnDestroy {
 
   private static readonly POPUP_TITLES: Record<string, string> = {
     setup: 'จัดวางเซนเซอร์',
-    status: 'สถานะอุปกรณ์',
+    status: 'สถานะเซนเซอร์',
     egg: 'บันทึกไข่',
     health: 'ตรวจสุขภาพ',
     vaccine: 'ให้วัคซีน',

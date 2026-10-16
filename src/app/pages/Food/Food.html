@@ -191,7 +191,7 @@
           สต็อกอาหาร{{ selectedDeductType }}หมดแล้ว ไม่มีอะไรให้ตัด
         </p>
 
-        <button type="button" class="secondary-action-btn" [disabled]="isDeducting || !selectedDeductType || isSelectedStockEmpty" (click)="forceDeductStock()">
+        <button type="button" class="secondary-action-btn" [disabled]="isDeducting || !selectedDeductType || isSelectedStockEmpty" (click)="askDeductStock()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"/>
             <line x1="8" y1="12" x2="16" y2="12"/>
@@ -211,7 +211,7 @@
                 <line x1="8" y1="12" x2="16" y2="12"/>
               </svg>
             </div>
-            <h2>เข้าสต็อกอาหาร</h2>
+            <h2>เพิ่มสต็อกอาหาร</h2>
           </div>
           <button type="button" class="icon-btn" title="ตั้งเงื่อนไขอายุไก่กับประเภทอาหาร" aria-label="ตั้งเงื่อนไขอายุไก่กับประเภทอาหาร" (click)="openAgeConfig()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -273,6 +273,18 @@
         <button type="button" class="modal-btn-save" [disabled]="isSavingAgeConfig" (click)="saveAgeConfig()">
           {{ isSavingAgeConfig ? 'กำลังบันทึก...' : 'บันทึก' }}
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ป็อบอัพยืนยันก่อนตัดสต็อก -->
+  <div class="custom-modal-overlay" *ngIf="showDeductConfirm" (click)="closeDeductConfirm()">
+    <div class="custom-modal" (click)="$event.stopPropagation()">
+      <h3>ยืนยันการตัดสต็อก</h3>
+      <p class="modal-hint">ต้องการตัดสต็อกอาหาร{{ selectedDeductType }}ของวันนี้ตอนนี้เลยใช่ไหม ระบบจะหักตามจำนวนไก่จริงในคอกที่กินอาหารประเภทนี้ และจะตัดอัตโนมัติอีกครั้งตอน 6 โมงเช้าตามปกติ</p>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn-cancel" (click)="closeDeductConfirm()">ยกเลิก</button>
+        <button type="button" class="modal-btn-save" (click)="confirmDeductStock()">ยืนยันตัดสต็อก</button>
       </div>
     </div>
   </div>
