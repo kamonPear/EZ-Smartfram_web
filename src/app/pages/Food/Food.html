@@ -237,7 +237,7 @@
   <div class="custom-modal-overlay" *ngIf="showAgeConfig" (click)="closeAgeConfig()">
     <div class="custom-modal" (click)="$event.stopPropagation()">
       <h3>เงื่อนไขอายุไก่กับประเภทอาหาร</h3>
-      <p class="modal-hint">กำหนดว่าไก่อายุกี่สัปดาห์ (นับจากวันเกิดของแต่ละคอก) ให้กินอาหารประเภทไหน ช่วงอายุนับรวมค่าเริ่มต้น ไม่รวมค่าสิ้นสุด</p>
+      <p class="modal-hint">กำหนดว่าไก่อายุกี่สัปดาห์ (นับจากวันเกิดของแต่ละคอก) ให้กินอาหารประเภทไหน และไก่ 1 ตัวกินกี่กรัมต่อวัน ระบบจะนำไปคำนวณปริมาณที่แต่ละคอกกินต่อวัน ช่วงอายุนับรวมค่าเริ่มต้น ไม่รวมค่าสิ้นสุด</p>
 
       <div class="age-config-group">
         <span class="age-config-label">{{ FOOD_TYPE_SMALL }}</span>
@@ -247,6 +247,11 @@
           <span>ถึง</span>
           <input type="number" min="1" step="1" [(ngModel)]="ageForm.small_max_weeks">
           <span>สัปดาห์</span>
+        </div>
+        <div class="age-config-inputs age-config-grams">
+          <span>ไก่ 1 ตัวกินวันละ</span>
+          <input type="number" min="0" step="any" [(ngModel)]="ageForm.small_grams_per_bird">
+          <span>กรัม</span>
         </div>
       </div>
 
@@ -258,6 +263,11 @@
           <span>ถึง</span>
           <input type="number" min="0" step="1" [(ngModel)]="ageForm.large_max_weeks">
           <span>สัปดาห์</span>
+        </div>
+        <div class="age-config-inputs age-config-grams">
+          <span>ไก่ 1 ตัวกินวันละ</span>
+          <input type="number" min="0" step="any" [(ngModel)]="ageForm.large_grams_per_bird">
+          <span>กรัม</span>
         </div>
         <small class="age-config-note">ใส่ 0 ที่ช่อง "ถึง" = ไม่จำกัดอายุ</small>
       </div>

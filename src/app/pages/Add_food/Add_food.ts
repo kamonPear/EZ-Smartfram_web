@@ -55,10 +55,6 @@ export class AddFoodComponent {
   // ถูกตัดจริงทุกวันตอน 6 โมงเช้า ถ้าคอกยังไม่มี/ยังไม่รู้อายุ จะได้ 0 แล้วใช้ค่าเผื่อไว้แทน (เคส
   // ฟาร์มเพิ่งเริ่มยังไม่มีคอกให้คำนวณจากของจริงได้)
   private dailyConsumptionByType: Record<string, number> = {};
-  private readonly fallbackConsumePerDay: Record<string, number> = {
-    [FOOD_TYPE_SMALL]: 20,
-    [FOOD_TYPE_LARGE]: 30,
-  };
 
   showToast = false;
   toastMessage = '';
@@ -103,10 +99,10 @@ export class AddFoodComponent {
       this.expiryDate = null;
       return;
     }
-    const consumePerDay = this.dailyConsumptionByType[this.selectedFoodType]
-      || this.fallbackConsumePerDay[this.selectedFoodType]
-      || 20;
-    const daysLeft = Math.ceil(amt / consumePerDay);
+    // อัตรากินต่อวันมาจากเงื่อนไขที่เจ้าของฟาร์มตั้งไว้ (ไม่มีค่าตายตัวในโค้ด) ถ้ายังไม่มี
+    // คอกที่กินอาหารประเภทนี้ หรือยังไม่ได้ตั้งเงื่อนไข จะประมาณวันไม่ได้ ใช้วันที่นำเข้าแทน
+    const consumePerDay = this.dailyConsumptionByType[this.selectedFoodType] || 0;
+    const daysLeft = consumePerDay > 0 ? Math.ceil(amt / consumePerDay) : 0;
     const start = this.importDate ?? new Date();
     const d = new Date(start);
     d.setDate(d.getDate() + daysLeft);

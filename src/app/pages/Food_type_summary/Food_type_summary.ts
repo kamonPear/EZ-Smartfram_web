@@ -12,6 +12,9 @@ interface CoopFoodConsumption {
   age_weeks: number;
   food_type: string;
   estimated_kg_per_day: number;
+  age_min_weeks: number;
+  age_max_weeks: number;
+  grams_per_bird: number;
 }
 
 interface FoodDistributionRow {
@@ -117,6 +120,13 @@ export class FoodTypeSummaryComponent {
 
   get totalChickens(): number {
     return this.coopsForSelectedType.reduce((sum, c) => sum + (c.amount || 0), 0);
+  }
+
+  // เหตุผลที่คอกนี้กินอาหารประเภทนี้: อายุอยู่ในช่วงที่เจ้าของฟาร์มตั้งไว้ (max 0 = ไม่จำกัด)
+  ageRangeText(coop: CoopFoodConsumption): string {
+    return coop.age_max_weeks === 0
+      ? `ตั้งแต่ ${coop.age_min_weeks} สัปดาห์ขึ้นไป`
+      : `${coop.age_min_weeks}-${coop.age_max_weeks} สัปดาห์`;
   }
 
   selectFoodType(type: string) {
