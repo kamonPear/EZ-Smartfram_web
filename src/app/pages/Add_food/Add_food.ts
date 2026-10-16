@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picker-calendar';
 import { formatDateKey } from '../../shared/calendar-markers.util';
-import { FOOD_TYPE_SMALL, FOOD_TYPE_LARGE, FoodAgeConfig } from '../Food/Food';
+import { FOOD_TYPE_SMALL, FOOD_TYPE_LARGE, FoodAgeRule } from '../Food/Food';
 
 type DateField = 'import' | 'expiry' | null;
 
@@ -13,13 +13,13 @@ function ageRangeText(min: number, max: number): string {
   return max === 0 ? `ตั้งแต่ ${min} สัปดาห์ขึ้นไป` : `${min}-${max} สัปดาห์`;
 }
 
-export function foodTypeAgeHint(foodType: string | null, cfg: FoodAgeConfig | null = null): string {
-  // ยังไม่ได้ตั้งเงื่อนไข -> ไม่โชว์ช่วงอายุตายตัว
-  if (!cfg || !cfg.configured) return 'เลือกประเภทอาหารให้ตรงกับช่วงอายุไก่ (ตั้งช่วงอายุได้ที่หน้าคลังอาหาร)';
-  const c = cfg;
-  if (foodType === FOOD_TYPE_SMALL) return 'สำหรับไก่อายุ ' + ageRangeText(c.small_min_weeks, c.small_max_weeks);
-  if (foodType === FOOD_TYPE_LARGE) return 'สำหรับไก่อายุ ' + ageRangeText(c.large_min_weeks, c.large_max_weeks);
-  return 'เลือกประเภทอาหารให้ตรงกับช่วงอายุไก่';
+// ข้อความใต้ปุ่มเลือกประเภทอาหาร: สรุปช่วงอายุของประเภทนั้นจากตารางที่เจ้าของฟาร์มกรอกไว้
+export function foodTypeAgeHint(foodType: string | null, rules: FoodAgeRule[] = []): string {
+  const mine = rules.filter(r => r.food_type === foodType).sort((a, b) => a.min_weeks - b.min_weeks);
+  if (!foodType || mine.length === 0) {
+    return 'ยังไม่ได้ตั้งช่วงอายุของประเภทนี้ (ตั้งได้ที่หน้าคลังอาหาร)';
+  }
+  return 'สำหรับไก่อายุ ' + mine.map(r => ageRangeText(r.min_weeks, r.max_weeks)).join(', ');
 }
 
 // หน้า "เพิ่มสต็อกอาหาร" - ย้ายมาจากแอปมือถือ (Main_DataAdd_Food1) บันทึกผ่าน
@@ -35,9 +35,9 @@ export function foodTypeAgeHint(foodType: string | null, cfg: FoodAgeConfig | nu
 export class AddFoodComponent {
   readonly FOOD_TYPE_SMALL = FOOD_TYPE_SMALL;
   readonly FOOD_TYPE_LARGE = FOOD_TYPE_LARGE;
-  ageConfig: FoodAgeConfig | null = null;
+  ageRules: FoodAgeRule[] = [];
   ageHint(type: string | null): string {
-    return foodTypeAgeHint(type, this.ageConfig);
+    return foodTypeAgeHint(type, this.ageRules);
   }
 
   selectedFoodType: string | null = null;
@@ -66,8 +66,8 @@ export class AddFoodComponent {
     private cdr: ChangeDetectorRef
   ) {
     this.loadDailyConsumption();
-    this.api.get<FoodAgeConfig>('/food-age-config').subscribe({
-      next: (cfg) => { this.ageConfig = cfg; this.cdr.detectChanges(); },
+    this.api.get<FoodAgeRule[]>('/food-age-rules').subscribe({
+      next: (rules) => { this.ageRules = rules || []; this.cdr.detectChanges(); },
       error: (err) => console.error('โหลดเงื่อนไขอายุไม่สำเร็จ:', err),
     });
   }

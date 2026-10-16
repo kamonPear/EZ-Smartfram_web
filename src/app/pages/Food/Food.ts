@@ -27,24 +27,21 @@ interface CoopFoodConsumption {
   estimated_kg_per_day: number;
 }
 
-export interface FoodAgeConfig {
-  small_min_weeks: number;
-  small_max_weeks: number;
-  large_min_weeks: number;
-  large_max_weeks: number;
-  small_grams_per_bird: number;
-  large_grams_per_bird: number;
-  configured?: boolean;
+// หนึ่งแถวในตารางการให้อาหารที่เจ้าของฟาร์มกรอกเอง: ไก่อายุ [min, max) สัปดาห์ กินอาหาร
+// ประเภทนี้ ตัวละกี่กรัมต่อวัน (max = 0 คือไม่จำกัด) เก็บใน DB ตาราง food_age_rule
+export interface FoodAgeRule {
+  food_type: string;
+  min_weeks: number;
+  max_weeks: number;
+  grams_per_bird: number;
 }
 
-// ค่าในฟอร์มตั้งเงื่อนไข - เริ่มว่างเปล่า (null) ถ้าเจ้าของฟาร์มยังไม่เคยตั้งค่า
-interface AgeForm {
-  small_min_weeks: number | null;
-  small_max_weeks: number | null;
-  large_min_weeks: number | null;
-  large_max_weeks: number | null;
-  small_grams_per_bird: number | null;
-  large_grams_per_bird: number | null;
+// แถวในฟอร์ม - ช่องตัวเลขเริ่มว่างเปล่า (null) ให้กรอกเอง
+interface AgeRuleRow {
+  food_type: string;
+  min_weeks: number | null;
+  max_weeks: number | null;
+  grams_per_bird: number | null;
 }
 
 interface HistoryEntry {
@@ -84,7 +81,7 @@ export class FoodComponent {
   showAgeConfig = false;
   isSavingAgeConfig = false;
   ageConfigError = '';
-  ageForm: AgeForm = this.emptyAgeForm();
+  ageRules: AgeRuleRow[] = [];
 
   showToast = false;
   toastMessage = '';
@@ -241,28 +238,32 @@ export class FoodComponent {
     });
   }
 
-  private emptyAgeForm(): AgeForm {
-    return {
-      small_min_weeks: null, small_max_weeks: null, large_min_weeks: null, large_max_weeks: null,
-      small_grams_per_bird: null, large_grams_per_bird: null,
-    };
+  private blankAgeRule(): AgeRuleRow {
+    return { food_type: FOOD_TYPE_SMALL, min_weeks: null, max_weeks: null, grams_per_bird: null };
+  }
+
+  addAgeRule() {
+    this.ageRules.push(this.blankAgeRule());
+    this.ageConfigError = '';
+  }
+
+  removeAgeRule(index: number) {
+    this.ageRules.splice(index, 1);
+    this.ageConfigError = '';
   }
 
   openAgeConfig() {
     this.ageConfigError = '';
-    this.api.get<FoodAgeConfig>('/food-age-config').subscribe({
-      next: (cfg) => {
-        // ยังไม่เคยตั้งค่า -> ปล่อยช่องว่างให้กรอกเอง (ไม่เติมค่าให้)
-        this.ageForm = cfg.configured
-          ? {
-              small_min_weeks: cfg.small_min_weeks,
-              small_max_weeks: cfg.small_max_weeks,
-              large_min_weeks: cfg.large_min_weeks,
-              large_max_weeks: cfg.large_max_weeks,
-              small_grams_per_bird: cfg.small_grams_per_bird,
-              large_grams_per_bird: cfg.large_grams_per_bird,
-            }
-          : this.emptyAgeForm();
+    this.api.get<FoodAgeRule[]>('/food-age-rules').subscribe({
+      next: (rules) => {
+        // ยังไม่เคยกรอก -> เริ่มด้วยแถวว่าง 1 แถว (ไม่เติมค่าให้)
+        this.ageRules = (rules || []).map(r => ({
+          food_type: r.food_type,
+          min_weeks: r.min_weeks,
+          max_weeks: r.max_weeks,
+          grams_per_bird: r.grams_per_bird,
+        }));
+        if (this.ageRules.length === 0) this.ageRules.push(this.blankAgeRule());
         this.showAgeConfig = true;
         this.cdr.detectChanges();
       },
@@ -279,44 +280,45 @@ export class FoodComponent {
   }
 
   saveAgeConfig() {
-    const f = this.ageForm;
-    const raw = [f.small_min_weeks, f.small_max_weeks, f.large_min_weeks, f.large_max_weeks,
-      f.small_grams_per_bird, f.large_grams_per_bird];
-    if (raw.some(v => v === null || (v as unknown) === '')) {
-      this.ageConfigError = 'กรุณากรอกให้ครบทุกช่อง';
+    if (this.ageRules.length === 0) {
+      this.ageConfigError = 'กรุณาเพิ่มช่วงอายุอย่างน้อย 1 แถว';
       return;
     }
-    const all = raw.map(Number);
-    const nums = all.slice(0, 4);
-    const [sGrams, lGrams] = all.slice(4);
-    if (!(sGrams > 0) || !(lGrams > 0)) {
-      this.ageConfigError = 'ปริมาณอาหารต่อตัวต่อวัน (กรัม) ต้องมากกว่า 0';
-      return;
+    const rules: FoodAgeRule[] = [];
+    for (let i = 0; i < this.ageRules.length; i++) {
+      const row = this.ageRules[i];
+      const n = i + 1;
+      const vals = [row.min_weeks, row.max_weeks, row.grams_per_bird];
+      if (vals.some(v => v === null || v === undefined || (v as unknown) === '')) {
+        this.ageConfigError = `แถวที่ ${n}: กรุณากรอกให้ครบทุกช่อง`;
+        return;
+      }
+      const min = Number(row.min_weeks), max = Number(row.max_weeks), grams = Number(row.grams_per_bird);
+      if (!Number.isInteger(min) || !Number.isInteger(max) || min < 0 || max < 0) {
+        this.ageConfigError = `แถวที่ ${n}: อายุต้องเป็นจำนวนเต็ม (สัปดาห์) ที่ไม่ติดลบ`;
+        return;
+      }
+      if (max !== 0 && max <= min) {
+        this.ageConfigError = `แถวที่ ${n}: อายุสิ้นสุดต้องมากกว่าอายุเริ่มต้น (หรือใส่ 0 = ไม่จำกัด)`;
+        return;
+      }
+      if (!(grams > 0)) {
+        this.ageConfigError = `แถวที่ ${n}: ปริมาณอาหารต่อตัวต่อวัน (กรัม) ต้องมากกว่า 0`;
+        return;
+      }
+      rules.push({ food_type: row.food_type, min_weeks: min, max_weeks: max, grams_per_bird: grams });
     }
-    if (nums.some(n => !Number.isInteger(n) || n < 0)) {
-      this.ageConfigError = 'กรุณากรอกอายุเป็นจำนวนเต็ม (สัปดาห์) ที่ไม่ติดลบ';
-      return;
-    }
-    const [sMin, sMax, lMin, lMax] = nums;
-    if (sMax <= sMin) {
-      this.ageConfigError = `อายุสิ้นสุดของ${FOOD_TYPE_SMALL}ต้องมากกว่าอายุเริ่มต้น`;
-      return;
-    }
-    if (lMax !== 0 && lMax <= lMin) {
-      this.ageConfigError = `อายุสิ้นสุดของ${FOOD_TYPE_LARGE}ต้องมากกว่าอายุเริ่มต้น (หรือใส่ 0 = ไม่จำกัด)`;
-      return;
-    }
-    if (!(sMax <= lMin || (lMax !== 0 && lMax <= sMin))) {
-      this.ageConfigError = 'ช่วงอายุของสองประเภทต้องไม่ซ้อนทับกัน';
-      return;
+    const sorted = [...rules].sort((a, b) => a.min_weeks - b.min_weeks);
+    for (let i = 1; i < sorted.length; i++) {
+      if (sorted[i - 1].max_weeks === 0 || sorted[i - 1].max_weeks > sorted[i].min_weeks) {
+        this.ageConfigError = 'ช่วงอายุของแต่ละแถวต้องไม่ซ้อนทับกัน';
+        return;
+      }
     }
 
     this.ageConfigError = '';
     this.isSavingAgeConfig = true;
-    this.api.put<FoodAgeConfig>('/food-age-config', {
-      small_min_weeks: sMin, small_max_weeks: sMax, large_min_weeks: lMin, large_max_weeks: lMax,
-      small_grams_per_bird: sGrams, large_grams_per_bird: lGrams,
-    }).subscribe({
+    this.api.put<FoodAgeRule[]>('/food-age-rules', { rules }).subscribe({
       next: () => {
         this.isSavingAgeConfig = false;
         this.showAgeConfig = false;
