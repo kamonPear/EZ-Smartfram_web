@@ -40,7 +40,7 @@
           <span class="coop-row-name">รวมทุกคอก</span>
           <span class="coop-row-sub">{{ coopsForSelectedType.length }} คอก • {{ totalChickens }} ตัว</span>
         </div>
-        <span class="coop-row-actual has-value">{{ totalActualKg.toFixed(1) }} กก.</span>
+        <span class="coop-row-actual has-value">{{ formatKg(totalActualKg) }} กก.</span>
       </div>
 
       <p class="section-label">แยกตามคอก</p>
@@ -58,7 +58,7 @@
         </div>
 
         <span class="coop-row-actual" [class.has-value]="actualKgFor(coop.coop_id, selectedFoodType) !== null">
-          {{ actualKgFor(coop.coop_id, selectedFoodType) !== null ? (actualKgFor(coop.coop_id, selectedFoodType) ?? 0).toFixed(1) + ' กก.' : '-' }}
+          {{ actualKgFor(coop.coop_id, selectedFoodType) !== null ? formatKg(actualKgFor(coop.coop_id, selectedFoodType) ?? 0) + ' กก.' : '-' }}
         </span>
         <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="9 18 15 12 9 6"/>
@@ -76,7 +76,7 @@
       <div class="history-modal-list" *ngIf="historyRows.length > 0">
         <div class="history-modal-row" *ngFor="let row of historyRows">
           <span>{{ formatDateSimple(row.distributed_at) }}</span>
-          <span>{{ row.kg_given.toFixed(1) }} กก.</span>
+          <span>{{ formatKg(row.kg_given) }} กก.</span>
         </div>
       </div>
 
