@@ -93,6 +93,12 @@
   font-weight: 600;
   transition: all 0.2s ease;
 
+  // ชื่อยาวที่ไม่มีช่องว่าง (เช่น "DHT22(อุณหภูมิ)") ต้องตัดบรรทัดได้ ไม่งั้นดันการ์ดกว้างเกินถาด
+  span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
   .palette-icon {
     width: 42px;
     height: 42px;
@@ -573,6 +579,7 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;   // กันแถบเลื่อนแนวนอน (hover ที่เลื่อนการ์ดไปขวา 4px เคยทำให้ล้น)
     padding-right: 4px;
   }
 
