@@ -88,7 +88,7 @@
                   </g>
                 </svg>
               </span>
-              <input type="text" [(ngModel)]="medicineName" placeholder="เช่น นิวคาสเซิล, หลอดลมอักเสบ">
+              <input type="text" [(ngModel)]="medicineName" maxlength="150" placeholder="เช่น นิวคาสเซิล, หลอดลมอักเสบ">
             </div>
             <p class="field-warning" *ngIf="isDuplicateName">มียา/วัคซีนชื่อนี้อยู่ในระบบแล้ว กรุณาใช้ชื่ออื่น</p>
           </div>

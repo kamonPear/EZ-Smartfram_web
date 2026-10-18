@@ -604,6 +604,11 @@
     font-size: 0.92rem;
 
     &:focus { outline: none; border-color: #F5A623; }
+
+    option {
+      background-color: #1B2A38;
+      color: var(--text-title);
+    }
   }
 }
 
