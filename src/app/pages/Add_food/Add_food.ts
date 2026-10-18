@@ -43,6 +43,8 @@ export class AddFoodComponent {
   selectedFoodType: string | null = null;
   importDate: Date | null = new Date();
   amount: number | null = null;
+  // ปริมาณ (กก.) ที่เจ้าของฟาร์มกำหนดให้แจ้งเตือน "ใกล้หมด" ของประเภทนี้ (ว่าง = ใช้ค่าเดิม)
+  minQuantity: number | null = null;
   // คำนวณอัตโนมัติจากปริมาณที่นำเข้าและอัตรากินต่อวัน (ไม่มีช่องกรอกแล้ว)
   expiryDate: Date | null = null;
 
@@ -66,6 +68,7 @@ export class AddFoodComponent {
     private cdr: ChangeDetectorRef
   ) {
     this.loadDailyConsumption();
+    this.loadSavedThresholds();
     this.api.get<FoodAgeRule[]>('/food-age-rules').subscribe({
       next: (rules) => { this.ageRules = rules || []; this.cdr.detectChanges(); },
       error: (err) => console.error('โหลดเงื่อนไขอายุไม่สำเร็จ:', err),
@@ -88,8 +91,28 @@ export class AddFoodComponent {
     });
   }
 
+  // ปริมาณใกล้หมดที่เจ้าของเคยตั้งไว้ของแต่ละประเภท ไว้เติมในช่องให้อัตโนมัติเวลานำเข้า
+  // รอบถัดไป จะได้ไม่ต้องกรอกซ้ำ (แก้ทับได้)
+  private savedMinByType: Record<string, number> = {};
+
+  private loadSavedThresholds() {
+    this.api.get<{ food_type: string; min_quantity?: number }[]>('/foods').subscribe({
+      next: (rows) => {
+        const saved: Record<string, number> = {};
+        for (const row of rows || []) {
+          if (row.food_type && (row.min_quantity ?? 0) > 0) saved[row.food_type] = Number(row.min_quantity);
+        }
+        this.savedMinByType = saved;
+        if (this.selectedFoodType) this.minQuantity = saved[this.selectedFoodType] ?? null;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('โหลดปริมาณใกล้หมดที่เคยตั้งไม่สำเร็จ:', err),
+    });
+  }
+
   selectFoodType(type: string) {
     this.selectedFoodType = type;
+    this.minQuantity = this.savedMinByType[type] ?? null;
     this.recalculateExpiryDate();
   }
 
@@ -174,13 +197,19 @@ export class AddFoodComponent {
       return;
     }
 
+    if (this.minQuantity != null && this.minQuantity < 0) {
+      this.flashToast('ปริมาณแจ้งเตือนต้องไม่ติดลบ', 'error');
+      return;
+    }
+
     this.isSaving = true;
-    const payload = {
+    const payload: Record<string, unknown> = {
       food_type: this.selectedFoodType,
       // import_volume เป็น int ฝั่ง backend (models.CreateImportFoodRequest)
       import_volume: Math.round(this.amount),
       expiry_date: `${formatDateKey(this.expiryDate)}T00:00:00Z`,
     };
+    if (this.minQuantity != null) payload['min_quantity'] = Number(this.minQuantity);
 
     this.api.post('/importfoods', payload).subscribe({
       next: () => {

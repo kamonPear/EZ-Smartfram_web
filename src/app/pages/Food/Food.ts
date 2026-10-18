@@ -16,6 +16,8 @@ interface FoodStock {
   food_type: string;
   quantity_current: number;
   date_up: string;
+  // ปริมาณที่เจ้าของฟาร์มกำหนดให้แจ้งเตือน "ใกล้หมด" (0 = ไม่ได้ตั้ง)
+  min_quantity?: number;
 }
 
 interface CoopFoodConsumption {
@@ -197,6 +199,45 @@ export class FoodComponent {
     const date = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
     const time = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
     return `${date} เวลา ${time} น.`;
+  }
+
+  // แก้ปริมาณแจ้งเตือน "ใกล้หมด" ของประเภทอาหารหนึ่ง (ต้องมีแถวสต็อกแล้ว = เคยนำเข้า)
+  editingMinType: string | null = null;
+  minDraft: number | null = null;
+  isSavingMin = false;
+
+  startEditMin(foodType: string, stock: FoodStock | null) {
+    if (!stock) return;
+    this.editingMinType = foodType;
+    this.minDraft = stock.min_quantity && stock.min_quantity > 0 ? stock.min_quantity : null;
+  }
+
+  cancelEditMin() {
+    this.editingMinType = null;
+  }
+
+  saveMinQuantity() {
+    if (!this.editingMinType) return;
+    const value = this.minDraft == null ? 0 : Number(this.minDraft);
+    if (isNaN(value) || value < 0) {
+      this.flashToast('ปริมาณแจ้งเตือนต้องไม่ติดลบ', 'error');
+      return;
+    }
+    const foodType = this.editingMinType;
+    this.isSavingMin = true;
+    this.api.put('/foods/min-quantity', { food_type: foodType, min_quantity: value }).subscribe({
+      next: () => {
+        this.isSavingMin = false;
+        this.editingMinType = null;
+        this.flashToast(value > 0 ? `ตั้งแจ้งเตือน${foodType}ใกล้หมดที่ ${value} กก. แล้ว` : `ปิดแจ้งเตือน${foodType}ใกล้หมดแล้ว`);
+        this.loadAll();
+      },
+      error: (err) => {
+        this.isSavingMin = false;
+        console.error('บันทึกปริมาณแจ้งเตือนไม่สำเร็จ:', err);
+        this.flashToast('บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
+      }
+    });
   }
 
   selectDeductType(foodType: string) {

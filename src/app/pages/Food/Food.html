@@ -43,6 +43,7 @@
             </div>
             <span class="stock-tile-label">{{ FOOD_TYPE_SMALL }}</span>
             <span class="stock-tile-value">{{ formatAmount(smallStock?.quantity_current) }}<small> กก.</small></span>
+            <ng-container *ngTemplateOutlet="minTpl; context: { type: FOOD_TYPE_SMALL, stock: smallStock }"></ng-container>
             <span class="stock-tile-updated">{{ smallStock ? formatDateTime(smallStock.date_up) : 'ยังไม่มีข้อมูล' }}</span>
           </div>
 
@@ -55,9 +56,25 @@
             </div>
             <span class="stock-tile-label">{{ FOOD_TYPE_LARGE }}</span>
             <span class="stock-tile-value">{{ formatAmount(largeStock?.quantity_current) }}<small> กก.</small></span>
+            <ng-container *ngTemplateOutlet="minTpl; context: { type: FOOD_TYPE_LARGE, stock: largeStock }"></ng-container>
             <span class="stock-tile-updated">{{ largeStock ? formatDateTime(largeStock.date_up) : 'ยังไม่มีข้อมูล' }}</span>
           </div>
         </div>
+
+        <!-- แถวตั้งปริมาณแจ้งเตือน "ใกล้หมด" ของแต่ละประเภท (เจ้าของฟาร์มกำหนดเอง) -->
+        <ng-template #minTpl let-type="type" let-stock="stock">
+          <div class="stock-tile-min" *ngIf="editingMinType !== type">
+            <span *ngIf="!stock">นำเข้าสต็อกก่อนจึงตั้งแจ้งเตือนได้</span>
+            <button type="button" class="min-link" *ngIf="stock" (click)="startEditMin(type, stock)">
+              🔔 {{ stock.min_quantity > 0 ? 'เตือนเมื่อเหลือ ≤ ' + formatAmount(stock.min_quantity) + ' กก.' : 'ยังไม่ตั้งแจ้งเตือนใกล้หมด' }} ✎
+            </button>
+          </div>
+          <div class="stock-tile-min is-editing" *ngIf="editingMinType === type">
+            <input type="number" min="0" [(ngModel)]="minDraft" placeholder="กก. (ว่าง = ปิด)" (keyup.enter)="saveMinQuantity()">
+            <button type="button" class="min-save" [disabled]="isSavingMin" (click)="saveMinQuantity()">บันทึก</button>
+            <button type="button" class="min-cancel" (click)="cancelEditMin()">ยกเลิก</button>
+          </div>
+        </ng-template>
       </div>
 
       <!-- สรุปผลอาหารแต่ละประเภท - แตะเพื่อดูการกินอาหารแยกตามคอก -->

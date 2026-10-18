@@ -48,8 +48,6 @@ function loadFoodSwitchAcks(): string[] {
   }
 }
 
-// สต็อกอาหารเหลือต่ำกว่านี้ (กก.) แจ้งเตือน "ใกล้หมดแล้ว" เสมอ ไม่ว่าจะตั้งขั้นต่ำไว้เท่าไร
-const FOOD_LOW_KG = 20;
 
 // เตือนล่วงหน้า/ค้างหลังเปลี่ยนช่วงอายุกี่วัน (ก่อนและหลังวันที่ไก่ถึงอายุขั้นต่ำของช่วงใหม่)
 const FOOD_SWITCH_WINDOW_DAYS = 3;
@@ -156,7 +154,7 @@ export class NotificationsService {
           urgent: true,
           daysUntil: -999,
         });
-      } else if (current < FOOD_LOW_KG || current <= min) {
+      } else if (min > 0 && current <= min) {
         notifications.push({
           id: `food_${foodId}`,
           type: 'food',
