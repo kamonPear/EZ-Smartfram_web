@@ -140,6 +140,57 @@
     }
   }
 
+  &-min {
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+
+    .min-link {
+      padding: 0;
+      border: 0;
+      background: none;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    &.is-editing {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+
+      input {
+        flex: 1 1 90px;
+        min-width: 0;
+        padding: 4px 8px;
+        border-radius: 8px;
+        border: 1px solid var(--border-subtle);
+        background: var(--bg-panel);
+        color: var(--text-title);
+        font: inherit;
+      }
+
+      button {
+        padding: 4px 10px;
+        border: 0;
+        border-radius: 8px;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .min-save {
+        background: var(--accent-green-bright);
+        color: #fff;
+      }
+
+      .min-cancel {
+        background: transparent;
+        color: var(--text-secondary);
+      }
+    }
+  }
+
   &-updated {
     margin-top: auto;
     color: var(--text-secondary);
