@@ -43,6 +43,7 @@
             </div>
             <span class="stock-tile-label">{{ FOOD_TYPE_SMALL }}</span>
             <span class="stock-tile-value">{{ formatAmount(smallStock?.quantity_current) }}<small> กก.</small></span>
+            <ng-container *ngTemplateOutlet="minTpl; context: { type: FOOD_TYPE_SMALL, stock: smallStock }"></ng-container>
             <span class="stock-tile-updated">{{ smallStock ? formatDateTime(smallStock.date_up) : 'ยังไม่มีข้อมูล' }}</span>
           </div>
 
@@ -55,9 +56,26 @@
             </div>
             <span class="stock-tile-label">{{ FOOD_TYPE_LARGE }}</span>
             <span class="stock-tile-value">{{ formatAmount(largeStock?.quantity_current) }}<small> กก.</small></span>
+            <ng-container *ngTemplateOutlet="minTpl; context: { type: FOOD_TYPE_LARGE, stock: largeStock }"></ng-container>
             <span class="stock-tile-updated">{{ largeStock ? formatDateTime(largeStock.date_up) : 'ยังไม่มีข้อมูล' }}</span>
           </div>
         </div>
+
+        <!-- แถวตั้งปริมาณแจ้งเตือน "ใกล้หมด" ของแต่ละประเภท (เจ้าของฟาร์มกำหนดเอง) -->
+        <ng-template #minTpl let-type="type" let-stock="stock">
+          <div class="stock-tile-min" *ngIf="editingMinType !== type">
+            <span *ngIf="minLocked">🔒 เตือนเมื่อเหลือ ≤ {{ formatAmount(lockedMinValue) }} กก. (ล็อกแล้ว)</span>
+            <span *ngIf="!minLocked && !stock">นำเข้าสต็อกก่อนจึงตั้งแจ้งเตือนได้</span>
+            <button type="button" class="min-link" *ngIf="!minLocked && stock" (click)="startEditMin(type, stock)">
+              🔔 ยังไม่ตั้งแจ้งเตือนใกล้หมด (ตั้งได้ครั้งเดียว) ✎
+            </button>
+          </div>
+          <div class="stock-tile-min is-editing" *ngIf="editingMinType === type">
+            <input type="number" min="0" [(ngModel)]="minDraft" placeholder="กก." (keyup.enter)="saveMinQuantity()">
+            <button type="button" class="min-save" [disabled]="isSavingMin" (click)="saveMinQuantity()">บันทึก</button>
+            <button type="button" class="min-cancel" (click)="cancelEditMin()">ยกเลิก</button>
+          </div>
+        </ng-template>
       </div>
 
       <!-- สรุปผลอาหารแต่ละประเภท - แตะเพื่อดูการกินอาหารแยกตามคอก -->
@@ -239,13 +257,22 @@
       <h3>เงื่อนไขอายุไก่กับประเภทอาหาร</h3>
       <p class="modal-hint">กรอกตารางว่าไก่อายุกี่สัปดาห์ (นับจากวันเกิดของแต่ละคอก) ให้กินอาหารประเภทไหน และไก่ 1 ตัวกินกี่กรัมต่อวัน เพิ่มได้หลายแถว ระบบจะนำไปคำนวณว่าแต่ละคอกกินอาหารอะไรและกินวันละเท่าไร ช่วงอายุนับรวมค่าเริ่มต้น ไม่รวมค่าสิ้นสุด</p>
 
-      <div class="age-rule-list">
+      <div class="type-select-backdrop" *ngIf="openTypeMenu !== null" (click)="closeTypeMenu()"></div>
+      <div class="age-rule-list" [class.menu-open]="openTypeMenu !== null">
         <div class="age-rule-row" *ngFor="let rule of ageRules; let i = index">
           <div class="age-rule-head">
-            <select [(ngModel)]="rule.food_type" aria-label="ประเภทอาหาร">
-              <option [ngValue]="FOOD_TYPE_SMALL">{{ FOOD_TYPE_SMALL }}</option>
-              <option [ngValue]="FOOD_TYPE_LARGE">{{ FOOD_TYPE_LARGE }}</option>
-            </select>
+            <div class="type-select" [class.open]="openTypeMenu === i">
+              <button type="button" class="type-select-btn" aria-haspopup="listbox" [attr.aria-expanded]="openTypeMenu === i" aria-label="ประเภทอาหาร" (click)="toggleTypeMenu(i)">
+                <span>{{ rule.food_type }}</span>
+                <svg class="type-select-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="type-select-menu" role="listbox" *ngIf="openTypeMenu === i">
+                <button type="button" role="option" class="type-select-option" *ngFor="let t of [FOOD_TYPE_SMALL, FOOD_TYPE_LARGE]" [class.selected]="rule.food_type === t" [attr.aria-selected]="rule.food_type === t" (click)="pickType(rule, t)">
+                  <span>{{ t }}</span>
+                  <svg *ngIf="rule.food_type === t" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>
+              </div>
+            </div>
             <button type="button" class="age-rule-remove" title="ลบแถวนี้" aria-label="ลบแถวนี้" (click)="removeAgeRule(i)">✕</button>
           </div>
           <div class="age-config-inputs">

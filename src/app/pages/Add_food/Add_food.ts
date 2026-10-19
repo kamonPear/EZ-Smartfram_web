@@ -45,6 +45,8 @@ export class AddFoodComponent {
   selectedFoodType: string | null = null;
   importDate: Date | null = new Date();
   amount: number | null = null;
+  // ปริมาณ (กก.) ที่เจ้าของฟาร์มกำหนดให้แจ้งเตือน "ใกล้หมด" ของประเภทนี้ (ว่าง = ใช้ค่าเดิม)
+  minQuantity: number | null = null;
   // คำนวณอัตโนมัติจากปริมาณที่นำเข้าและอัตรากินต่อวัน (ไม่มีช่องกรอกแล้ว)
   expiryDate: Date | null = null;
 
@@ -68,6 +70,7 @@ export class AddFoodComponent {
     private cdr: ChangeDetectorRef
   ) {
     this.loadDailyConsumption();
+    this.loadSavedThresholds();
     this.api.get<FoodAgeRule[]>('/food-age-rules').subscribe({
       next: (rules) => { this.ageRules = rules || []; this.cdr.detectChanges(); },
       error: (err) => console.error('โหลดเงื่อนไขอายุไม่สำเร็จ:', err),
@@ -87,6 +90,26 @@ export class AddFoodComponent {
         this.cdr.detectChanges();
       },
       error: (err) => console.error('โหลดอัตราการกินอาหารไม่สำเร็จ:', err),
+    });
+  }
+
+  // ปริมาณใกล้หมดที่เจ้าของเคยตั้งไว้ ใช้ค่าเดียวร่วมกันทุกประเภทอาหาร เติมในช่องให้
+  // อัตโนมัติตั้งแต่เปิดหน้า จะได้ไม่ต้องกรอกซ้ำ (แก้ทับได้ และจะใช้กับทั้งสองประเภท)
+  // ตั้งได้ครั้งเดียว: ถ้าเคยตั้งแล้ว (minLocked) จะล็อกช่องนี้ แก้ไขไม่ได้ (backend ก็ปฏิเสธการแก้)
+  minLocked = false;
+  showMinConfirm = false;
+
+  private loadSavedThresholds() {
+    this.api.get<{ min_quantity?: number }[]>('/foods').subscribe({
+      next: (rows) => {
+        const saved = (rows || []).map(r => Number(r.min_quantity) || 0).find(v => v > 0);
+        if (saved != null) {
+          this.minQuantity = saved;
+          this.minLocked = true;
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('โหลดปริมาณใกล้หมดที่เคยตั้งไม่สำเร็จ:', err),
     });
   }
 
@@ -158,6 +181,11 @@ export class AddFoodComponent {
     }, 2500);
   }
 
+  cancelMinConfirm() {
+    this.showMinConfirm = false;
+    this.cdr.detectChanges();
+  }
+
   async saveFoodData() {
     if (!this.selectedFoodType) {
       this.flashToast('กรุณาเลือกประเภทอาหาร', 'error');
@@ -176,19 +204,41 @@ export class AddFoodComponent {
       return;
     }
 
-    // ให้เจ้าของฟาร์มทวนข้อมูลอีกรอบก่อนบันทึกจริง (ป็อบอัพกลาง services/confirm.service.ts)
-    const ok = await this.confirm.ask({
-      message: 'ตรวจสอบข้อมูลการนำเข้าอาหารก่อนบันทึก',
-      details: [`ประเภทอาหาร: ${this.selectedFoodType}`, `ปริมาณ: ${Math.round(this.amount!)} กก.`, `วันที่นำเข้า: ${thDate(this.importDate)}`, `วันหมดอายุ: ${thDate(this.expiryDate)}`],
-    });
-    if (!ok) return;
+    if (!this.minLocked && this.minQuantity != null && this.minQuantity < 0) {
+      this.flashToast('ปริมาณแจ้งเตือนต้องไม่ติดลบ', 'error');
+      return;
+    }
+
+    // กรอกปริมาณใกล้หมดเป็นครั้งแรก -> ถามยืนยันก่อน เพราะบันทึกแล้วแก้ไขไม่ได้
+    if (!this.minLocked && this.minQuantity != null && this.minQuantity > 0 && !this.showMinConfirm) {
+      this.showMinConfirm = true;
+      this.cdr.detectChanges();
+      return;
+    }
+    // กดยืนยันจากป็อบอัพ "ตั้งปริมาณใกล้หมด" มาแล้ว ถือว่ายืนยันแล้ว ไม่ถามซ้ำอีกรอบ
+    const confirmedViaMinDialog = this.showMinConfirm;
+    this.showMinConfirm = false;
+
+    if (!confirmedViaMinDialog) {
+      // ให้เจ้าของฟาร์มทวนข้อมูลอีกรอบก่อนบันทึกจริง (ป็อบอัพกลาง services/confirm.service.ts)
+      const ok = await this.confirm.ask({
+        message: 'ตรวจสอบข้อมูลการนำเข้าอาหารก่อนบันทึก',
+        details: [`ประเภทอาหาร: ${this.selectedFoodType}`, `ปริมาณ: ${Math.round(this.amount!)} กก.`, `วันที่นำเข้า: ${thDate(this.importDate)}`, `วันหมดอายุ: ${thDate(this.expiryDate)}`],
+      });
+      if (!ok) return;
+    }
+
     this.isSaving = true;
-    const payload = {
+    const payload: Record<string, unknown> = {
       food_type: this.selectedFoodType,
       // import_volume เป็น int ฝั่ง backend (models.CreateImportFoodRequest)
       import_volume: Math.round(this.amount),
       expiry_date: `${formatDateKey(this.expiryDate)}T00:00:00Z`,
     };
+    // ตั้งครั้งแรกเท่านั้น (ถ้าล็อกแล้วไม่ส่ง) และต้องมากกว่า 0
+    if (!this.minLocked && this.minQuantity != null && Number(this.minQuantity) > 0) {
+      payload['min_quantity'] = Number(this.minQuantity);
+    }
 
     this.api.post('/importfoods', payload).subscribe({
       next: () => {
