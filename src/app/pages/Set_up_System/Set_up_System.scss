@@ -587,3 +587,23 @@
     background: linear-gradient(to top, var(--bg-card) 70%, transparent);
   }
 }
+
+// แจ้งเตือนลอยด้านบนกลางจอ แบบเดียวกับหน้าอื่นทั้งเว็บ
+.toast-notification {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--accent-green-bright);
+  color: var(--text-primary, var(--text-title));
+  padding: 14px 26px;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  z-index: 2000;
+}
