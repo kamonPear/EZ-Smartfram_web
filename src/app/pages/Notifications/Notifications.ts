@@ -58,7 +58,7 @@ export class NotificationsComponent {
     });
   }
 
-  iconFor(n: FarmNotification): 'vaccine' | 'health' | 'food' | 'motion' {
+  iconFor(n: FarmNotification): 'vaccine' | 'health' | 'food' | 'motion' | 'offline' {
     return n.type;
   }
 
@@ -85,6 +85,7 @@ export class NotificationsComponent {
     if (n.type === 'food') return 'รับทราบ';
     if (n.type === 'health') return 'ไปตรวจสุขภาพ';
     if (n.type === 'motion') return 'รับทราบ';
+    if (n.type === 'offline') return 'รับทราบ';
     if (n.type === 'vaccine' && !this.canCompleteVaccine(n)) return 'ยังไม่ถึงวันให้';
     return 'เสร็จสิ้น';
   }
@@ -125,6 +126,13 @@ export class NotificationsComponent {
       // ไปหน้าตรวจสุขภาพของคอกนั้นให้กรอกผลตรวจจริง (ไม่ตัดออกจากรายการทันที
       // เผื่อกดแล้วไม่ได้กรอกจริง - รีเฟรชรายการใหม่ตอนกลับมาหน้านี้แทน)
       this.router.navigate(['/add-health'], { queryParams: { coop_id: n.coopId } });
+      return;
+    }
+
+    if (n.type === 'offline') {
+      // จำว่ารับทราบแล้ว ไม่ขึ้นซ้ำจนกว่าเซนเซอร์จะดับรอบใหม่
+      this.notificationsService.acknowledgeOffline(n.id);
+      this.removeLocal(n);
       return;
     }
 
