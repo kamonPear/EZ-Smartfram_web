@@ -44,7 +44,7 @@
             <span class="stock-tile-label">{{ FOOD_TYPE_SMALL }}</span>
             <span class="stock-tile-value">{{ formatAmount(smallStock?.quantity_current) }}<small> กก.</small></span>
             <ng-container *ngTemplateOutlet="minTpl; context: { type: FOOD_TYPE_SMALL, stock: smallStock }"></ng-container>
-            <span class="stock-tile-updated">{{ smallStock ? formatDateTime(smallStock.date_up) : 'ยังไม่มีข้อมูล' }}</span>
+            <span class="stock-tile-updated">{{ smallStock ? 'อัปเดตล่าสุด ' + formatDateSimple(smallStock.date_up) : 'ยังไม่มีข้อมูล' }}</span>
           </div>
 
           <div class="stock-tile" [class.is-empty]="isStockEmpty(largeStock)">
@@ -57,7 +57,7 @@
             <span class="stock-tile-label">{{ FOOD_TYPE_LARGE }}</span>
             <span class="stock-tile-value">{{ formatAmount(largeStock?.quantity_current) }}<small> กก.</small></span>
             <ng-container *ngTemplateOutlet="minTpl; context: { type: FOOD_TYPE_LARGE, stock: largeStock }"></ng-container>
-            <span class="stock-tile-updated">{{ largeStock ? formatDateTime(largeStock.date_up) : 'ยังไม่มีข้อมูล' }}</span>
+            <span class="stock-tile-updated">{{ largeStock ? 'อัปเดตล่าสุด ' + formatDateSimple(largeStock.date_up) : 'ยังไม่มีข้อมูล' }}</span>
           </div>
         </div>
 
