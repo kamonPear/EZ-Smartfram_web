@@ -4,7 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { SiteSearchComponent } from '../../components/site-search/site-search.component';
-import { ConfirmService, thDate } from '../../services/confirm.service';
+import { ConfirmService, changedLines } from '../../services/confirm.service';
 import { backNavigator } from '../../shared/go-back.util';
 
 interface MedicineSchedule {
@@ -78,6 +78,12 @@ export class AddVaccineComponent {
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
   isSaving = false;
+
+  // ป็อบอัพแก้ไขยา/วัคซีนที่มีอยู่แล้ว (กดปุ่ม "แก้ไข" ในรายการด้านซ้าย) - ช่วงอายุแก้เป็น "วัน"
+  // editing = แถวเดิมก่อนแก้ (ใช้อ้างชื่อเดิมตอนส่ง และเทียบว่าเปลี่ยนอะไรไป)
+  editing: MedicineSchedule | null = null;
+  editForm = { name: '', method: '', minAgeDays: null as number | null, maxAgeDays: null as number | null, description: '' };
+  isSavingEdit = false;
 
   constructor(private router: Router, private api: ApiService, private cdr: ChangeDetectorRef) {
     this.loadSchedules();
@@ -269,7 +275,13 @@ export class AddVaccineComponent {
     };
 
     this.api.post(`/vaccines/schedule`, payload).subscribe({
-      next: () => this.router.navigate(['/home']),
+      // บันทึกแล้วอยู่หน้านี้ต่อ (ไม่เด้งไปหน้าแรก) - ล้างฟอร์มและโหลดรายการใหม่ให้เห็นตัวที่เพิ่งเพิ่ม
+      next: () => {
+        this.isSaving = false;
+        this.flashToast(`บันทึก "${payload.name}" สำเร็จ`, 'success');
+        this.resetForm();
+        this.loadSchedules();
+      },
       error: (err: any) => {
         this.isSaving = false;
         console.error('บันทึกข้อมูลวัคซีนไม่สำเร็จ:', err);
@@ -278,6 +290,100 @@ export class AddVaccineComponent {
         } else {
           this.flashToast('บันทึกข้อมูลวัคซีนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
         }
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private resetForm() {
+    this.medicineName = '';
+    this.method = '';
+    this.minAgeDays = this.minAgeWeeks = this.minAgeMonths = null;
+    this.maxAgeDays = this.maxAgeWeeks = this.maxAgeMonths = null;
+    this.description = '';
+    this.cdr.detectChanges();
+  }
+
+  // อายุเป็นสัปดาห์/เดือนโดยประมาณ ไว้โชว์ใต้ช่องกรอกวันในป็อบอัพแก้ไข
+  ageHint(days: number | null): string {
+    if (days === null || isNaN(days)) return '';
+    return `≈ ${this.round1(days / 7)} สัปดาห์ · ${this.monthsWhole(days)} เดือน`;
+  }
+
+  openEdit(s: MedicineSchedule, event?: Event) {
+    event?.stopPropagation();
+    this.editing = s;
+    this.editForm = {
+      name: s.name,
+      method: s.method,
+      minAgeDays: s.min_age_days,
+      maxAgeDays: s.max_age_days,
+      description: s.description || '',
+    };
+    this.cdr.detectChanges();
+  }
+
+  closeEdit() {
+    if (this.isSavingEdit) return;
+    this.editing = null;
+    this.cdr.detectChanges();
+  }
+
+  async saveEdit() {
+    const old = this.editing;
+    if (!old) return;
+    const f = this.editForm;
+    const name = f.name.trim();
+    if (!name || !f.method || f.minAgeDays === null || f.maxAgeDays === null) {
+      this.flashToast('กรุณาระบุชื่อยา วิธีการให้ และช่วงอายุ (ต่ำสุด-สูงสุด) ให้ครบถ้วน', 'error');
+      return;
+    }
+    if (f.minAgeDays > f.maxAgeDays) {
+      this.flashToast('อายุต่ำสุดต้องไม่มากกว่าอายุสูงสุด', 'error');
+      return;
+    }
+    const lower = name.toLowerCase();
+    if (this.schedules.some(s => s.id !== old.id && s.name.trim().toLowerCase() === lower)) {
+      this.flashToast('มียา/วัคซีนชื่อนี้อยู่ในระบบแล้ว กรุณาใช้ชื่ออื่น', 'error');
+      return;
+    }
+
+    const changes = changedLines([
+      ['ชื่อยา', old.name, name],
+      ['วิธีการให้', old.method, f.method],
+      ['อายุต่ำสุด', `${old.min_age_days} วัน`, `${f.minAgeDays} วัน`],
+      ['อายุสูงสุด', `${old.max_age_days} วัน`, `${f.maxAgeDays} วัน`],
+      ['คำอธิบาย', old.description, f.description],
+    ]);
+    if (changes.length === 0) {
+      this.flashToast('ยังไม่ได้แก้ไขข้อมูลใด ๆ', 'error');
+      return;
+    }
+    const ok = await this.confirm.ask({ title: 'ยืนยันการแก้ไข', message: `แก้ไข "${old.name}" ตามนี้ใช่ไหม?`, details: changes });
+    if (!ok) return;
+
+    this.isSavingEdit = true;
+    this.cdr.detectChanges();
+    this.api.put(`/vaccines/schedule/update?old_name=${encodeURIComponent(old.name)}`, {
+      name,
+      method: f.method,
+      min_age_days: f.minAgeDays,
+      max_age_days: f.maxAgeDays,
+      description: f.description,
+    }).subscribe({
+      // แก้แล้วอยู่หน้านี้ต่อ ปิดป็อบอัพและโหลดรายการใหม่ (คอกที่เข้าเกณฑ์อาจเปลี่ยนตามช่วงอายุใหม่)
+      next: () => {
+        this.isSavingEdit = false;
+        this.editing = null;
+        this.matchingCoopsByScheduleId.delete(old.id);
+        this.flashToast(`แก้ไข "${name}" สำเร็จ`, 'success');
+        this.loadSchedules();
+      },
+      error: (err: any) => {
+        this.isSavingEdit = false;
+        console.error('แก้ไขข้อมูลวัคซีนไม่สำเร็จ:', err);
+        const serverMsg = typeof err?.error === 'string' ? err.error.trim() : '';
+        this.flashToast(serverMsg || 'แก้ไขข้อมูลวัคซีนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
         this.cdr.detectChanges();
       }
     });
