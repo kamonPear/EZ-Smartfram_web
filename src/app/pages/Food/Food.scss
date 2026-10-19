@@ -643,25 +643,93 @@
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 10px;
+}
 
-  select {
-    padding: 8px 12px;
-    border-radius: 10px;
-    border: 1px solid var(--border-strong);
-    background: transparent;
-    color: var(--text-title);
-    font-family: inherit;
-    font-weight: 700;
-    font-size: 0.92rem;
+/* เมนูเลือกประเภทอาหารแบบกำหนดเอง */
+.type-select {
+  position: relative;
 
-    &:focus { outline: none; border-color: #F5A623; }
+  &.open { z-index: 10; }
+}
 
-    option {
-      background-color: #1B2A38;
-      color: var(--text-title);
-    }
+.type-select-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 8px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-title);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover { border-color: #F5A623; }
+  &:focus-visible { outline: none; border-color: #F5A623; }
+
+  .type-select-chevron {
+    width: 16px;
+    height: 16px;
+    color: var(--text-secondary);
+    transition: transform 0.18s;
   }
 }
+
+.type-select.open .type-select-btn {
+  border-color: #F5A623;
+  background: rgba(245, 166, 35, 0.08);
+
+  .type-select-chevron { transform: rotate(180deg); color: #F5A623; }
+}
+
+.type-select-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 100%;
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-panel, #1B2A38);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  animation: popIn 0.14s ease-out;
+}
+
+.type-select-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-title);
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+
+  svg { width: 16px; height: 16px; color: #F5A623; }
+
+  &:hover { background: rgba(255, 255, 255, 0.07); }
+  &.selected { background: rgba(245, 166, 35, 0.14); color: #F5A623; }
+}
+
+/* พื้นหลังโปร่งใสคลุมป็อบอัพ ไว้กดที่ว่างเพื่อปิดเมนู */
+.type-select-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+}
+
+/* ระหว่างเปิดเมนู เผื่อที่ด้านล่างของลิสต์ให้เมนูของแถวสุดท้ายไม่ถูกตัด (ลิสต์เลื่อนได้) */
+.age-rule-list.menu-open { padding-bottom: 90px; }
 
 .age-rule-remove {
   width: 30px;

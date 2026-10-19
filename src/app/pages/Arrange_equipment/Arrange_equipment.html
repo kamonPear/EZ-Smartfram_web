@@ -48,15 +48,15 @@
         <div class="coop-device-summary">
           <ng-container *ngIf="deviceCount(coop) > 0; else noDevice">
             <span class="device-dot" [class.online]="onlineCount(coop) > 0"></span>
-            <span>อุปกรณ์ {{ deviceCount(coop) }} ชิ้น · ออนไลน์ {{ onlineCount(coop) }}</span>
+            <span>เซนเซอร์ {{ deviceCount(coop) }} ชิ้น · ออนไลน์ {{ onlineCount(coop) }}</span>
           </ng-container>
           <ng-template #noDevice>
-            <span class="no-device">ยังไม่มีอุปกรณ์</span>
+            <span class="no-device">ยังไม่มีเซนเซอร์</span>
           </ng-template>
         </div>
 
         <div class="coop-cta">
-          <span>จัดวางอุปกรณ์</span>
+          <span>จัดวางเซนเซอร์</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="5" y1="12" x2="19" y2="12"/>
             <polyline points="12 5 19 12 12 19"/>

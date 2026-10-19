@@ -272,3 +272,60 @@
   font-weight: 600;
   margin: -6px 0 0 4px;
 }
+
+/* ช่องที่ล็อกแล้ว (ปริมาณอาหารใกล้หมด) */
+.input-pill.is-locked {
+  opacity: 0.75;
+
+  input { cursor: not-allowed; }
+}
+
+.field-note {
+  margin: -6px 0 0 4px;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+
+/* หน้าต่างยืนยัน */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+}
+
+.confirm-box {
+  width: 420px;
+  max-width: 92vw;
+  padding: 24px 26px;
+  border-radius: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+
+  h3 {
+    margin: 0 0 10px;
+    color: var(--text-title);
+    font-size: 1.1rem;
+  }
+
+  p {
+    margin: 0 0 18px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  strong { color: var(--text-title); }
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+
+  button { flex: 1; }
+}
