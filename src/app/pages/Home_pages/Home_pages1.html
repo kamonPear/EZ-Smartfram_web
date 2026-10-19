@@ -1,11 +1,11 @@
 <div class="dashboard-container">
   <header class="header">
-  <div class="logo-container">
-    <img src="assets/images/logo.png" alt="Farm Logo">
-  </div>
+    <div class="logo-container">
+      <img src="assets/images/logo.png" alt="Farm Logo">
+    </div>
 
-  <h1>EZ - SMART FARM</h1>
-</header>
+    <h1>EZ - SMART FARM</h1>
+  </header>
 
   <!-- ค้นหารวมทั้งเว็บ (ตัวเดียวกับทุกหน้า): คอก อุปกรณ์ ไข่ วัคซีน อาหาร แจ้งเตือน และเมนู -->
   <div class="global-search">
@@ -62,10 +62,11 @@
       <div class="stats-grid">
         <button type="button" class="stat-tile" routerLink="/coop-list">
           <div class="stat-icon stat-icon--green">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 11.5 12 4l8 7.5"/>
-              <path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"/>
-              <path d="M10 20v-5h4v5"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M4 11.5 12 4l8 7.5" />
+              <path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9" />
+              <path d="M10 20v-5h4v5" />
             </svg>
           </div>
           <div class="stat-text">
@@ -76,10 +77,11 @@
 
         <button type="button" class="stat-tile" routerLink="/coop-list">
           <div class="stat-icon stat-icon--blue">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 14c0-4 3-7 7-7 1 0 2 .2 2 .2S14 5 17 5c0 2-1 3-1 3s2 1 2 4c0 4-3 7-7 7-3 0-5-1-6-3"/>
-              <circle cx="15.3" cy="8.3" r="0.6" fill="currentColor" stroke="none"/>
-              <path d="M5 14 2 15l3 1"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M4 14c0-4 3-7 7-7 1 0 2 .2 2 .2S14 5 17 5c0 2-1 3-1 3s2 1 2 4c0 4-3 7-7 7-3 0-5-1-6-3" />
+              <circle cx="15.3" cy="8.3" r="0.6" fill="currentColor" stroke="none" />
+              <path d="M5 14 2 15l3 1" />
             </svg>
           </div>
           <div class="stat-text">
@@ -90,11 +92,12 @@
 
         <button type="button" class="stat-tile" routerLink="/device-summary">
           <div class="stat-icon stat-icon--green">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 9a13 13 0 0 1 16 0"/>
-              <path d="M7 12.5a8.5 8.5 0 0 1 10 0"/>
-              <path d="M10.5 16a4 4 0 0 1 3 0"/>
-              <circle cx="12" cy="19" r="1" fill="currentColor" stroke="none"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M4 9a13 13 0 0 1 16 0" />
+              <path d="M7 12.5a8.5 8.5 0 0 1 10 0" />
+              <path d="M10.5 16a4 4 0 0 1 3 0" />
+              <circle cx="12" cy="19" r="1" fill="currentColor" stroke="none" />
             </svg>
           </div>
           <div class="stat-text">
@@ -105,9 +108,10 @@
 
         <button type="button" class="stat-tile" routerLink="/notifications">
           <div class="stat-icon stat-icon--red">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 2 6H4c.5-.5 2-2 2-6Z"/>
-              <path d="M10 19a2 2 0 0 0 4 0"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 2 6H4c.5-.5 2-2 2-6Z" />
+              <path d="M10 19a2 2 0 0 0 4 0" />
             </svg>
           </div>
           <div class="stat-text">
@@ -142,14 +146,14 @@
       <!-- ปฏิทินรวมทั้งฟาร์ม (ไม่กรองคอกเดียว) - ดึงมาร์คจากวัคซีน/สุขภาพ/วันเกิด-
            วันรับเข้าเลี้ยง/นัดตรวจสุขภาพกำหนดเองของทุกคอกรวมกัน คลิกวันไหนก็กางราย
            ละเอียดของวันนั้นลงมาได้เลย (ใช้ตัวเดียวกับปฏิทินของ Data_coop) -->
-      <app-date-picker-calendar
-        class="farm-calendar-inline"
-        [inline]="true"
-        [viewOnly]="true"
-        [title]="'ปฏิทินฟาร์ม'"
-        [selectedDate]="null"
-        [markers]="dayMarkers">
+      <app-date-picker-calendar class="farm-calendar-inline" [inline]="true" [viewOnly]="true" [title]="'ปฏิทินฟาร์ม'"
+        [selectedDate]="null" [markers]="dayMarkers">
       </app-date-picker-calendar>
+      <div class="coop-hover-anchor coop-hover-anchor--layout" *ngIf="hoveredLayoutCoop"
+        [style.left.%]="hoveredLayoutCoop.pos_x" [style.top.%]="hoveredLayoutCoop.pos_y"
+        (click)="$event.stopPropagation()">
+        <app-coop-hover-card [coop]="hoveredLayoutCoop"></app-coop-hover-card>
+      </div>
 
       <!-- พรีวิวผังฟาร์มที่จัดวางไว้ (จากหน้า "จัดวางผังฟาร์ม") - โชว์ให้เห็นผลจริง
            ที่หน้าแรก ไม่ใช่แค่บันทึกไว้เงียบๆ แล้วไม่มีที่ไหนแสดงผล -->
@@ -177,15 +181,9 @@
             <rect *ngIf="farmShape === 'square'" x="4" y="4" width="92" height="92" />
           </svg>
 
-          <div
-            class="coop-marker-preview"
-            *ngFor="let coop of placedCoops"
-            [style.left.%]="coop.pos_x"
-            [style.top.%]="coop.pos_y"
-            (click)="selectCoop(coop)"
-            (mouseenter)="hoveredLayoutCoop = coop"
-            (mouseleave)="hoveredLayoutCoop = null"
-          >
+          <div class="coop-marker-preview" *ngFor="let coop of placedCoops" [style.left.%]="coop.pos_x"
+            [style.top.%]="coop.pos_y" (click)="selectCoop(coop)" (mouseenter)="hoveredLayoutCoop = coop"
+            (mouseleave)="hoveredLayoutCoop = null">
             <div class="marker-icon">
               <img src="assets/images/coopchicken.png" [alt]="coop.name_coop">
             </div>
@@ -195,15 +193,7 @@
           <!-- ✅ ป็อบอัพเดียวอยู่นอก *ngFor กันไม่ให้มีหลายใบซ้อนกันได้เลย (มีแค่
                1 element เดียวในหน้า) และแยกตัวแปรจากป็อบอัพในตารางด้านล่าง ไม่งั้น
                ชี้คอกในผังแล้วป็อบอัพในตารางที่ id เดียวกันจะโผล่ขึ้นมาซ้อนด้วย -->
-          <div
-            class="coop-hover-anchor coop-hover-anchor--layout"
-            *ngIf="hoveredLayoutCoop"
-            [style.left.%]="hoveredLayoutCoop.pos_x"
-            [style.top.%]="hoveredLayoutCoop.pos_y"
-            (click)="$event.stopPropagation()"
-          >
-            <app-coop-hover-card [coop]="hoveredLayoutCoop"></app-coop-hover-card>
-          </div>
+
         </div>
       </div>
     </section>
@@ -212,25 +202,40 @@
          เพื่อไปจัดการจริง (รับทราบ/ไปตรวจสุขภาพ/เสร็จสิ้น) ที่หน้าแจ้งเตือน -->
     <section class="alerts-section" *ngIf="!isLoadingNotifications">
       <div class="section-title-row">
-        <h2 class="section-title">แจ้งเตือนล่าสุด<span class="title-badge" *ngIf="notifications.length > 0">{{ notifications.length }}</span></h2>
+        <h2 class="section-title">แจ้งเตือนล่าสุด<span class="title-badge" *ngIf="notifications.length > 0">{{
+            notifications.length }}</span></h2>
         <a class="see-all-link" routerLink="/notifications">ดูทั้งหมด →</a>
       </div>
       <div class="alert-card">
         <p class="alert-empty" *ngIf="notifications.length === 0">ยังไม่มีการแจ้งเตือน</p>
         <div class="alert-row" *ngFor="let n of latestNotifications" [class.is-urgent]="n.urgent">
           <div class="alert-icon" [class]="'is-' + n.type">
-            <svg *ngIf="n.type === 'vaccine'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="m18 2 4 4"/><path d="m17 7 3-3"/><path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5"/><path d="m9 11 4 4"/><path d="m5 19-3 3"/><path d="m14 4 6 6"/>
+            <svg *ngIf="n.type === 'vaccine'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="m18 2 4 4" />
+              <path d="m17 7 3-3" />
+              <path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5" />
+              <path d="m9 11 4 4" />
+              <path d="m5 19-3 3" />
+              <path d="m14 4 6 6" />
             </svg>
-            <svg *ngIf="n.type === 'health'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/>
-              <path d="M6.5 12h2l1.5-2.5L12 14l1.5-3h2.5"/>
+            <svg *ngIf="n.type === 'health'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z" />
+              <path d="M6.5 12h2l1.5-2.5L12 14l1.5-3h2.5" />
             </svg>
-            <svg *ngIf="n.type === 'food'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22c6.23-.05 7.87-5.57 7.5-10-.36-4.34-3.95-9.96-7.5-10-3.55.04-7.14 5.66-7.5 10-.37 4.43 1.27 9.95 7.5 10Z"/>
+            <svg *ngIf="n.type === 'food'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M12 22c6.23-.05 7.87-5.57 7.5-10-.36-4.34-3.95-9.96-7.5-10-3.55.04-7.14 5.66-7.5 10-.37 4.43 1.27 9.95 7.5 10Z" />
             </svg>
-            <svg *ngIf="n.type === 'motion'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="4" r="2"/><path d="m14 7-3 1-2 6 2 8"/><path d="m9 8-4 2 2 3"/><path d="m13 14 3 1 2 6"/>
+            <svg *ngIf="n.type === 'motion'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="4" r="2" />
+              <path d="m14 7-3 1-2 6 2 8" />
+              <path d="m9 8-4 2 2 3" />
+              <path d="m13 14 3 1 2 6" />
             </svg>
           </div>
           <div class="alert-body">
@@ -274,15 +279,10 @@
         <button class="retry-btn" *ngIf="showRetryButton" (click)="loadCoops()">🔄 โหลดใหม่ตอนนี้</button>
       </div>
 
-      <div class="coop-grid" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)" *ngIf="!isLoading && !loadError && coops.length > 0">
-        <div
-          class="coop-card"
-          cdkDrag
-          *ngFor="let coop of coops"
-          (click)="selectCoop(coop)"
-          (mouseenter)="hoveredCoopId = coop.coop_id"
-          (mouseleave)="hoveredCoopId = null"
-        >
+      <div class="coop-grid" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)"
+        *ngIf="!isLoading && !loadError && coops.length > 0">
+        <div class="coop-card" cdkDrag *ngFor="let coop of coops" (click)="selectCoop(coop)"
+          (mouseenter)="hoveredCoopId = coop.coop_id" (mouseleave)="hoveredCoopId = null">
           <div class="coop-hover-anchor" *ngIf="hoveredCoopId === coop.coop_id" (click)="$event.stopPropagation()">
             <app-coop-hover-card [coop]="coop"></app-coop-hover-card>
           </div>
@@ -291,7 +291,8 @@
               <img src="assets/images/coopchicken.png" alt=" Coop Icon">
             </div>
             <div class="coop-info">
-              <span class="coop-name" [attr.title]="coop.name_coop || null">{{ coop.name_coop || 'คอกที่ ' + coop.coop_id }}</span>
+              <span class="coop-name" [attr.title]="coop.name_coop || null">{{ coop.name_coop || 'คอกที่ ' +
+                coop.coop_id }}</span>
               <span class="coop-amount">{{ coop.amount }} ตัว</span>
               <!-- ทิศของคอกในผังฟาร์ม (เทียบจุดกึ่งกลางผัง) - ถ้ายังไม่เคยจัดวางผัง
                    ฟาร์มเลยบอกตรงๆ แทนที่จะไม่ขึ้นอะไรเลย -->
@@ -299,9 +300,10 @@
               <span class="coop-direction is-unset" *ngIf="!coopDirection(coop)">ยังไม่จัดรูปแบบผังฟาร์ม</span>
             </div>
             <button class="coop-edit-btn" title="แก้ไขคอกนี้" (click)="editCoop($event, coop)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 20h9"/>
-                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
               </svg>
               <span>แก้ไข</span>
             </button>
@@ -310,10 +312,8 @@
           <div class="device-list" *ngIf="coop.devices && coop.devices.length > 0">
             <h4>อุปกรณ์:</h4>
             <div class="device-icons">
-              <div class="device-item"
-                *ngFor="let device of coop.devices"
-                (mouseenter)="tooltipDeviceId = device.device_id"
-                (mouseleave)="tooltipDeviceId = null">
+              <div class="device-item" *ngFor="let device of coop.devices"
+                (mouseenter)="tooltipDeviceId = device.device_id" (mouseleave)="tooltipDeviceId = null">
                 <img [src]="deviceIconSrc(device)" [alt]="device.name">
                 <span class="device-status" [class.online]="device.current_status === 'Online'"></span>
                 <div class="device-tooltip" *ngIf="tooltipDeviceId === device.device_id">
