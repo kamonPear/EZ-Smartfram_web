@@ -533,8 +533,16 @@ export class AddHealthComponent {
       return;
     }
 
-    if (!this.coopId || this.healthyCount == null || this.poorHealthCount == null || !this.collectDate) {
-      this.flashToast('กรุณาเลือกคอกและกรอกจำนวนไก่ให้ครบถ้วน', 'error');
+    if (!this.coopId) {
+      this.flashToast('ไม่พบคอกที่จะบันทึก', 'error');
+      return;
+    }
+    const missing: string[] = [];
+    if (!this.collectDate) missing.push('วันที่ตรวจ');
+    if (this.healthyCount == null) missing.push('จำนวนไก่สุขภาพดี');
+    if (this.poorHealthCount == null) missing.push('จำนวนไก่สุขภาพไม่ดี');
+    if (missing.length || this.healthyCount == null || this.poorHealthCount == null || !this.collectDate) {
+      this.flashToast(`กรุณากรอกให้ครบ: ${missing.join(', ')}`, 'error');
       return;
     }
 

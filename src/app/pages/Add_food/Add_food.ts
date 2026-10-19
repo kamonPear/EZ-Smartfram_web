@@ -48,6 +48,7 @@ export class AddFoodComponent {
   selectedFoodType: string | null = null;
   importDate: Date | null = new Date();
   amount: number | null = null;
+  note = '';
   // ปริมาณ (กก.) ที่เจ้าของฟาร์มกำหนดให้แจ้งเตือน "ใกล้หมด" ของประเภทนี้ (ว่าง = ใช้ค่าเดิม)
   minQuantity: number | null = null;
   // คำนวณอัตโนมัติจากปริมาณที่นำเข้าและอัตรากินต่อวัน (ไม่มีช่องกรอกแล้ว)
@@ -226,7 +227,7 @@ export class AddFoodComponent {
       // ให้เจ้าของฟาร์มทวนข้อมูลอีกรอบก่อนบันทึกจริง (ป็อบอัพกลาง services/confirm.service.ts)
       const ok = await this.confirm.ask({
         message: 'ตรวจสอบข้อมูลการนำเข้าอาหารก่อนบันทึก',
-        details: [`ประเภทอาหาร: ${this.selectedFoodType}`, `ปริมาณ: ${Math.round(this.amount!)} กก.`, `วันที่นำเข้า: ${thDate(this.importDate)}`, `วันหมดอายุ: ${thDate(this.expiryDate)}`],
+        details: [`ประเภทอาหาร: ${this.selectedFoodType}`, `ปริมาณ: ${Math.round(this.amount!)} กก.`, `วันที่นำเข้า: ${thDate(this.importDate)}`, `วันที่อาหารจะหมด: ${thDate(this.expiryDate)}`, ...(this.note.trim() ? [`หมายเหตุ: ${this.note.trim()}`] : [])],
       });
       if (!ok) return;
     }
@@ -237,6 +238,7 @@ export class AddFoodComponent {
       // import_volume เป็น int ฝั่ง backend (models.CreateImportFoodRequest)
       import_volume: Math.round(this.amount),
       expiry_date: `${formatDateKey(this.expiryDate)}T00:00:00Z`,
+      note: this.note.trim(),
     };
     // ตั้งครั้งแรกเท่านั้น (ถ้าล็อกแล้วไม่ส่ง) และต้องมากกว่า 0
     if (!this.minLocked && this.minQuantity != null && Number(this.minQuantity) > 0) {

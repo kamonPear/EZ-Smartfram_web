@@ -287,6 +287,18 @@ export class EditCoopComponent implements OnInit {
         alert('กรุณากรอกจำนวนไก่สุขภาพดีและป่วยให้ครบถ้วน');
         return;
       }
+      const healthy = Number(this.healthForm.healthy);
+      const poor = Number(this.healthForm.poorHealth);
+      if (!Number.isInteger(healthy) || !Number.isInteger(poor) || healthy < 0 || poor < 0) {
+        alert('จำนวนไก่ต้องเป็นจำนวนเต็มตั้งแต่ 0 ขึ้นไป');
+        return;
+      }
+      // สุขภาพดี + ป่วย ต้องรวมเท่ากับจำนวนไก่ทั้งหมดของคอก (เหมือนตอนเพิ่มบันทึกในหน้าตรวจสุขภาพ)
+      const total = this.originalCoop?.count;
+      if (total != null && healthy + poor !== total) {
+        alert(`จำนวนไก่ไม่ตรงกับที่มีจริง (คอกนี้มี ${total} ตัว แต่กรอกรวม ${healthy + poor} ตัว) กรุณาตรวจสอบก่อนบันทึก`);
+        return;
+      }
       const payload = {
         coop_id: Number(this.coopId),
         healthy: this.healthForm.healthy,
