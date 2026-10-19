@@ -38,7 +38,7 @@ const PAGES: { label: string; route: string; keywords?: string }[] = [
   { label: 'หน้าหลัก', route: '/home' },
   { label: 'ค้นหา', route: '/search' },
   { label: 'การแจ้งเตือน', route: '/notifications' },
-  { label: 'สถานะการทำงานของอุปกรณ์', route: '/device-summary', keywords: 'เซนเซอร์ ออนไลน์ ออฟไลน์' },
+  { label: 'สถานะการทำงานของอุปกรณ์และเซนเซอร์', route: '/device-summary', keywords: 'เซนเซอร์ บอร์ด ESP32 ออนไลน์ ออฟไลน์' },
   { label: 'นัดตรวจสุขภาพ', route: '/health-appointments' },
   { label: 'คลังอาหาร', route: '/food', keywords: 'อาหาร สต็อก เม็ดเล็ก เม็ดใหญ่' },
   { label: 'เพิ่มสต็อกอาหาร', route: '/add-food', keywords: 'นำเข้าอาหาร' },

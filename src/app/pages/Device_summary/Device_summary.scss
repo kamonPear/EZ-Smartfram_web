@@ -226,3 +226,30 @@
   color: rgba(var(--fg-rgb), 0.5);
   padding: 30px 0;
 }
+
+/* แบ่งหน้าเป็น 2 ส่วน: อุปกรณ์ (บอร์ด ESP32) และ เซนเซอร์ */
+.section-title {
+  color: var(--text-title);
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 8px 0 4px;
+
+  & ~ .section-title { margin-top: 32px; }
+}
+
+.section-hint {
+  color: rgba(var(--fg-rgb), 0.55);
+  font-size: 0.82rem;
+  margin: 0 0 14px;
+}
+
+// การ์ดบอร์ดเป็นข้อมูลอย่างเดียว ไม่ต้องกดกางดู
+.board-card {
+  cursor: default;
+}
+
+.board-icon {
+  color: var(--accent-green-bright);
+
+  svg { width: 26px; height: 26px; }
+}
