@@ -1,10 +1,11 @@
-import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { DragDropModule, CdkDragEnd } from '@angular/cdk/drag-drop';
 import { ApiService } from '../../services/api.service';
 import { CoopHoverCard } from '../../shared/coop-hover-card/coop-hover-card';
 import { Coop } from '../../shared/coop-summary.util';
+import { ConfirmService } from '../../services/confirm.service';
 
 type FarmShape = 'circle' | 'triangle' | 'square';
 
@@ -29,7 +30,15 @@ export class FarmLayoutComponent implements OnInit {
   isSaving = false;
   showToast = false;
   toastMessage = '';
-  showConfirmModal = false;
+  private confirm = inject(ConfirmService);
+
+  // ค่าเดิมตอนโหลดหน้า (รูปทรง + ตำแหน่งคอก) ใช้เทียบว่าเปลี่ยนอะไรไป เพื่อโชว์ในป็อบอัพยืนยัน
+  private originalShape: FarmShape | null = null;
+  private originalPos = new Map<number, { x: number | null; y: number | null }>();
+
+  // ตำแหน่งคอกที่จัดไว้ของแต่ละรูปทรง (เฉพาะที่ยังไม่ได้บันทึก) - สลับไปดูรูปทรงอื่นแล้ว
+  // กลับมา จะได้ผังเดิมคืน ไม่หายไปทั้งหมด
+  private draftByShape = new Map<FarmShape, Map<number, { x: number | null; y: number | null }>>();
 
   // จุดยอดสามเหลี่ยมในพื้นที่ % (0-100) ตรงกับ viewBox ของ SVG พอดี
   private readonly triangle = {
@@ -72,6 +81,7 @@ export class FarmLayoutComponent implements OnInit {
     this.api.get<Coop[]>('/coops').subscribe({
       next: (data) => {
         this.coops = data || [];
+        this.originalPos = new Map(this.coops.map((c) => [c.coop_id, { x: c.pos_x ?? null, y: c.pos_y ?? null }]));
         this.cdr.detectChanges();
       },
       error: (err) => console.error('ดึงข้อมูลคอกไก่ล้มเหลว:', err),
@@ -82,6 +92,7 @@ export class FarmLayoutComponent implements OnInit {
     this.api.get<{ shape: FarmShape }>('/farm-layout').subscribe({
       next: (data) => {
         if (data?.shape) this.shape = data.shape;
+        this.originalShape = this.shape;
         this.cdr.detectChanges();
       },
       error: (err) => console.error('ดึงข้อมูลผังฟาร์มล้มเหลว:', err),
@@ -98,17 +109,25 @@ export class FarmLayoutComponent implements OnInit {
 
   selectShape(shape: FarmShape) {
     if (this.shape === shape) return;
+
+    // จำผังของรูปทรงปัจจุบันไว้ก่อนสลับ เผื่อผู้ใช้สลับกลับมา
+    this.draftByShape.set(this.shape, new Map(this.coops.map((c) => [c.coop_id, { x: c.pos_x ?? null, y: c.pos_y ?? null }])));
+    const hadPlacements = this.placedCoops.length > 0;
     this.shape = shape;
 
-    // เปลี่ยนรูปทรงแล้วขอบเขตเปลี่ยนไป ตำแหน่งเดิมอาจไม่พอดีกับทรงใหม่ จึงเคลียร์ตำแหน่งทั้งหมด
-    // ให้ผู้ใช้เริ่มจัดวางใหม่ (ยังไม่ได้บันทึกจนกว่าจะกด "บันทึกผังฟาร์ม" จึงย้อนกลับได้เสมอ)
-    const hadPlacements = this.placedCoops.length > 0;
+    // รูปทรงที่เคยจัดไว้แล้วในรอบนี้ -> คืนผังนั้น / รูปทรงที่บันทึกไว้ในระบบ -> คืนผังที่บันทึกไว้
+    // รูปทรงใหม่ที่ยังไม่เคยจัด -> เคลียร์ให้เริ่มวางใหม่ (ขอบเขตต่างกัน ตำแหน่งเดิมอาจไม่พอดี)
+    const saved = this.draftByShape.get(shape) ?? (shape === this.originalShape ? this.originalPos : null);
     this.coops.forEach((c) => {
-      c.pos_x = null;
-      c.pos_y = null;
+      const p = saved?.get(c.coop_id);
+      c.pos_x = p?.x ?? null;
+      c.pos_y = p?.y ?? null;
     });
 
-    if (hadPlacements) {
+    if (saved && this.placedCoops.length > 0) {
+      this.toastMessage = `กลับมาที่ผัง${this.shapeLabel} ตำแหน่งคอกที่จัดไว้ยังอยู่ครบ`;
+      this.flashToast();
+    } else if (hadPlacements) {
       this.toastMessage = `เปลี่ยนเป็น${this.shapeLabel}แล้ว เริ่มจัดวางคอกใหม่ได้เลย`;
       this.flashToast();
     }
@@ -204,20 +223,36 @@ export class FarmLayoutComponent implements OnInit {
     return !(hasNeg && hasPos);
   }
 
-  // เปิดป็อบอัพถามยืนยันก่อนบันทึกจริง กันคนกดพลาดจนตำแหน่งที่จัดไว้หายไป
+  // ถามยืนยันก่อนบันทึกจริง (ป็อบอัพกลางเดียวกับทุกหน้า services/confirm.service.ts) กันคนกดพลาด
+  // จนตำแหน่งที่จัดไว้หายไป และโชว์ว่าเปลี่ยนอะไรไปบ้างให้เจ้าของฟาร์มเช็กอีกรอบ
   // ต้องมีอย่างน้อย 1 คอกวางไว้แล้วเท่านั้นถึงจะบันทึกได้ (บันทึกผังเปล่าๆ ไม่มีความหมาย)
-  openConfirmModal() {
-    if (this.placedCoops.length === 0) return;
-    this.showConfirmModal = true;
-  }
+  async openConfirmModal() {
+    if (this.placedCoops.length === 0 || this.isSaving) return;
+    const label = (s: FarmShape | null) => (s === 'circle' ? 'วงกลม' : s === 'square' ? 'สี่เหลี่ยม' : s === 'triangle' ? 'สามเหลี่ยม' : '-');
+    const names = (list: Coop[]) => list.map((c) => c.name_coop || `คอก ${c.coop_id}`).join(', ');
+    const placed = (p?: { x: number | null; y: number | null }) => p != null && p.x != null && p.y != null;
 
-  cancelConfirm() {
-    this.showConfirmModal = false;
-  }
+    const moved: Coop[] = [], added: Coop[] = [], removed: Coop[] = [];
+    for (const c of this.coops) {
+      const before = this.originalPos.get(c.coop_id);
+      const now = { x: c.pos_x ?? null, y: c.pos_y ?? null };
+      if (!placed(before) && placed(now)) added.push(c);
+      else if (placed(before) && !placed(now)) removed.push(c);
+      else if (placed(before) && placed(now) && (Math.abs(before!.x! - now.x!) > 0.01 || Math.abs(before!.y! - now.y!) > 0.01)) moved.push(c);
+    }
+    const details: string[] = [];
+    if (this.originalShape && this.originalShape !== this.shape) details.push(`รูปแบบฟาร์ม: ${label(this.originalShape)} → ${label(this.shape)}`);
+    if (added.length) details.push(`วางคอกเพิ่ม (${added.length}): ${names(added)}`);
+    if (moved.length) details.push(`ย้ายตำแหน่งคอก (${moved.length}): ${names(moved)}`);
+    if (removed.length) details.push(`เอาออกจากผัง (${removed.length}): ${names(removed)}`);
+    details.push(`รวมคอกบนผัง${this.shapeLabel}: ${this.placedCoops.length} คอก` + (this.unplacedCoops.length ? ` (ยังไม่ได้วาง ${this.unplacedCoops.length} คอก)` : ''));
 
-  confirmSave() {
-    this.showConfirmModal = false;
-    this.saveLayout();
+    const changed = details.length > 1;
+    const ok = await this.confirm.ask({
+      message: changed ? 'ตรวจสอบการเปลี่ยนแปลงผังฟาร์มก่อนบันทึก' : 'ผังฟาร์มยังเหมือนเดิม ต้องการบันทึกซ้ำใช่ไหม?',
+      details,
+    });
+    if (ok) this.saveLayout();
   }
 
   saveLayout() {

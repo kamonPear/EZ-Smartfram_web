@@ -1,9 +1,10 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { SiteSearchComponent } from '../../components/site-search/site-search.component';
+import { ConfirmService, thDate } from '../../services/confirm.service';
 
 interface MedicineSchedule {
   id: number;
@@ -40,6 +41,7 @@ interface MatchingCoopsResponse {
   styleUrls: ['./Add_vaccine.scss']
 })
 export class AddVaccineComponent {
+  private confirm = inject(ConfirmService);
 
   medicineName: string = '';
   method: string = '';
@@ -232,7 +234,7 @@ export class AddVaccineComponent {
     }, 2500);
   }
 
-  saveVaccine() {
+  async saveVaccine() {
     if (!this.medicineName.trim() || !this.method || this.minAgeDays === null || this.maxAgeDays === null) {
       this.flashToast('กรุณาระบุชื่อยา วิธีการให้ และช่วงอายุ (ต่ำสุด-สูงสุด) ให้ครบถ้วน', 'error');
       return;
@@ -248,6 +250,12 @@ export class AddVaccineComponent {
       return;
     }
 
+    // ให้เจ้าของฟาร์มทวนข้อมูลอีกรอบก่อนบันทึกจริง (ป็อบอัพกลาง services/confirm.service.ts)
+    const ok = await this.confirm.ask({
+      message: 'ตรวจสอบข้อมูลวัคซีน/ยาก่อนบันทึก',
+      details: [`ชื่อยา: ${this.medicineName.trim()}`, `วิธีการให้: ${this.method}`, `ช่วงอายุ: ${this.minAgeDays} - ${this.maxAgeDays} วัน`],
+    });
+    if (!ok) return;
     this.isSaving = true;
     const payload = {
       name: this.medicineName.trim(),

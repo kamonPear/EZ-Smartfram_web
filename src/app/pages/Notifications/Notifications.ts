@@ -1,9 +1,10 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { FarmNotification, NotificationsService } from '../../services/notifications.service';
 import { SiteSearchComponent } from '../../components/site-search/site-search.component';
+import { ConfirmService, thDate } from '../../services/confirm.service';
 
 // รวมการแจ้งเตือนทั้งฟาร์มไว้ที่เดียว (อาหารใกล้หมด/หมด, ใกล้ถึงกำหนดวัคซีน,
 // ใกล้ถึงกำหนดตรวจสุขภาพก่อนให้วัคซีน) - พอร์ตตรรกะเดียวกับ Notifications_.dart
@@ -16,6 +17,7 @@ import { SiteSearchComponent } from '../../components/site-search/site-search.co
   styleUrls: ['./Notifications.scss']
 })
 export class NotificationsComponent {
+  private confirm = inject(ConfirmService);
   isLoading = true;
   notifications: FarmNotification[] = [];
   // แหล่งข้อมูลที่โหลดไม่สำเร็จ - โชว์เตือนบนหน้า ไม่ให้เข้าใจผิดว่า "ไม่มีแจ้งเตือน"
@@ -87,13 +89,15 @@ export class NotificationsComponent {
     return 'เสร็จสิ้น';
   }
 
-  handleAction(n: FarmNotification) {
+  async handleAction(n: FarmNotification) {
     if (n.type === 'vaccine') {
       if (!this.canCompleteVaccine(n)) {
         this.flashToast('ยังไม่ถึงวันครบกำหนดให้วัคซีนนี้ กดสำเร็จก่อนไม่ได้', 'error');
         return;
       }
       // id ของแจ้งเตือนวัคซีนคือ "vaccine_<alertId>" ตัดคำนำหน้าออกก่อนยิง PUT
+      // ให้เจ้าของฟาร์มทวนข้อมูลอีกรอบก่อนบันทึกจริง (ป็อบอัพกลาง services/confirm.service.ts)
+      if (!(await this.confirm.ask({ message: 'บันทึกว่าให้วัคซีนนี้เสร็จแล้วใช่ไหม?', details: [n.title] }))) return;
       const alertId = n.id.replace(/^vaccine_/, '');
       this.api.put(`/vaccines/alerts?id=${alertId}`, {
         is_completed: true,

@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +6,7 @@ import { ApiService } from '../../services/api.service';
 import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picker-calendar';
 import { DayMarker, loadCalendarMarkers } from '../../shared/calendar-markers.util';
 import { toBackendDateOnly, formatChickenAge } from '../../shared/coop-summary.util';
+import { ConfirmService, thDate } from '../../services/confirm.service';
 
 @Component({
   selector: 'app-add-coop',
@@ -15,6 +16,7 @@ import { toBackendDateOnly, formatChickenAge } from '../../shared/coop-summary.u
   styleUrls: ['./Add_coop.scss']
 })
 export class AddCoopComponent {
+  private confirm = inject(ConfirmService);
 
   coopName: string = '';
   chickenCount: number | null = null;
@@ -108,7 +110,7 @@ export class AddCoopComponent {
     return received.getTime() < birth.getTime();
   }
 
-  addCoop() {
+  async addCoop() {
     if (!this.coopName.trim() || !this.chickenCount || this.chickenCount < 1 || !this.birthDate || !this.receivedDate) {
       this.flashToast('กรุณากรอกชื่อคอก จำนวนไก่ วันเกิดไก่ และวันที่รับเข้าเลี้ยงให้ครบถ้วน', 'error');
       return;
@@ -124,6 +126,12 @@ export class AddCoopComponent {
       return;
     }
 
+    // ให้เจ้าของฟาร์มทวนข้อมูลอีกรอบก่อนบันทึกจริง (ป็อบอัพกลาง services/confirm.service.ts)
+    const ok = await this.confirm.ask({
+      message: 'ตรวจสอบข้อมูลคอกไก่ก่อนบันทึก',
+      details: [`ชื่อคอก: ${this.coopName.trim()}`, `จำนวนไก่: ${this.chickenCount} ตัว`, `วันเกิดไก่: ${thDate(this.birthDate)}`, `วันที่รับเข้าเลี้ยง: ${thDate(this.receivedDate)}`],
+    });
+    if (!ok) return;
     this.isSaving = true;
     const payload = {
       name_coop: this.coopName.trim(),

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -8,6 +8,7 @@ import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picke
 import { DayMarker, loadCalendarMarkers } from '../../shared/calendar-markers.util';
 import { deviceIconSrc } from '../../shared/device-icon.util';
 import { SetUpSystem } from '../Set_up_System/Set_up_System';
+import { ConfirmService, changedLines, thDate } from '../../services/confirm.service';
 
 type RecordKind = 'health' | 'vaccine' | 'egg';
 
@@ -21,6 +22,7 @@ const VACCINE_METHODS = ['พ่น', 'ฉีด', 'หยอดปาก', 'ผ
   styleUrls: ['./Edit_coop.scss']
 })
 export class EditCoopComponent implements OnInit {
+  private confirm = inject(ConfirmService);
 
   deviceIconSrc = deviceIconSrc;
   vaccineMethods = VACCINE_METHODS;
@@ -46,6 +48,11 @@ export class EditCoopComponent implements OnInit {
 
   openRecordModal: RecordKind | null = null;
   editingRecordId: number | null = null;
+
+  // ค่าเดิมตอนโหลดหน้า / ตอนเปิดหน้าต่างแก้ไขรายการ - ใช้เทียบว่าแก้ช่องไหนไป
+  // เพื่อโชว์ในป็อบอัพยืนยันก่อนบันทึก (ค่าเดิม → ค่าใหม่)
+  private originalCoop: { name: string; count: number | null; birth: Date | null; received: Date | null; note: string } | null = null;
+  private editingOriginal: HealthRecord | VaccineRecord | EggRecord | null = null;
   isSavingRecord = false;
 
   healthForm = { healthy: null as number | null, poorHealth: null as number | null, note: '' };
@@ -82,6 +89,7 @@ export class EditCoopComponent implements OnInit {
         this.birthDate = data?.birthday ? new Date(data.birthday) : null;
         this.receivedDate = data?.date_adopt_animals ? new Date(data.date_adopt_animals) : null;
         this.note = data?.note || '';
+        this.originalCoop = { name: this.coopName, count: this.chickenCount, birth: this.birthDate, received: this.receivedDate, note: this.note };
         this.devices = data?.devices || [];
         // วันล่าสุดขึ้นก่อน วันเก่าไปอยู่ล่างสุด (เดิมไม่ได้เรียงเลย ใช้ลำดับดิบจาก
         // backend ซึ่งไม่จำเป็นต้องเรียงตามวันที่)
@@ -175,7 +183,7 @@ export class EditCoopComponent implements OnInit {
     return received.getTime() < birth.getTime();
   }
 
-  saveCoop() {
+  async saveCoop() {
     if (!this.coopName.trim() || !this.chickenCount || this.chickenCount < 1 || !this.birthDate || !this.receivedDate) {
       alert('กรุณากรอกชื่อคอก จำนวนไก่ วันเกิดไก่ และวันที่รับเข้าเลี้ยงให้ครบถ้วน');
       return;
@@ -186,6 +194,25 @@ export class EditCoopComponent implements OnInit {
       return;
     }
 
+    // ให้เจ้าของฟาร์มทวนข้อมูลอีกรอบก่อนบันทึกจริง (ป็อบอัพกลาง services/confirm.service.ts)
+    // โชว์เฉพาะช่องที่แก้ไขจริง (ค่าเดิม → ค่าใหม่) ให้เจ้าของฟาร์มเช็กอีกรอบ
+    const o = this.originalCoop;
+    const changes = changedLines([
+      ['ชื่อคอก', o?.name, this.coopName],
+      ['จำนวนไก่', o?.count != null ? `${o.count} ตัว` : null, this.chickenCount != null ? `${this.chickenCount} ตัว` : null],
+      ['วันเกิดไก่', thDate(o?.birth), thDate(this.birthDate)],
+      ['วันที่รับเข้าเลี้ยง', thDate(o?.received), thDate(this.receivedDate)],
+      ['หมายเหตุ', o?.note, this.note],
+    ]);
+    if (changes.length === 0) {
+      alert('ยังไม่ได้แก้ไขข้อมูลใด ๆ');
+      return;
+    }
+    const ok = await this.confirm.ask({
+      message: `ตรวจสอบรายการที่แก้ไข (${changes.length} รายการ) ก่อนบันทึก`,
+      details: changes,
+    });
+    if (!ok) return;
     this.isSaving = true;
 
     const payload = {
@@ -223,16 +250,19 @@ export class EditCoopComponent implements OnInit {
       this.editingRecordId = r.health_id;
       this.recordDate = new Date(r.record_date);
       this.healthForm = { healthy: r.healthy, poorHealth: r.poor_health, note: r.note || '' };
+      this.editingOriginal = r;
     } else if (kind === 'vaccine') {
       const r = record as VaccineRecord;
       this.editingRecordId = r.vaccine_id;
       this.recordDate = new Date(r.record_date);
       this.vaccineForm = { name: r.name, method: r.method || '', recommendedAge: r.recommended_age || '', note: r.note || '' };
+      this.editingOriginal = r;
     } else {
       const r = record as EggRecord;
       this.editingRecordId = r.egg_id;
       this.recordDate = new Date(r.date_collect_egg);
       this.eggForm = { numberEgg: r.number_egg, note: r.note || '' };
+      this.editingOriginal = r;
     }
     this.cdr.detectChanges();
   }
@@ -295,7 +325,34 @@ export class EditCoopComponent implements OnInit {
     }
   }
 
-  private submitRecord(kind: RecordKind, basePath: string, payload: any) {
+  private async submitRecord(kind: RecordKind, basePath: string, payload: any) {
+    // ให้เจ้าของฟาร์มทวนข้อมูลอีกรอบก่อนบันทึกจริง (ป็อบอัพกลาง services/confirm.service.ts)
+    const what = kind === 'health' ? 'ผลตรวจสุขภาพ' : kind === 'vaccine' ? 'ประวัติการให้วัคซีน' : 'บันทึกการเก็บไข่';
+    // โชว์เฉพาะช่องที่แก้ไขจริง (ค่าเดิม → ค่าใหม่)
+    const orig: any = this.editingOriginal || {};
+    const rows: [string, unknown, unknown][] =
+      kind === 'health' ? [
+        ['วันที่ตรวจ', thDate(orig.record_date), thDate(payload.record_date)],
+        ['ไก่สุขภาพดี', `${orig.healthy} ตัว`, `${payload.healthy} ตัว`],
+        ['ไก่ป่วย', `${orig.poor_health} ตัว`, `${payload.poor_health} ตัว`],
+        ['หมายเหตุ', orig.note, payload.note],
+      ] : kind === 'vaccine' ? [
+        ['วันที่ให้วัคซีน', thDate(orig.record_date), thDate(payload.record_date)],
+        ['ชื่อวัคซีน', orig.name, payload.name],
+        ['วิธีการให้', orig.method, payload.method],
+        ['อายุไก่ที่ให้', orig.recommended_age, payload.recommended_age],
+        ['หมายเหตุ', orig.note, payload.note],
+      ] : [
+        ['วันที่เก็บไข่', thDate(orig.date_collect_egg), thDate(payload.date_collect_egg)],
+        ['จำนวนไข่', `${orig.number_egg} ฟอง`, `${payload.number_egg ?? orig.number_egg} ฟอง`],
+        ['หมายเหตุ', orig.note, payload.note],
+      ];
+    const changes = changedLines(rows);
+    if (changes.length === 0) {
+      alert('ยังไม่ได้แก้ไขข้อมูลใด ๆ');
+      return;
+    }
+    if (!(await this.confirm.ask({ message: `ตรวจสอบรายการที่แก้ไขใน${what} (${changes.length} รายการ) ก่อนบันทึก`, details: changes }))) return;
     this.isSavingRecord = true;
     this.api.put(`${basePath}?id=${this.editingRecordId}`, payload).subscribe({
       next: () => {
