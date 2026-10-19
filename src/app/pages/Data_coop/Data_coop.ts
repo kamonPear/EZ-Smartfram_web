@@ -336,7 +336,7 @@ export class DataCoopComponent implements OnInit, OnDestroy {
   }
 
   get motionSummaryText(): string {
-    if (this.motionCount === 0) return 'ยังไม่พบความเคลื่อนไหวใน 24 ชม.ที่ผ่านมา';
+    if (this.motionCount === 0) return 'ยังไม่พบการเคลื่อนไหวหน้าคอก';
     const timeLabel = this.motionLastAt
       ? this.motionLastAt.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
       : '-';
