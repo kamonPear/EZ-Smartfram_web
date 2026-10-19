@@ -98,7 +98,7 @@
     </div>
 
     <div class="action-row">
-      <button class="btn-cancel" routerLink="/">
+      <button type="button" class="btn-cancel" (click)="goBack()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="6" y1="6" x2="18" y2="18"/>
           <line x1="18" y1="6" x2="6" y2="18"/>
@@ -195,20 +195,41 @@
         <button type="button" (click)="nextChartPage()" [disabled]="chartOffset === 0" aria-label="ถัดไป">&rsaquo;</button>
       </div>
 
-      <!-- คลิกแท่งเพื่อดูรายละเอียดของช่วงนั้น (วัน/เดือน/ปี) - เมาส์ชี้เพื่อดูยอด
-           แยกตามคอกก่อนคลิก -->
-      <div class="egg-chart" [class.egg-chart-year]="chartMode === 'year'" *ngIf="!isLoadingHistory">
-        <div
-          class="egg-chart-bar"
-          *ngFor="let bar of chartBars; trackBy: trackByBarKey"
-          [class.is-today]="bar.isCurrent"
-          [class.is-selected]="selectedBarKey === bar.key"
-          (click)="selectBar(bar)"
-          (mouseenter)="onBarHoverStart(bar)"
-          (mouseleave)="onBarHoverEnd()"
-        >
-          <div class="egg-chart-bar-track">
-            <div class="egg-chart-tooltip" *ngIf="hoveredBarKey === bar.key">
+      <!-- กราฟเส้น: คลิกจุดเพื่อดูรายละเอียดของช่วงนั้น (วัน/เดือน/ปี) - เมาส์ชี้เพื่อดูยอด
+           แยกตามคอกก่อนคลิก  เส้น+พื้นไล่สีวาดด้วย SVG ด้านหลัง จุดและช่องกดเป็น HTML วางทับ -->
+      <div class="egg-chart" *ngIf="!isLoadingHistory">
+        <div class="egg-chart-plot">
+          <svg class="egg-chart-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="addEggLineFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" class="egg-fill-top"/>
+                <stop offset="100%" class="egg-fill-bottom"/>
+              </linearGradient>
+            </defs>
+            <line class="egg-chart-grid" x1="0" y1="33" x2="100" y2="33" vector-effect="non-scaling-stroke"/>
+            <line class="egg-chart-grid" x1="0" y1="66" x2="100" y2="66" vector-effect="non-scaling-stroke"/>
+            <path [attr.d]="chartLinePaths.area" fill="url(#addEggLineFill)"/>
+            <path class="egg-chart-line" [attr.d]="chartLinePaths.line" vector-effect="non-scaling-stroke"/>
+          </svg>
+          <div
+            class="egg-chart-point"
+            *ngFor="let bar of chartBars; trackBy: trackByBarKey"
+            [class.is-today]="bar.isCurrent"
+            [class.is-selected]="selectedBarKey === bar.key"
+            [class.is-hovered]="hoveredBarKey === bar.key"
+            (click)="selectBar(bar)"
+            (mouseenter)="onBarHoverStart(bar)"
+            (mouseleave)="onBarHoverEnd()"
+          >
+            <span class="egg-chart-guide"></span>
+            <span class="egg-chart-dot" [style.bottom.%]="pointPercent(bar.value)"></span>
+            <div
+              class="egg-chart-tooltip"
+              *ngIf="hoveredBarKey === bar.key"
+              [class.is-below]="pointPercent(bar.value) > 60"
+              [style.bottom]="pointPercent(bar.value) > 60 ? null : 'calc(' + pointPercent(bar.value) + '% + 16px)'"
+              [style.top]="pointPercent(bar.value) > 60 ? 'calc(' + (100 - pointPercent(bar.value)) + '% + 16px)' : null"
+            >
               <ng-container *ngIf="statsCoopId == null && coopBreakdownForBar(bar).length > 1; else singleBarTotal">
                 <div class="egg-chart-tooltip-row" *ngFor="let item of coopBreakdownForBar(bar)">
                   <span>{{ item.name }}</span><span>{{ item.total }} ฟอง</span>
@@ -216,9 +237,16 @@
               </ng-container>
               <ng-template #singleBarTotal>{{ bar.value }} ฟอง</ng-template>
             </div>
-            <div class="egg-chart-bar-fill" [style.height.%]="barHeightPercent(bar.value)"></div>
           </div>
-          <span class="egg-chart-bar-label">{{ bar.label }}</span>
+        </div>
+        <div class="egg-chart-labels">
+          <span
+            class="egg-chart-bar-label"
+            *ngFor="let bar of chartBars; trackBy: trackByBarKey"
+            [class.is-today]="bar.isCurrent"
+            [class.is-selected]="selectedBarKey === bar.key"
+            (click)="selectBar(bar)"
+          >{{ bar.label }}</span>
         </div>
       </div>
 

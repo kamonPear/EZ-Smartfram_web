@@ -13,6 +13,9 @@ import { DeviceStatusComponent } from '../Device_status/Device_status';
 import { AddEggComponent } from '../Add_egg/Add_egg';
 import { AddHealthComponent } from '../Add_health/Add_health';
 import { GiveVaccineComponent } from '../Give_vaccine/Give_vaccine';
+import { linePointPercent, smoothLinePaths } from '../../shared/line-chart.util';
+import { ArrivalVaccineNote, loadArrivalVaccineNote } from '../../shared/arrival-vaccine.util';
+import { ArrivalVaccineNoteComponent } from '../../components/arrival-vaccine-note/arrival-vaccine-note.component';
 
 interface SlotPreview {
   id: number;
@@ -46,7 +49,7 @@ interface VaccineChecklistItem extends PendingVaccine {
 @Component({
   selector: 'app-data-coop',
   standalone: true,
-  imports: [CommonModule, RouterModule, DatePickerCalendar, SetUpSystem, DeviceStatusComponent],
+  imports: [CommonModule, RouterModule, DatePickerCalendar, SetUpSystem, DeviceStatusComponent, ArrivalVaccineNoteComponent],
   templateUrl: './Data_coop.html',
   styleUrls: ['./Data_coop.scss']
 })
@@ -91,6 +94,9 @@ export class DataCoopComponent implements OnInit, OnDestroy {
   // ส่วนที่โชว์ในกรอบ "วัคซีนที่ให้" ใช้ vaccineChecklist (รวมทุกตัว) แทน
   pendingVaccines: PendingVaccine[] = [];
   vaccineChecklist: VaccineChecklistItem[] = [];
+  // ไก่ที่รับเข้าฟาร์มตอนโตแล้ว - วัคซีนที่เลยช่วงอายุไปก่อนเข้าฟาร์ม (null = ไม่มี) ใช้อธิบายในกรอบ
+  // ตรวจสุขภาพ/วัคซีนว่าทำไมว่าง (shared/arrival-vaccine.util.ts)
+  arrivalNote: ArrivalVaccineNote | null = null;
 
   // นัดตรวจสุขภาพที่กำหนดวันเองของคอกนี้ (จาก backend แล้ว - ไม่ใช่ localStorage
   // อีกต่อไป) ใช้ร่วมกับ pendingVaccines ใน healthAppointment getter ด้านล่าง
@@ -140,6 +146,7 @@ export class DataCoopComponent implements OnInit, OnDestroy {
       if (this.selectedCoop) {
         this.fetchCoopDetails();
         this.fetchPendingVaccines();
+        this.fetchArrivalNote();
         this.fetchManualAppointments();
         this.fetchMotionAlerts();
         this.loadMarkers();
@@ -256,6 +263,14 @@ export class DataCoopComponent implements OnInit, OnDestroy {
   // เดียวกันนี้สร้าง 2 ลิสต์: pendingVaccines (เฉพาะที่ยังไม่ให้ - ใช้คำนวณนัดตรวจ
   // สุขภาพถัดไปเท่านั้น) และ vaccineChecklist (ทุกตัวรวมที่ให้แล้ว - โชว์ในกรอบ
   // "วัคซีนที่ให้")
+  fetchArrivalNote() {
+    if (!this.selectedCoop) return;
+    loadArrivalVaccineNote(this.api, this.selectedCoop).subscribe(note => {
+      this.arrivalNote = note;
+      this.cdr.detectChanges();
+    });
+  }
+
   fetchPendingVaccines(silent = false) {
     if (!this.selectedCoop) return;
     this.api.get<any[]>('/vaccines/alerts').subscribe({
@@ -399,43 +414,13 @@ export class DataCoopComponent implements OnInit, OnDestroy {
     return Math.max(1, ...this.eggBars.map(b => b.value));
   }
 
-  // ความสูงของจุดบนกราฟเส้น (% จากล่าง) - เว้นขอบล่าง 8% ให้จุดของวันที่ได้ 0 ฟองยังมองเห็น
-  // และเว้นขอบบนไว้ให้จุดสูงสุดไม่ชนขอบกล่อง
+  // กราฟเส้น: ความสูงจุด / เส้นโค้ง / พื้นใต้เส้น คำนวณด้วยตัวช่วยกลาง (shared/line-chart.util.ts)
   eggPointPercent(value: number): number {
-    return 8 + (Math.max(0, value) / this.eggChartMax) * 78;
+    return linePointPercent(value, this.eggChartMax);
   }
 
-  // พิกัดของแต่ละวันในระบบ 0-100 ของ SVG: x = กึ่งกลางช่องของวันนั้น, y = นับจากบนลงล่าง
-  private get eggPoints(): [number, number][] {
-    const bars = this.eggBars;
-    return bars.map((b, i) => [((i + 0.5) / bars.length) * 100, 100 - this.eggPointPercent(b.value)]);
-  }
-
-  // เส้นโค้งผ่านทุกจุด (Catmull-Rom แปลงเป็น Bezier) - จำกัดจุดควบคุมไม่ให้โค้งเลยขอบล่าง/บน
-  get eggLinePath(): string {
-    const pts = this.eggPoints;
-    if (pts.length === 0) return '';
-    const clampY = (y: number) => Math.min(100, Math.max(0, y));
-    let d = `M ${pts[0][0]} ${pts[0][1]}`;
-    for (let i = 0; i < pts.length - 1; i++) {
-      const p0 = pts[i - 1] ?? pts[i];
-      const p1 = pts[i];
-      const p2 = pts[i + 1];
-      const p3 = pts[i + 2] ?? p2;
-      const c1x = p1[0] + (p2[0] - p0[0]) / 6;
-      const c1y = clampY(p1[1] + (p2[1] - p0[1]) / 6);
-      const c2x = p2[0] - (p3[0] - p1[0]) / 6;
-      const c2y = clampY(p2[1] - (p3[1] - p1[1]) / 6);
-      d += ` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2[0]} ${p2[1]}`;
-    }
-    return d;
-  }
-
-  // พื้นที่ใต้เส้น (เติมสีไล่ระดับ) = เส้นเดิม แล้วลากลงขอบล่างปิดเป็นรูป
-  get eggAreaPath(): string {
-    const pts = this.eggPoints;
-    if (pts.length === 0) return '';
-    return `${this.eggLinePath} L ${pts[pts.length - 1][0]} 100 L ${pts[0][0]} 100 Z`;
+  get eggLinePaths(): { line: string; area: string } {
+    return smoothLinePaths(this.eggBars.map(b => b.value));
   }
 
   get todayEggTotal(): number {

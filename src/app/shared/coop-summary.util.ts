@@ -127,15 +127,15 @@ export function formatThaiDate(isoDate: string | undefined | null): string {
 
 /** อายุไก่นับจากวันเกิดถึงวันนี้ แบบอ่านง่าย เช่น "2 เดือน 1 สัปดาห์ 3 วัน" - เทียบ
  *  แค่ระดับวัน (ตัดเวลาทิ้ง) กันพลาดเรื่องเวลาในวันเดียวกันทำให้ปัดวันผิด - รับได้
- *  ทั้ง ISO string (เช่นจาก hover card) และ Date ที่ parse ไว้แล้ว (เช่นจาก Data_coop) */
-export function formatChickenAge(birthday: string | Date | undefined | null): string {
+ *  ทั้ง ISO string (เช่นจาก hover card) และ Date ที่ parse ไว้แล้ว (เช่นจาก Data_coop)
+ *  asOf = นับอายุถึงวันไหน (ไม่ส่ง = วันนี้) เช่น อายุตอนรับเข้าฟาร์ม */
+export function formatChickenAge(birthday: string | Date | undefined | null, asOf: Date = new Date()): string {
   if (!birthday) return '';
   const birth = birthday instanceof Date ? birthday : new Date(birthday);
   if (isNaN(birth.getTime())) return '';
 
   const b = new Date(birth.getFullYear(), birth.getMonth(), birth.getDate());
-  const now = new Date();
-  const t = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const t = new Date(asOf.getFullYear(), asOf.getMonth(), asOf.getDate());
   const totalDays = Math.round((t.getTime() - b.getTime()) / 86400000);
   if (totalDays < 0) return '';
 

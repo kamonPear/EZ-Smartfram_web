@@ -2,6 +2,8 @@ import { Component, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { ArrivalVaccineNote, loadArrivalVaccineNote } from '../../shared/arrival-vaccine.util';
+import { ArrivalVaccineNoteComponent } from '../../components/arrival-vaccine-note/arrival-vaccine-note.component';
 import { ApiService } from '../../services/api.service';
 import { ConfirmService, thDate } from '../../services/confirm.service';
 
@@ -31,7 +33,7 @@ interface VaccineHistoryRow {
 @Component({
   selector: 'app-give-vaccine',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ArrivalVaccineNoteComponent],
   templateUrl: './Give_vaccine.html',
   styleUrls: ['./Give_vaccine.scss']
 })
@@ -41,6 +43,8 @@ export class GiveVaccineComponent {
   coopName = '';
   isLoading = true;
   alerts: VaccineAlertRow[] = [];
+  // ไก่เข้าฟาร์มตอนโตแล้ว - วัคซีนที่เลยช่วงอายุไปก่อนเข้าฟาร์ม ไม่ต้องให้ (shared/arrival-vaccine.util.ts)
+  arrivalNote: ArrivalVaccineNote | null = null;
   savingId: string | null = null;
 
   // แจ้งเตือนผลลัพธ์กดให้วัคซีน - ของเดิมกดแล้วเงียบ รู้แค่การ์ดอัปเดตเฉยๆ
@@ -57,6 +61,12 @@ export class GiveVaccineComponent {
   constructor(private route: ActivatedRoute, private api: ApiService, private cdr: ChangeDetectorRef) {
     this.coopId = this.route.snapshot.queryParamMap.get('coop_id');
     this.fetchAlerts();
+    if (this.coopId) {
+      loadArrivalVaccineNote(this.api, this.coopId).subscribe(note => {
+        this.arrivalNote = note;
+        this.cdr.detectChanges();
+      });
+    }
   }
 
   fetchAlerts() {

@@ -9,6 +9,10 @@ import { DayMarker, loadCalendarMarkers, formatDateKey } from '../../shared/cale
 import { HealthAppointmentService } from '../../services/health-appointment.service';
 import { HealthRecord, formatThaiDate } from '../../shared/coop-summary.util';
 import { ConfirmService, thDate } from '../../services/confirm.service';
+import { backNavigator } from '../../shared/go-back.util';
+import { linePointPercent, smoothLinePaths } from '../../shared/line-chart.util';
+import { ArrivalVaccineNote, loadArrivalVaccineNote } from '../../shared/arrival-vaccine.util';
+import { ArrivalVaccineNoteComponent } from '../../components/arrival-vaccine-note/arrival-vaccine-note.component';
 
 type ChartMode = 'day' | 'month' | 'year';
 
@@ -33,12 +37,14 @@ const THAI_MONTH_SHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 
 @Component({
   selector: 'app-add-health',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, DatePickerCalendar],
+  imports: [CommonModule, RouterModule, FormsModule, DatePickerCalendar, ArrivalVaccineNoteComponent],
   templateUrl: './Add_health.html',
   styleUrls: ['./Add_health.scss']
 })
 export class AddHealthComponent {
   private confirm = inject(ConfirmService);
+  // ปุ่มยกเลิก: กลับหน้าก่อนหน้าที่เปิดมา ไม่เด้งไปหน้าแรก (shared/go-back.util.ts)
+  readonly goBack = backNavigator('/');
 
   collectDate: Date | null = new Date();
   isCalendarOpen: boolean = false;
@@ -69,6 +75,8 @@ export class AddHealthComponent {
   // (เหมือนหน้านัดตรวจสุขภาพโหมดอัตโนมัติ) แล้วล็อกวันที่ไว้ ไม่ให้เลือกเอง
   isLoadingAppointment = false;
   hasNoAppointment = false;
+  // ไก่เข้าฟาร์มตอนโตแล้ว (เลยช่วงวัคซีน) - อธิบายว่าทำไมไม่มีนัดตรวจ (shared/arrival-vaccine.util.ts)
+  arrivalNote: ArrivalVaccineNote | null = null;
   appointmentVaccineName: string | null = null;
   appointmentVaccineDate: Date | null = null;
 
@@ -127,6 +135,11 @@ export class AddHealthComponent {
     if (!this.coopId) return;
     this.isLoadingAppointment = true;
     this.collectDate = null;
+    this.arrivalNote = null;
+    loadArrivalVaccineNote(this.api, this.coopId).subscribe(note => {
+      this.arrivalNote = note;
+      this.cdr.detectChanges();
+    });
 
     forkJoin({
       alerts: this.api.get<any[]>('/vaccines/alerts'),
@@ -416,27 +429,22 @@ export class AddHealthComponent {
     return bars;
   }
 
-  // สเกลของกราฟอิง "จำนวนไก่ทั้งหมดที่ตรวจ" (สุขภาพดี+ป่วย) ของแท่งที่มากที่สุดใน
-  // ช่วงที่โชว์อยู่ ไม่ใช่แค่จำนวนป่วยเหมือนเดิม เพราะตอนนี้แท่งแสดงทั้งคู่ซ้อนกัน
+  // สเกลเดียวกันทั้ง 2 เส้น = ค่าสูงสุดของสุขภาพดีหรือป่วยในช่วงที่โชว์อยู่ เทียบความสูงกันได้ตรง ๆ
   get chartMax(): number {
-    return Math.max(1, ...this.chartBars.map(b => b.healthyValue + b.poorValue));
+    return Math.max(1, ...this.chartBars.map(b => Math.max(b.healthyValue, b.poorValue)));
   }
 
-  // ความสูงของแท่งรวม (เขียว+แดงซ้อนกัน) เทียบกับ chartMax - ถ้ามีการตรวจแต่นับ
-  // ได้ 0 ทั้งคู่ (กรณีหายาก) ยังโชว์แท่งเตี้ยๆ ไว้ยืนยันว่ามีการบันทึกจริง ไม่ใช่
-  // ปล่อยว่างจนดูเหมือนข้อมูลหาย
-  barTotalHeightPercent(bar: ChartBar): number {
-    const total = bar.healthyValue + bar.poorValue;
-    if (total <= 0) return bar.hasRecord ? 4 : 0;
-    return Math.max(6, (total / this.chartMax) * 100);
+  // กราฟเส้น: ความสูงจุด / เส้นโค้ง คำนวณด้วยตัวช่วยกลาง (shared/line-chart.util.ts)
+  pointPercent(value: number): number {
+    return linePointPercent(value, this.chartMax);
   }
 
-  // ความสูงของแต่ละท่อนสี (เขียว/แดง) เป็น % ของความสูงแท่งรวมเอง (ไม่ใช่ % ของ
-  // ทั้งแท่งกราฟ) เพื่อให้สัดส่วนสุขภาพดี/ป่วยภายในแท่งนั้นถูกต้องเสมอ
-  segmentHeightPercent(part: number, bar: ChartBar): number {
-    const total = bar.healthyValue + bar.poorValue;
-    if (total <= 0 || part <= 0) return 0;
-    return (part / total) * 100;
+  get healthyLinePaths(): { line: string; area: string } {
+    return smoothLinePaths(this.chartBars.map(b => b.healthyValue), this.chartMax);
+  }
+
+  get poorLinePaths(): { line: string; area: string } {
+    return smoothLinePaths(this.chartBars.map(b => b.poorValue), this.chartMax);
   }
 
   barTooltip(bar: ChartBar): string {

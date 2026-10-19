@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { SiteSearchComponent } from '../../components/site-search/site-search.component';
 import { ConfirmService, thDate } from '../../services/confirm.service';
+import { backNavigator } from '../../shared/go-back.util';
 
 interface MedicineSchedule {
   id: number;
@@ -42,6 +43,8 @@ interface MatchingCoopsResponse {
 })
 export class AddVaccineComponent {
   private confirm = inject(ConfirmService);
+  // ปุ่มยกเลิก: กลับหน้าก่อนหน้าที่เปิดมา ไม่เด้งไปหน้าแรก (shared/go-back.util.ts)
+  readonly goBack = backNavigator('/home');
 
   medicineName: string = '';
   method: string = '';
