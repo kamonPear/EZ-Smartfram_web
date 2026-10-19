@@ -373,7 +373,7 @@ export class DataCoopComponent implements OnInit, OnDestroy {
     return this.devicesList.filter(d => d.current_status === 'Online').length;
   }
 
-  // กราฟแท่งไข่ที่เก็บได้ของคอกนี้ ย้อนหลัง 14 วัน (คล้ายหน้าเพิ่มไข่ แต่ย่อลง
+  // ข้อมูลกราฟไข่ที่เก็บได้ของคอกนี้ ย้อนหลัง 14 วัน (แสดงเป็นกราฟเส้น) (คล้ายหน้าเพิ่มไข่ แต่ย่อลง
   // มาแสดงในแดชบอร์ดนี้)
   get eggBars(): EggBar[] {
     const bars: EggBar[] = [];
@@ -399,9 +399,43 @@ export class DataCoopComponent implements OnInit, OnDestroy {
     return Math.max(1, ...this.eggBars.map(b => b.value));
   }
 
-  eggBarHeightPercent(value: number): number {
-    if (value <= 0) return 0;
-    return Math.max(6, (value / this.eggChartMax) * 100);
+  // ความสูงของจุดบนกราฟเส้น (% จากล่าง) - เว้นขอบล่าง 8% ให้จุดของวันที่ได้ 0 ฟองยังมองเห็น
+  // และเว้นขอบบนไว้ให้จุดสูงสุดไม่ชนขอบกล่อง
+  eggPointPercent(value: number): number {
+    return 8 + (Math.max(0, value) / this.eggChartMax) * 78;
+  }
+
+  // พิกัดของแต่ละวันในระบบ 0-100 ของ SVG: x = กึ่งกลางช่องของวันนั้น, y = นับจากบนลงล่าง
+  private get eggPoints(): [number, number][] {
+    const bars = this.eggBars;
+    return bars.map((b, i) => [((i + 0.5) / bars.length) * 100, 100 - this.eggPointPercent(b.value)]);
+  }
+
+  // เส้นโค้งผ่านทุกจุด (Catmull-Rom แปลงเป็น Bezier) - จำกัดจุดควบคุมไม่ให้โค้งเลยขอบล่าง/บน
+  get eggLinePath(): string {
+    const pts = this.eggPoints;
+    if (pts.length === 0) return '';
+    const clampY = (y: number) => Math.min(100, Math.max(0, y));
+    let d = `M ${pts[0][0]} ${pts[0][1]}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i - 1] ?? pts[i];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[i + 2] ?? p2;
+      const c1x = p1[0] + (p2[0] - p0[0]) / 6;
+      const c1y = clampY(p1[1] + (p2[1] - p0[1]) / 6);
+      const c2x = p2[0] - (p3[0] - p1[0]) / 6;
+      const c2y = clampY(p2[1] - (p3[1] - p1[1]) / 6);
+      d += ` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2[0]} ${p2[1]}`;
+    }
+    return d;
+  }
+
+  // พื้นที่ใต้เส้น (เติมสีไล่ระดับ) = เส้นเดิม แล้วลากลงขอบล่างปิดเป็นรูป
+  get eggAreaPath(): string {
+    const pts = this.eggPoints;
+    if (pts.length === 0) return '';
+    return `${this.eggLinePath} L ${pts[pts.length - 1][0]} 100 L ${pts[0][0]} 100 Z`;
   }
 
   get todayEggTotal(): number {

@@ -336,69 +336,107 @@
   white-space: nowrap;
 }
 
-/* กราฟเก็บไข่แบบย่อ (14 วัน) */
+/* กราฟเก็บไข่แบบย่อ (14 วัน) - กราฟเส้น */
 .mini-egg-chart {
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  height: 90px;
-  padding-top: 8px;
+  padding-top: 10px;
   border-top: 1px solid var(--border-subtle);
 }
 
-.mini-egg-bar {
+.mini-egg-plot {
+  position: relative;
+  display: flex;
+  height: 110px;
+}
+
+.mini-egg-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.mini-egg-grid {
+  stroke: var(--border-subtle);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.mini-egg-line {
+  fill: none;
+  stroke: var(--accent-green-bright);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.egg-fill-top { stop-color: var(--accent-green-bright); stop-opacity: 0.32; }
+.egg-fill-bottom { stop-color: var(--accent-green-bright); stop-opacity: 0; }
+
+/* ช่องของแต่ละวัน (กว้างเท่ากัน) - ใช้รับการชี้/กด และวางจุดของวันนั้นไว้ตรงกลาง */
+.mini-egg-point {
+  position: relative;
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  height: 100%;
   cursor: pointer;
 
-  .mini-egg-bar-track {
-    position: relative;
-    flex: 1;
-    width: 100%;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
+  .mini-egg-guide {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    border-left: 1px dashed transparent;
+    transition: border-color 0.15s ease;
   }
 
-  .mini-egg-bar-fill {
-    width: 55%;
-    min-width: 3px;
-    border-radius: 4px 4px 1px 1px;
-    background: rgba(114, 213, 114, 0.35);
-    transition: background 0.15s ease;
+  .mini-egg-dot {
+    position: absolute;
+    left: 50%;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 2px solid var(--accent-green-bright);
+    transform: translate(-50%, 50%);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
 
-  .mini-egg-bar-label {
-    font-size: 0.6rem;
-    color: rgba(var(--fg-rgb), 0.4);
+  &.is-hovered .mini-egg-guide,
+  &.is-selected .mini-egg-guide { border-left-color: rgba(114, 213, 114, 0.45); }
+
+  &.is-hovered .mini-egg-dot { transform: translate(-50%, 50%) scale(1.35); }
+
+  &.is-today .mini-egg-dot {
+    background: var(--accent-green-bright);
+    box-shadow: 0 0 0 4px rgba(114, 213, 114, 0.22);
   }
 
-  &:hover .mini-egg-bar-fill { background: var(--accent-green-bright); }
-
-  &.is-today {
-    .mini-egg-bar-fill { background: var(--accent-green-bright); }
-    .mini-egg-bar-label { color: var(--accent-green-bright); font-weight: 700; }
-  }
-
-  &.is-selected .mini-egg-bar-fill {
+  &.is-selected .mini-egg-dot {
     background: var(--accent-green-bright);
     box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--accent-green-bright);
   }
+}
 
-  &.is-selected .mini-egg-bar-label {
-    color: var(--accent-green-bright);
-    font-weight: 700;
+.mini-egg-labels {
+  display: flex;
+  margin-top: 6px;
+
+  .mini-egg-bar-label {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    font-size: 0.6rem;
+    color: rgba(var(--fg-rgb), 0.4);
+    cursor: pointer;
+
+    &.is-today,
+    &.is-selected { color: var(--accent-green-bright); font-weight: 700; }
   }
 }
 
 .mini-egg-tooltip {
   position: absolute;
-  bottom: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%);
   background: var(--bg-card);

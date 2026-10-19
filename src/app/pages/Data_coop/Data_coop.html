@@ -65,21 +65,44 @@
           <button class="section-action-btn" (click)="openDevicePopup('egg')">บันทึกไข่</button>
         </div>
 
+        <!-- กราฟเส้น 14 วัน: เส้น+พื้นไล่สีวาดด้วย SVG ด้านหลัง ส่วนจุดและช่องกด/ชี้ของแต่ละวันเป็น HTML
+             วางทับ (จุดจะกลมเสมอไม่ถูกยืดตามขนาดกล่อง) -->
         <div class="mini-egg-chart">
-          <div
-            class="mini-egg-bar"
-            *ngFor="let bar of eggBars; trackBy: trackByEggBarKey"
-            [class.is-today]="bar.isToday"
-            [class.is-selected]="selectedEggBarKey === bar.key"
-            (click)="selectEggBar(bar)"
-            (mouseenter)="onEggBarHoverStart(bar)"
-            (mouseleave)="onEggBarHoverEnd()"
-          >
-            <div class="mini-egg-bar-track">
-              <div class="mini-egg-tooltip" *ngIf="hoveredEggBarKey === bar.key">{{ bar.value }} ฟอง</div>
-              <div class="mini-egg-bar-fill" [style.height.%]="eggBarHeightPercent(bar.value)"></div>
+          <div class="mini-egg-plot">
+            <svg class="mini-egg-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="eggLineFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" class="egg-fill-top"/>
+                  <stop offset="100%" class="egg-fill-bottom"/>
+                </linearGradient>
+              </defs>
+              <line class="mini-egg-grid" x1="0" y1="50" x2="100" y2="50" vector-effect="non-scaling-stroke"/>
+              <path class="mini-egg-area" [attr.d]="eggAreaPath" fill="url(#eggLineFill)"/>
+              <path class="mini-egg-line" [attr.d]="eggLinePath" vector-effect="non-scaling-stroke"/>
+            </svg>
+            <div
+              class="mini-egg-point"
+              *ngFor="let bar of eggBars; trackBy: trackByEggBarKey"
+              [class.is-today]="bar.isToday"
+              [class.is-selected]="selectedEggBarKey === bar.key"
+              [class.is-hovered]="hoveredEggBarKey === bar.key"
+              (click)="selectEggBar(bar)"
+              (mouseenter)="onEggBarHoverStart(bar)"
+              (mouseleave)="onEggBarHoverEnd()"
+            >
+              <span class="mini-egg-guide"></span>
+              <span class="mini-egg-dot" [style.bottom.%]="eggPointPercent(bar.value)"></span>
+              <div class="mini-egg-tooltip" *ngIf="hoveredEggBarKey === bar.key" [style.bottom]="'calc(' + eggPointPercent(bar.value) + '% + 14px)'">{{ bar.value }} ฟอง</div>
             </div>
-            <span class="mini-egg-bar-label">{{ bar.label }}</span>
+          </div>
+          <div class="mini-egg-labels">
+            <span
+              class="mini-egg-bar-label"
+              *ngFor="let bar of eggBars; trackBy: trackByEggBarKey"
+              [class.is-today]="bar.isToday"
+              [class.is-selected]="selectedEggBarKey === bar.key"
+              (click)="selectEggBar(bar)"
+            >{{ bar.label }}</span>
           </div>
         </div>
 
