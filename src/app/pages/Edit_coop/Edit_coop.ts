@@ -378,7 +378,9 @@ export class EditCoopComponent implements OnInit {
       error: (err: any) => {
         this.isSavingRecord = false;
         console.error(`บันทึกข้อมูล${kind}ไม่สำเร็จ:`, err);
-        alert('บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+        // ข้อความจริงจาก backend ถ้ามี (เช่น ยังไม่ได้ตรวจสุขภาพก่อนให้วัคซีน)
+        const serverMsg = typeof err?.error === 'string' ? err.error.trim() : '';
+        alert(serverMsg || 'บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
         this.cdr.detectChanges();
       }
     });
