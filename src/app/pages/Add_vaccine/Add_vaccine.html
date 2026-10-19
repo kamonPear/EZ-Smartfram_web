@@ -229,7 +229,7 @@
 
         <div class="edit-age-row">
           <div class="field-group">
-            <label class="field-label">อายุต่ำสุดที่ให้ (วัน)<span class="field-label-required">*</span></label>
+            <label class="field-label">อายุต่ำสุด (วัน)<span class="field-label-required">*</span></label>
             <div class="input-pill">
               <input type="number" min="0" [(ngModel)]="editForm.minAgeDays">
               <span class="input-pill-suffix">วัน</span>
@@ -237,7 +237,7 @@
             <span class="edit-age-hint">{{ ageHint(editForm.minAgeDays) }}</span>
           </div>
           <div class="field-group">
-            <label class="field-label">อายุสูงสุดที่ให้ (วัน)<span class="field-label-required">*</span></label>
+            <label class="field-label">อายุสูงสุด (วัน)<span class="field-label-required">*</span></label>
             <div class="input-pill">
               <input type="number" min="0" [(ngModel)]="editForm.maxAgeDays">
               <span class="input-pill-suffix">วัน</span>

@@ -564,16 +564,30 @@
 }
 
 .edit-modal {
-  width: min(560px, 100%);
+  width: min(440px, 100%);
   max-height: calc(100vh - 32px);
+  overflow-x: hidden;
   overflow-y: auto;
   background: var(--bg-card);
-  border-radius: 22px;
-  padding: 22px 24px;
+  border-radius: 20px;
+  padding: 18px 20px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
   box-sizing: border-box;
 
-  .action-row { margin-top: 20px; }
+  // ฟอร์มในป็อบอัพให้กะทัดรัดกว่าฟอร์มหลักของหน้า
+  .field-stack { gap: 10px; }
+  .field-group + .field-group { margin-top: 0; } // ไม่งั้นช่องอายุสูงสุดในแถวเดียวกันถูกดันลงต่ำกว่าช่องต่ำสุด
+  .field-label { font-size: 0.76rem; margin-bottom: 4px; }
+  .input-pill {
+    padding: 9px 16px;
+    gap: 8px;
+    input, select { font-size: 0.92rem; }
+  }
+  .action-row {
+    margin-top: 16px;
+    gap: 10px;
+    .btn-cancel, .btn-confirm { padding: 10px 14px; font-size: 0.92rem; }
+  }
 }
 
 .edit-modal-header {
@@ -596,8 +610,8 @@
 
 .edit-age-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); // minmax(0) กันช่องกว้างเกินจนล้นขอบป็อบอัพ
+  gap: 10px;
 
   @media (max-width: 520px) { grid-template-columns: 1fr; }
 }
