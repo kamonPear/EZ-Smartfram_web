@@ -174,12 +174,20 @@
   }
 
   select {
-    // บอกเบราว์เซอร์ว่า control นี้เป็นธีมมืด เมนู native ที่เปิดขึ้นมาจะได้ใช้สีที่อ่านออกให้เอง
-    color-scheme: dark;
-
+    // รายการตัวเลือกใช้สีตามธีม (สว่าง/มืด) - เดิมฟิกพื้นน้ำเงินเข้ม ทำให้โหมดสว่างตัวหนังสือเข้มบนพื้นเข้ม อ่านไม่ออก
+    // color-scheme ของเมนู native ตั้งไว้ตามธีมแล้วใน styles.scss
     option {
-      background-color: #1B2A38;
+      background-color: var(--bg-card);
       color: var(--text-title);
+    }
+
+    option:checked {
+      background-color: rgba(114, 213, 114, 0.25);
+      color: var(--text-title);
+    }
+
+    option:disabled {
+      color: rgba(var(--fg-rgb), 0.45);
     }
   }
 
