@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { forkJoin, map, Observable, of, catchError, Subject } from 'rxjs';
 import { ApiService } from './api.service';
 
-export type NotificationType = 'food' | 'vaccine' | 'health' | 'motion';
+export type NotificationType = 'food' | 'vaccine' | 'health' | 'motion' | 'offline';
 
 export interface FarmNotification {
   id: string;
@@ -32,6 +32,21 @@ function loadMotionAcks(): Record<string, number> {
     return JSON.parse(localStorage.getItem(MOTION_ACK_KEY) || '{}') || {};
   } catch {
     return {};
+  }
+}
+
+// จำว่าผู้ใช้กด "รับทราบ" แจ้งเตือนเซนเซอร์ไม่ทำงานตัวไหนแล้ว (เก็บในเบราว์เซอร์นี้)
+// id ผูกกับอุปกรณ์ตัวนั้นอย่างเดียว (ห้ามใส่ last_update - พัดลมส่งสถานะทุก 2 วินาที ค่านี้
+// เปลี่ยนตลอด ทำให้กดรับทราบแล้วแจ้งเตือนกลับมาเอง) การรับทราบจะถูกล้างเองเมื่ออุปกรณ์
+// กลับมาปกติ (หลุดจากรายการ) ถ้าเสียรอบใหม่จึงแจ้งเตือนใหม่
+const OFFLINE_ACK_KEY = 'ez_offline_ack';
+
+function loadOfflineAcks(): string[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(OFFLINE_ACK_KEY) || '[]');
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
   }
 }
 
@@ -97,12 +112,13 @@ export class NotificationsService {
       alerts: safe('วัคซีน', '/vaccines/alerts'),
       healths: safe('สุขภาพ', '/healths'),
       motion: safe('ความเคลื่อนไหว', '/motion-alerts'),
+      offline: safe('สถานะเซนเซอร์', '/offline-alerts'),
       appointments: safe('นัดตรวจสุขภาพ', '/health-appointments'),
       foodRules: safe('ตารางอาหารตามอายุ', '/food-age-rules'),
     }).pipe(
-      map(({ foods, coops, alerts, healths, motion, appointments, foodRules }) => {
+      map(({ foods, coops, alerts, healths, motion, appointments, foodRules, offline }) => {
         this.lastLoadFailed = failed;
-        return this.build(foods || [], coops || [], alerts || [], healths || [], motion || [], appointments || [], foodRules || []);
+        return this.build(foods || [], coops || [], alerts || [], healths || [], motion || [], appointments || [], foodRules || [], offline || []);
       })
     );
   }
@@ -121,6 +137,29 @@ export class NotificationsService {
     }
   }
 
+  /** บันทึกว่ารับทราบแจ้งเตือนเซนเซอร์ไม่ทำงานนี้แล้ว */
+  acknowledgeOffline(id: string) {
+    try {
+      const acks = loadOfflineAcks();
+      if (!acks.includes(id)) acks.push(id);
+      localStorage.setItem(OFFLINE_ACK_KEY, JSON.stringify(acks));
+    } catch {
+      // เขียน localStorage ไม่ได้ - ยอมให้แจ้งเตือนกลับมาตอนโหลดใหม่
+    }
+  }
+
+  private pruneOfflineAcks(current: Set<string>) {
+    try {
+      const acks = loadOfflineAcks();
+      const kept = acks.filter(id => current.has(id));
+      if (kept.length !== acks.length) {
+        localStorage.setItem(OFFLINE_ACK_KEY, JSON.stringify(kept));
+      }
+    } catch {
+      // เขียน localStorage ไม่ได้ - ปล่อยไว้ตามเดิม
+    }
+  }
+
   /** บันทึกว่ารับทราบแจ้งเตือนเปลี่ยนประเภทอาหารตามอายุนี้แล้ว */
   acknowledgeFoodSwitch(id: string) {
     try {
@@ -132,7 +171,7 @@ export class NotificationsService {
     }
   }
 
-  private build(foods: any[], coops: any[], alerts: any[], healths: any[], motion: any[] = [], appointments: any[] = [], foodRules: any[] = []): FarmNotification[] {
+  private build(foods: any[], coops: any[], alerts: any[], healths: any[], motion: any[] = [], appointments: any[] = [], foodRules: any[] = [], offline: any[] = []): FarmNotification[] {
     const notifications: FarmNotification[] = [];
     const today = new Date();
     const todayOnly = dateOnly(today);
@@ -356,6 +395,48 @@ export class NotificationsService {
         coopId,
         coopName,
       });
+    }
+
+    // 7. แจ้งเตือนเซนเซอร์ไม่ทำงาน (Offline) - 1 แจ้งเตือนต่อเซนเซอร์ หายไปเองเมื่อเซนเซอร์
+    // กลับมาส่งข้อมูล หรือเมื่อผู้ใช้กด "รับทราบ" (แจ้งใหม่ถ้าดับรอบใหม่)
+    const offlineAcks = new Set(loadOfflineAcks());
+    const currentOfflineIds = new Set<string>();
+    for (const o of offline) {
+      const coopId = o?.coop_id != null ? String(o.coop_id) : '';
+      const coopName = o?.coop_name || coopNames.get(coopId) || `คอก ${coopId}`;
+      const sensorName = (o?.device_name && String(o.device_name).trim()) || `ช่อง ${o?.slot_index ?? '-'}`;
+      const last = o?.last_update ? new Date(o.last_update) : null;
+      const sinceLabel = last && !isNaN(last.getTime())
+        ? ` (ข้อมูลล่าสุด ${last.toLocaleString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })})`
+        : '';
+      const isFan = o?.kind === 'fan';
+      const offlineId = `offline_${o?.device_id}`;
+      currentOfflineIds.add(offlineId);
+      if (offlineAcks.has(offlineId)) continue;
+      // พัดลม: อุณหภูมิหรือแอมโมเนียถึงเกณฑ์ฟาร์มแล้วแต่พัดลมไม่ทำงาน (backend คัดมาให้แล้ว)
+      // บอกแค่ชื่อคอกกับว่าพัดลมไม่ทำงาน
+      // หลอดไฟ: อุณหภูมิต่ำกว่าเกณฑ์ฟาร์มแล้วแต่หลอดไฟไม่ทำงาน (backend คัดมาให้แล้ว)
+      const coopLabel = coopName.startsWith('คอก') ? coopName : 'คอก ' + coopName;
+      const title = isFan
+        ? `‼️ ${coopLabel} พัดลมไม่ทำงาน กรุณาตรวจสอบ`
+        : o?.kind === 'lamp'
+        ? `‼️ ${coopLabel} หลอดไฟไม่ทำงาน กรุณาตรวจสอบ`
+        : `📡 เซนเซอร์ ${sensorName} ที่${coopName}ไม่ทำงาน${sinceLabel} กรุณาตรวจสอบ`;
+      notifications.push({
+        id: offlineId,
+        type: 'offline',
+        title,
+        urgent: true,
+        daysUntil: -500,
+        coopId,
+        coopName,
+      });
+    }
+
+    // ล้างการรับทราบของอุปกรณ์ที่กลับมาปกติแล้ว (ข้ามถ้าโหลดรายการนี้ไม่สำเร็จ ไม่งั้น
+    // "โหลดไม่ได้" จะถูกมองเป็น "ปกติทุกตัว" แล้วล้างทิ้งหมด)
+    if (!this.lastLoadFailed.includes('สถานะเซนเซอร์')) {
+      this.pruneOfflineAcks(currentOfflineIds);
     }
 
     notifications.sort((a, b) => a.daysUntil - b.daysUntil);
