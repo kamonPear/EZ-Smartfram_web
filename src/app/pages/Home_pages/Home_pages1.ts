@@ -229,6 +229,8 @@ export class HomePages1 implements OnInit, OnDestroy {
   }
 
   selectCoop(coop: Coop) {
+    // เพิ่งปล่อยการ์ดจากการลากจัดเรียง - เบราว์เซอร์ยิง click ตามมา ไม่ให้เปิดหน้าคอก
+    if (this.suppressCoopClick) return;
     this.router.navigate(['/data-coop'], {
       state: { coopNumber: coop.coop_id?.toString() }
     });
@@ -242,7 +244,34 @@ export class HomePages1 implements OnInit, OnDestroy {
   openTemperatureSettings() {
   }
 
+  // ลากการ์ดคอกจัดเรียง (Angular CDK, orientation "mixed" รองรับตารางหลายแถว) แล้วบันทึกลำดับไว้ที่
+  // backend (PUT /coops/order -> คอลัมน์ coop.sort_order) จึงเรียงแบบเดียวกันทุกเครื่องและในแอป
+  // บันทึกไม่สำเร็จ -> คืนลำดับเดิม
+  private suppressCoopClick = false;
+
+  trackByCoopId(_index: number, coop: Coop): number {
+    return coop.coop_id;
+  }
+
+  onCoopDragStarted() {
+    this.suppressCoopClick = true;
+  }
+
   drop(event: CdkDragDrop<Coop[]>) {
+    // ปล่อยให้ click ที่ตามหลังการปล่อยเมาส์ผ่านไปก่อน แล้วค่อยให้กดเปิดคอกได้ตามปกติ
+    setTimeout(() => (this.suppressCoopClick = false), 0);
+    if (event.previousIndex === event.currentIndex) return;
+
+    const before = [...this.coops];
     moveItemInArray(this.coops, event.previousIndex, event.currentIndex);
+    this.cdr.detectChanges();
+
+    this.api.put('/coops/order', { coop_ids: this.coops.map(c => c.coop_id) }).subscribe({
+      error: (err) => {
+        console.error('บันทึกลำดับคอกไม่สำเร็จ:', err);
+        this.coops = before;
+        this.cdr.detectChanges();
+      },
+    });
   }
 }

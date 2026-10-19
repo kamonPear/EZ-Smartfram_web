@@ -248,6 +248,7 @@
     <section class="coop-section" id="coop-list-section">
       <div class="section-title-row">
         <h2 class="section-title">คอกไก่ของคุณ</h2>
+        <span class="coop-sort-hint" *ngIf="coops.length > 1">✥ กดค้างแล้วลากการ์ดเพื่อจัดเรียงคอก</span>
       </div>
 
       <div class="coop-grid" *ngIf="isLoading">
@@ -279,9 +280,9 @@
         <button class="retry-btn" *ngIf="showRetryButton" (click)="loadCoops()">🔄 โหลดใหม่ตอนนี้</button>
       </div>
 
-      <div class="coop-grid" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)"
+      <div class="coop-grid" cdkDropList cdkDropListOrientation="mixed" (cdkDropListDropped)="drop($event)"
         *ngIf="!isLoading && !loadError && coops.length > 0">
-        <div class="coop-card" cdkDrag *ngFor="let coop of coops" (click)="selectCoop(coop)"
+        <div class="coop-card" cdkDrag [cdkDragStartDelay]="{ touch: 250, mouse: 0 }" (cdkDragStarted)="onCoopDragStarted()" *ngFor="let coop of coops; trackBy: trackByCoopId" (click)="selectCoop(coop)"
           (mouseenter)="hoveredCoopId = coop.coop_id" (mouseleave)="hoveredCoopId = null">
           <div class="coop-hover-anchor" *ngIf="hoveredCoopId === coop.coop_id" (click)="$event.stopPropagation()">
             <app-coop-hover-card [coop]="coop"></app-coop-hover-card>

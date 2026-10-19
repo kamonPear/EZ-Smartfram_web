@@ -711,8 +711,13 @@
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   }
 
+  // ช่องว่างที่การ์ดจะลงไปวาง - เป็นกรอบประให้เห็นตำแหน่งชัด ๆ
   &.cdk-drag-placeholder {
-    opacity: 0;
+    opacity: 1;
+    background: transparent;
+    border: 2px dashed var(--accent-green);
+    box-shadow: none;
+    > * { visibility: hidden; }
   }
 
   &.cdk-drag-animating {
@@ -1299,4 +1304,18 @@
 
     &:hover { color: var(--text-primary); }
   }
+}
+
+/* คำแนะนำการลากจัดเรียงคอก (ข้างหัวข้อ "คอกไก่ของคุณ") */
+.coop-sort-hint {
+  font-size: 0.78rem;
+  color: rgba(var(--fg-rgb), 0.5);
+}
+
+.coop-card.cdk-drag {
+  cursor: grab;
+}
+
+.cdk-drag-preview.coop-card {
+  cursor: grabbing;
 }
