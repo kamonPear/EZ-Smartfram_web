@@ -206,10 +206,19 @@ export class FoodComponent {
   minDraft: number | null = null;
   isSavingMin = false;
 
+  // ปริมาณใกล้หมดเป็นค่าเดียวใช้ร่วมกันทุกประเภท ตั้งได้ครั้งเดียวแล้วล็อก (แก้ไขไม่ได้)
+  get minLocked(): boolean {
+    return (this.smallStock?.min_quantity ?? 0) > 0 || (this.largeStock?.min_quantity ?? 0) > 0;
+  }
+
+  get lockedMinValue(): number {
+    return Math.max(this.smallStock?.min_quantity ?? 0, this.largeStock?.min_quantity ?? 0);
+  }
+
   startEditMin(foodType: string, stock: FoodStock | null) {
-    if (!stock) return;
+    if (!stock || this.minLocked) return;
     this.editingMinType = foodType;
-    this.minDraft = stock.min_quantity && stock.min_quantity > 0 ? stock.min_quantity : null;
+    this.minDraft = null;
   }
 
   cancelEditMin() {
@@ -217,25 +226,27 @@ export class FoodComponent {
   }
 
   saveMinQuantity() {
-    if (!this.editingMinType) return;
+    if (!this.editingMinType || this.minLocked) return;
     const value = this.minDraft == null ? 0 : Number(this.minDraft);
-    if (isNaN(value) || value < 0) {
-      this.flashToast('ปริมาณแจ้งเตือนต้องไม่ติดลบ', 'error');
+    if (isNaN(value) || value <= 0) {
+      this.flashToast('กรุณากรอกปริมาณที่มากกว่า 0', 'error');
       return;
     }
-    const foodType = this.editingMinType;
+    if (!confirm(`ตั้งแจ้งเตือนเมื่ออาหารเหลือไม่เกิน ${value} กก. (ใช้กับอาหารทุกประเภท)\n\nบันทึกแล้วจะแก้ไขไม่ได้ ยืนยันหรือไม่?`)) return;
+
     this.isSavingMin = true;
-    this.api.put('/foods/min-quantity', { food_type: foodType, min_quantity: value }).subscribe({
+    this.api.put('/foods/min-quantity', { min_quantity: value }).subscribe({
       next: () => {
         this.isSavingMin = false;
         this.editingMinType = null;
-        this.flashToast(value > 0 ? `ตั้งแจ้งเตือน${foodType}ใกล้หมดที่ ${value} กก. แล้ว` : `ปิดแจ้งเตือน${foodType}ใกล้หมดแล้ว`);
+        this.flashToast(`ตั้งแจ้งเตือนอาหารใกล้หมดที่ ${value} กก. แล้ว`);
         this.loadAll();
       },
       error: (err) => {
         this.isSavingMin = false;
         console.error('บันทึกปริมาณแจ้งเตือนไม่สำเร็จ:', err);
-        this.flashToast('บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
+        this.flashToast(err?.status === 409 ? 'ตั้งไว้แล้ว แก้ไขไม่ได้' : 'บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', 'error');
+        this.loadAll();
       }
     });
   }
@@ -312,7 +323,44 @@ export class FoodComponent {
     this.ageConfigError = '';
   }
 
+  // เมนูเลือกประเภทอาหารแบบกำหนดเอง (แทน <select> ของเบราว์เซอร์): เก็บ index ของแถวที่เปิดเมนูอยู่
+  openTypeMenu: number | null = null;
+
+  toggleTypeMenu(index: number) {
+    this.openTypeMenu = this.openTypeMenu === index ? null : index;
+  }
+
+  closeTypeMenu() {
+    this.openTypeMenu = null;
+  }
+
+  pickType(rule: AgeRuleRow, foodType: string) {
+    this.onAgeRuleTypeChange(rule, foodType);
+    this.openTypeMenu = null;
+  }
+
+  // เปลี่ยนประเภทของแถว: ถ้าเลือก "เม็ดใหญ่" ในแถวที่ช่วงอายุยังว่างอยู่ ให้เริ่มต่อจากที่
+  // "เม็ดเล็ก" จบ (เช่น เม็ดเล็ก 0-6 -> เม็ดใหญ่ เริ่ม 6) และใส่ "ถึง" = 0 (ไม่จำกัด)
+  // ไม่ทับค่าที่ผู้ใช้กรอกไว้แล้ว และถ้าเม็ดเล็กไม่มีอายุสิ้นสุด (0 = ไม่จำกัด) ก็ไม่เติมให้
+  onAgeRuleTypeChange(rule: AgeRuleRow, foodType: string) {
+    rule.food_type = foodType;
+    this.ageConfigError = '';
+    if (foodType !== FOOD_TYPE_LARGE) return;
+
+    const isBlank = (v: unknown) => v === null || v === undefined || v === '';
+    if (!isBlank(rule.min_weeks) || !isBlank(rule.max_weeks)) return;
+
+    const smallEnds = this.ageRules
+      .filter(r => r.food_type === FOOD_TYPE_SMALL && !isBlank(r.max_weeks) && Number(r.max_weeks) > 0)
+      .map(r => Number(r.max_weeks));
+    if (smallEnds.length === 0) return;
+
+    rule.min_weeks = Math.max(...smallEnds);
+    rule.max_weeks = 0;
+  }
+
   removeAgeRule(index: number) {
+    this.openTypeMenu = null;
     this.ageRules.splice(index, 1);
     this.ageConfigError = '';
   }
@@ -340,6 +388,7 @@ export class FoodComponent {
   }
 
   closeAgeConfig() {
+    this.openTypeMenu = null;
     this.showAgeConfig = false;
     this.cdr.detectChanges();
   }

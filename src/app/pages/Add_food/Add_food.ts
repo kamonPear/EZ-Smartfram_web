@@ -91,19 +91,20 @@ export class AddFoodComponent {
     });
   }
 
-  // ปริมาณใกล้หมดที่เจ้าของเคยตั้งไว้ของแต่ละประเภท ไว้เติมในช่องให้อัตโนมัติเวลานำเข้า
-  // รอบถัดไป จะได้ไม่ต้องกรอกซ้ำ (แก้ทับได้)
-  private savedMinByType: Record<string, number> = {};
+  // ปริมาณใกล้หมดที่เจ้าของเคยตั้งไว้ ใช้ค่าเดียวร่วมกันทุกประเภทอาหาร เติมในช่องให้
+  // อัตโนมัติตั้งแต่เปิดหน้า จะได้ไม่ต้องกรอกซ้ำ (แก้ทับได้ และจะใช้กับทั้งสองประเภท)
+  // ตั้งได้ครั้งเดียว: ถ้าเคยตั้งแล้ว (minLocked) จะล็อกช่องนี้ แก้ไขไม่ได้ (backend ก็ปฏิเสธการแก้)
+  minLocked = false;
+  showMinConfirm = false;
 
   private loadSavedThresholds() {
-    this.api.get<{ food_type: string; min_quantity?: number }[]>('/foods').subscribe({
+    this.api.get<{ min_quantity?: number }[]>('/foods').subscribe({
       next: (rows) => {
-        const saved: Record<string, number> = {};
-        for (const row of rows || []) {
-          if (row.food_type && (row.min_quantity ?? 0) > 0) saved[row.food_type] = Number(row.min_quantity);
+        const saved = (rows || []).map(r => Number(r.min_quantity) || 0).find(v => v > 0);
+        if (saved != null) {
+          this.minQuantity = saved;
+          this.minLocked = true;
         }
-        this.savedMinByType = saved;
-        if (this.selectedFoodType) this.minQuantity = saved[this.selectedFoodType] ?? null;
         this.cdr.detectChanges();
       },
       error: (err) => console.error('โหลดปริมาณใกล้หมดที่เคยตั้งไม่สำเร็จ:', err),
@@ -112,7 +113,6 @@ export class AddFoodComponent {
 
   selectFoodType(type: string) {
     this.selectedFoodType = type;
-    this.minQuantity = this.savedMinByType[type] ?? null;
     this.recalculateExpiryDate();
   }
 
@@ -179,6 +179,11 @@ export class AddFoodComponent {
     }, 2500);
   }
 
+  cancelMinConfirm() {
+    this.showMinConfirm = false;
+    this.cdr.detectChanges();
+  }
+
   saveFoodData() {
     if (!this.selectedFoodType) {
       this.flashToast('กรุณาเลือกประเภทอาหาร', 'error');
@@ -197,10 +202,18 @@ export class AddFoodComponent {
       return;
     }
 
-    if (this.minQuantity != null && this.minQuantity < 0) {
+    if (!this.minLocked && this.minQuantity != null && this.minQuantity < 0) {
       this.flashToast('ปริมาณแจ้งเตือนต้องไม่ติดลบ', 'error');
       return;
     }
+
+    // กรอกปริมาณใกล้หมดเป็นครั้งแรก -> ถามยืนยันก่อน เพราะบันทึกแล้วแก้ไขไม่ได้
+    if (!this.minLocked && this.minQuantity != null && this.minQuantity > 0 && !this.showMinConfirm) {
+      this.showMinConfirm = true;
+      this.cdr.detectChanges();
+      return;
+    }
+    this.showMinConfirm = false;
 
     this.isSaving = true;
     const payload: Record<string, unknown> = {
@@ -209,7 +222,10 @@ export class AddFoodComponent {
       import_volume: Math.round(this.amount),
       expiry_date: `${formatDateKey(this.expiryDate)}T00:00:00Z`,
     };
-    if (this.minQuantity != null) payload['min_quantity'] = Number(this.minQuantity);
+    // ตั้งครั้งแรกเท่านั้น (ถ้าล็อกแล้วไม่ส่ง) และต้องมากกว่า 0
+    if (!this.minLocked && this.minQuantity != null && Number(this.minQuantity) > 0) {
+      payload['min_quantity'] = Number(this.minQuantity);
+    }
 
     this.api.post('/importfoods', payload).subscribe({
       next: () => {
