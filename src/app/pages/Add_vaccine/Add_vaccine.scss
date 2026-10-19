@@ -529,3 +529,84 @@
     position: static;
   }
 }
+
+/* ปุ่มแก้ไขในแถวยา/วัคซีน */
+.existing-row-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  margin-left: 8px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(114, 213, 114, 0.45);
+  background: rgba(114, 213, 114, 0.1);
+  color: var(--accent-green-bright);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  svg { width: 13px; height: 13px; }
+  &:hover { background: rgba(114, 213, 114, 0.2); }
+}
+
+/* ป็อบอัพแก้ไขยา/วัคซีน (ต่ำกว่าป็อบอัพยืนยันกลางที่ z-index 3000) */
+.edit-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.edit-modal {
+  width: min(560px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  background: var(--bg-card);
+  border-radius: 22px;
+  padding: 22px 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  box-sizing: border-box;
+
+  .action-row { margin-top: 20px; }
+}
+
+.edit-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+
+  h3 { margin: 0; font-size: 1.15rem; color: var(--text-title); }
+}
+
+.edit-modal-close {
+  border: none;
+  background: transparent;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: rgba(var(--fg-rgb), 0.5);
+  cursor: pointer;
+}
+
+.edit-age-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 520px) { grid-template-columns: 1fr; }
+}
+
+.edit-age-hint {
+  display: block;
+  min-height: 1em;
+  margin-top: 4px;
+  padding-left: 14px;
+  font-size: 0.72rem;
+  color: rgba(var(--fg-rgb), 0.5);
+}
