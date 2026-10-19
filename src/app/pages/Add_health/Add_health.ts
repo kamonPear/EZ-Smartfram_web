@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -8,6 +8,7 @@ import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picke
 import { DayMarker, loadCalendarMarkers, formatDateKey } from '../../shared/calendar-markers.util';
 import { HealthAppointmentService } from '../../services/health-appointment.service';
 import { HealthRecord, formatThaiDate } from '../../shared/coop-summary.util';
+import { ConfirmService, thDate } from '../../services/confirm.service';
 
 type ChartMode = 'day' | 'month' | 'year';
 
@@ -37,6 +38,7 @@ const THAI_MONTH_SHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 
   styleUrls: ['./Add_health.scss']
 })
 export class AddHealthComponent {
+  private confirm = inject(ConfirmService);
 
   collectDate: Date | null = new Date();
   isCalendarOpen: boolean = false;
@@ -517,7 +519,7 @@ export class AddHealthComponent {
     }, 2500);
   }
 
-  saveHealth() {
+  async saveHealth() {
     if (this.hasNoAppointment) {
       this.flashToast('คอกนี้ยังไม่มีนัดตรวจสุขภาพในตอนนี้ บันทึกไม่ได้', 'error');
       return;
@@ -549,6 +551,12 @@ export class AddHealthComponent {
       return;
     }
 
+    // ให้เจ้าของฟาร์มทวนข้อมูลอีกรอบก่อนบันทึกจริง (ป็อบอัพกลาง services/confirm.service.ts)
+    const ok = await this.confirm.ask({
+      message: 'ตรวจสอบผลตรวจสุขภาพก่อนบันทึก',
+      details: [`คอก: ${this.selectedCoopName || '-'}`, `วันที่ตรวจ: ${thDate(this.collectDate)}`, `ไก่สุขภาพดี: ${this.healthyCount} ตัว`, `ไก่ป่วย: ${this.poorHealthCount} ตัว`],
+    });
+    if (!ok) return;
     this.isSaving = true;
     const payload = {
       coop_id: this.coopId,

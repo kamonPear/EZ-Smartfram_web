@@ -1,10 +1,11 @@
-import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { deviceIconSrc, DEVICE_ICON_CHOICES } from '../../shared/device-icon.util';
 import { legacyGridPosition } from '../../shared/coop-summary.util';
+import { ConfirmService, thDate } from '../../services/confirm.service';
 @Component({
   selector: 'app-set-up-system',
   standalone: true,
@@ -13,6 +14,7 @@ import { legacyGridPosition } from '../../shared/coop-summary.util';
   styleUrls: ['./Set_up_System.scss']
 })
 export class SetUpSystem implements OnInit {
+  private confirm = inject(ConfirmService);
 
   // ใช้ฝังในป็อบอัพของหน้าแก้ไขคอก (Edit_coop) - ส่ง id คอกมาตรงๆ แทนการอ่านจาก URL
   // และไม่เด้งไปหน้าอื่นตอนบันทึก (ยิง saved ให้หน้าที่ครอบอยู่ปิดป็อบอัพเอง)
@@ -131,11 +133,13 @@ export class SetUpSystem implements OnInit {
     this.editIcon = src;
   }
 
-  saveEditedType() {
+  async saveEditedType() {
     if (!this.managingType || this.managingType.id == null) return;
     const trimmedName = this.editName.trim();
     if (!trimmedName || !this.editIcon) return;
 
+    // ให้เจ้าของฟาร์มทวนข้อมูลอีกรอบก่อนบันทึกจริง (ป็อบอัพกลาง services/confirm.service.ts)
+    if (!(await this.confirm.ask({ message: 'บันทึกการแก้ไขชนิดอุปกรณ์ใช่ไหม?', details: [`ชื่ออุปกรณ์: ${trimmedName}`] }))) return;
     this.isSavingEdit = true;
     this.api.put<{ id: number; name: string; icon: string }>(`/device-types?id=${this.managingType.id}`, {
       name: trimmedName,
@@ -386,12 +390,18 @@ export class SetUpSystem implements OnInit {
     this.isModalOpen = false; 
   }
 
-  saveLayout() {
+  async saveLayout() {
     if (!this.selectedCoop) {
       console.error('No coop selected');
       return;
     }
 
+    // ให้เจ้าของฟาร์มทวนข้อมูลอีกรอบก่อนบันทึกจริง (ป็อบอัพกลาง services/confirm.service.ts)
+    const ok = await this.confirm.ask({
+      message: 'บันทึกการจัดวางอุปกรณ์ในคอกนี้ใช่ไหม? ระบบจะส่งตำแหน่งอุปกรณ์ไปให้บอร์ดในคอกด้วย',
+      details: [`คอก: ${this.selectedCoopName || '-'}`, `จำนวนอุปกรณ์ที่วาง: ${this.slots.filter((s: any) => s.device).length} ตัว`],
+    });
+    if (!ok) return;
     this.isSaving = true;
 
     const payload = {

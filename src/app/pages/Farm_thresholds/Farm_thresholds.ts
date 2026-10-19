@@ -1,7 +1,8 @@
-import { Component, ChangeDetectorRef, effect } from '@angular/core';
+import { Component, ChangeDetectorRef, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FarmThresholdService } from '../../services/farm-threshold.service';
+import { ConfirmService, thDate } from '../../services/confirm.service';
 
 @Component({
   selector: 'app-farm-thresholds',
@@ -11,6 +12,7 @@ import { FarmThresholdService } from '../../services/farm-threshold.service';
   styleUrls: ['./Farm_thresholds.scss']
 })
 export class FarmThresholdsComponent {
+  private confirm = inject(ConfirmService);
   readonly tempMin = 10;
   readonly tempMax = 45;
   readonly ammoniaMin = 0;
@@ -53,7 +55,13 @@ export class FarmThresholdsComponent {
     this.ammonia = Math.min(this.ammoniaMax, Math.max(this.ammoniaMin, this.ammonia + delta));
   }
 
-  save() {
+  async save() {
+    // ให้เจ้าของฟาร์มทวนข้อมูลอีกรอบก่อนบันทึกจริง (ป็อบอัพกลาง services/confirm.service.ts)
+    const ok = await this.confirm.ask({
+      message: 'บันทึกค่ามาตรฐานของฟาร์มใช่ไหม? (ใช้ร่วมกันทุกคอก)',
+      details: [`อุณหภูมิมาตรฐาน: ${this.temp} °C`, `แอมโมเนียมาตรฐาน: ${this.ammonia} ppm`],
+    });
+    if (!ok) return;
     this.isSaving = true;
     // รอผลจาก backend จริงก่อน - สำเร็จค่อยโชว์ toast แล้วพากลับหน้าแรก (คล้ายกับ
     // Navigator.pop ของแอปมือถือ) ถ้าล้มเหลวอยู่หน้านี้ต่อและแจ้งผู้ใช้

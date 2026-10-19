@@ -1,8 +1,9 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { ApiService } from '../../services/api.service';
+import { ConfirmService, thDate } from '../../services/confirm.service';
 
 interface VaccineAlertRow {
   id: string;
@@ -35,6 +36,7 @@ interface VaccineHistoryRow {
   styleUrls: ['./Give_vaccine.scss']
 })
 export class GiveVaccineComponent {
+  private confirm = inject(ConfirmService);
   coopId: string | null = null;
   coopName = '';
   isLoading = true;
@@ -125,7 +127,7 @@ export class GiveVaccineComponent {
     return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
-  markGiven(a: VaccineAlertRow) {
+  async markGiven(a: VaccineAlertRow) {
     if (a.isCompleted || this.savingId) return;
     // ✅ กดให้วัคซีนก่อนถึงวันครบกำหนดจริงไม่ได้ (เดิมกดได้ตลอด แม้การ์ดจะบอกว่า
     // "อีก X วันถึงกำหนด" อยู่ก็ตาม) - backend เช็คซ้ำอีกชั้นเป็นด่านจริงอยู่แล้ว
@@ -133,6 +135,8 @@ export class GiveVaccineComponent {
       this.flashToast('ยังไม่ถึงวันครบกำหนดให้วัคซีนนี้ กดให้วัคซีนก่อนไม่ได้', 'error');
       return;
     }
+    // ให้เจ้าของฟาร์มทวนข้อมูลอีกรอบก่อนบันทึกจริง (ป็อบอัพกลาง services/confirm.service.ts)
+    if (!(await this.confirm.ask({ message: 'บันทึกว่าให้วัคซีนนี้แล้วใช่ไหม?', details: [`คอก: ${this.coopName || '-'}`, `วัคซีน: ${a.vaccineName}`] }))) return;
     this.savingId = a.id;
     this.api.put(`/vaccines/alerts?id=${a.id}`, {
       is_completed: true,

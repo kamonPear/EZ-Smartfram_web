@@ -16,9 +16,10 @@
   margin-right: auto;
 }
 
+// แจ้งเตือนอยู่ด้านบนจอ ให้เห็นทันทีแม้ปฏิทินเลือกวันเปิดอยู่ (ด้านล่างโดนปฏิทินบังสายตา)
 .toast-notification {
   position: fixed;
-  bottom: 30px;
+  top: 24px;
   left: 50%;
   transform: translateX(-50%);
   background-color: var(--bg-card);

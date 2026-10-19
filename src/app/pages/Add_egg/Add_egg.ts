@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +6,7 @@ import { ApiService } from '../../services/api.service';
 import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picker-calendar';
 import { DayMarker, loadCalendarMarkers, formatDateKey } from '../../shared/calendar-markers.util';
 import { EggRecord, formatThaiDate } from '../../shared/coop-summary.util';
+import { ConfirmService, thDate } from '../../services/confirm.service';
 
 type ChartMode = 'day' | 'month' | 'year';
 
@@ -34,6 +35,7 @@ const THAI_MONTH_SHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 
   styleUrls: ['./Add_egg.scss']
 })
 export class AddEggComponent {
+  private confirm = inject(ConfirmService);
 
   // วันที่เก็บไข่เลือกได้ไม่เกินวันนี้ (ไข่ที่ลงวันอนาคตจะไม่ขึ้นในกราฟ/ยอดวันนี้)
   readonly today = new Date();
@@ -490,7 +492,7 @@ export class AddEggComponent {
     }, 2500);
   }
 
-  saveEgg() {
+  async saveEgg() {
     // ช่องจำนวนไข่ว่าง หรือกรอก 0 (หรือค่าติดลบ) - แจ้งเตือนเฉพาะจุดและไม่บันทึก
     if (!this.eggCount || this.eggCount < 1) {
       this.flashToast('กรุณากรอกจำนวนไข่ไก่', 'error');
@@ -512,6 +514,12 @@ export class AddEggComponent {
       return;
     }
 
+    // ให้เจ้าของฟาร์มทวนข้อมูลอีกรอบก่อนบันทึกจริง (ป็อบอัพกลาง services/confirm.service.ts)
+    const ok = await this.confirm.ask({
+      message: 'ตรวจสอบข้อมูลการเก็บไข่ก่อนบันทึก',
+      details: [`คอก: ${this.selectedCoopName || '-'}`, `วันที่เก็บไข่: ${thDate(this.collectDate)}`, `จำนวนไข่: ${this.eggCount} ฟอง`],
+    });
+    if (!ok) return;
     this.isSaving = true;
     const payload = {
       coop_id: this.coopId,

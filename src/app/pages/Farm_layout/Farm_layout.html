@@ -135,23 +135,6 @@
     <span>{{ toastMessage }}</span>
   </div>
 
-  <!-- ป็อบอัพยืนยันก่อนบันทึกผังฟาร์มจริง -->
-  <div class="custom-modal-overlay" *ngIf="showConfirmModal">
-    <div class="custom-modal">
-      <h3>ยืนยันผังฟาร์มนี้?</h3>
-      <p>
-        คอกไก่ {{ placedCoops.length }} คอก จะถูกวางตามผัง{{ shapeLabel }}ที่จัดไว้
-        <ng-container *ngIf="unplacedCoops.length > 0">
-          <br>(ยังมี {{ unplacedCoops.length }} คอกที่ยังไม่ได้วาง)
-        </ng-container>
-      </p>
-      <div class="modal-actions">
-        <button class="btn-cancel" [disabled]="isSaving" (click)="cancelConfirm()">ยกเลิก</button>
-        <button class="btn-confirm-save" [disabled]="isSaving" (click)="confirmSave()">
-          {{ isSaving ? 'กำลังบันทึก...' : 'ยืนยัน' }}
-        </button>
-      </div>
-    </div>
-  </div>
+  <!-- ป็อบอัพยืนยันก่อนบันทึกใช้ตัวกลางของทั้งเว็บแล้ว (services/confirm.service.ts) -->
 
 </div>

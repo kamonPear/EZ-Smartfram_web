@@ -1,10 +1,11 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { ApiService } from '../../services/api.service';
 import { SiteSearchComponent } from '../../components/site-search/site-search.component';
+import { ConfirmService, thDate } from '../../services/confirm.service';
 
 // ประเภทอาหารที่รองรับ - ผูกกับช่วงอายุไก่ที่กินอาหารประเภทนั้น (ตรงกับฝั่ง backend
 // models.FoodTypeSmallPellet/FoodTypeLargePellet เป๊ะ)
@@ -63,6 +64,7 @@ interface HistoryEntry {
   styleUrls: ['./Food.scss']
 })
 export class FoodComponent {
+  private confirm = inject(ConfirmService);
   readonly FOOD_TYPE_SMALL = FOOD_TYPE_SMALL;
   readonly FOOD_TYPE_LARGE = FOOD_TYPE_LARGE;
 
@@ -393,7 +395,7 @@ export class FoodComponent {
     this.cdr.detectChanges();
   }
 
-  saveAgeConfig() {
+  async saveAgeConfig() {
     if (this.ageRules.length === 0) {
       this.ageConfigError = 'กรุณาเพิ่มช่วงอายุอย่างน้อย 1 แถว';
       return;
@@ -431,6 +433,12 @@ export class FoodComponent {
     }
 
     this.ageConfigError = '';
+    // ให้เจ้าของฟาร์มทวนข้อมูลอีกรอบก่อนบันทึกจริง (ป็อบอัพกลาง services/confirm.service.ts)
+    const ok = await this.confirm.ask({
+      message: 'บันทึกเงื่อนไขอายุไก่กับประเภทอาหารใช่ไหม? ระบบจะใช้ตารางนี้คำนวณการตัดสต็อกอัตโนมัติ',
+      details: rules.map((r) => `${r.food_type}: อายุ ${r.min_weeks} - ${r.max_weeks === 0 ? 'ไม่จำกัด' : r.max_weeks} สัปดาห์, ตัวละ ${r.grams_per_bird} กรัม/วัน`),
+    });
+    if (!ok) return;
     this.isSavingAgeConfig = true;
     this.api.put<FoodAgeRule[]>('/food-age-rules', { rules }).subscribe({
       next: () => {

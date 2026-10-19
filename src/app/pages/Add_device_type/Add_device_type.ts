@@ -1,9 +1,10 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { DEVICE_ICON_CHOICES } from '../../shared/device-icon.util';
+import { ConfirmService, thDate } from '../../services/confirm.service';
 
 // หน้า "เพิ่มอุปกรณ์" (ชนิดอุปกรณ์ใหม่ที่ซื้อมา) - คนละหน้ากับ Set_up_System ที่ใช้
 // ลากอุปกรณ์ไปวางบนแคนวาสของคอก หน้านี้แค่ตั้งชื่อ+เลือกไอคอนไว้ล่วงหน้า บันทึกผ่าน
@@ -17,6 +18,7 @@ import { DEVICE_ICON_CHOICES } from '../../shared/device-icon.util';
   styleUrls: ['./Add_device_type.scss']
 })
 export class AddDeviceTypeComponent {
+  private confirm = inject(ConfirmService);
   readonly iconChoices = DEVICE_ICON_CHOICES;
 
   name = '';
@@ -52,7 +54,7 @@ export class AddDeviceTypeComponent {
     }, 2500);
   }
 
-  save() {
+  async save() {
     const trimmedName = this.name.trim();
     if (!trimmedName) {
       this.flashToast('กรุณาตั้งชื่ออุปกรณ์', 'error');
@@ -63,6 +65,8 @@ export class AddDeviceTypeComponent {
       return;
     }
 
+    // ให้เจ้าของฟาร์มทวนข้อมูลอีกรอบก่อนบันทึกจริง (ป็อบอัพกลาง services/confirm.service.ts)
+    if (!(await this.confirm.ask({ message: 'เพิ่มชนิดอุปกรณ์นี้ใช่ไหม?', details: [`ชื่ออุปกรณ์: ${trimmedName}`] }))) return;
     this.isSaving = true;
     this.api.post('/device-types', { name: trimmedName, icon: this.selectedIcon }).subscribe({
       next: () => {

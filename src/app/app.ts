@@ -4,6 +4,7 @@ import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { GlobalSearchComponent } from './components/global-search/global-search.component';
+import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 
 // หน้าที่วางช่องค้นหารวมไว้ในหน้าเองแล้ว (ไม่ต้องมีปุ่มแว่นขยายลอยซ้ำ) และหน้า login
 const PAGES_WITH_SEARCH_BOX = [
@@ -13,7 +14,7 @@ const PAGES_WITH_SEARCH_BOX = [
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterOutlet, SidebarComponent, GlobalSearchComponent],
+  imports: [CommonModule, RouterOutlet, SidebarComponent, GlobalSearchComponent, ConfirmDialogComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

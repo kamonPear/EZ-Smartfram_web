@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +6,7 @@ import { ApiService } from '../../services/api.service';
 import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picker-calendar';
 import { formatDateKey } from '../../shared/calendar-markers.util';
 import { FOOD_TYPE_SMALL, FOOD_TYPE_LARGE, FoodAgeRule } from '../Food/Food';
+import { ConfirmService, thDate } from '../../services/confirm.service';
 
 type DateField = 'import' | 'expiry' | null;
 
@@ -33,6 +34,7 @@ export function foodTypeAgeHint(foodType: string | null, rules: FoodAgeRule[] = 
   styleUrls: ['./Add_food.scss']
 })
 export class AddFoodComponent {
+  private confirm = inject(ConfirmService);
   readonly FOOD_TYPE_SMALL = FOOD_TYPE_SMALL;
   readonly FOOD_TYPE_LARGE = FOOD_TYPE_LARGE;
   ageRules: FoodAgeRule[] = [];
@@ -184,7 +186,7 @@ export class AddFoodComponent {
     this.cdr.detectChanges();
   }
 
-  saveFoodData() {
+  async saveFoodData() {
     if (!this.selectedFoodType) {
       this.flashToast('กรุณาเลือกประเภทอาหาร', 'error');
       return;
@@ -213,7 +215,18 @@ export class AddFoodComponent {
       this.cdr.detectChanges();
       return;
     }
+    // กดยืนยันจากป็อบอัพ "ตั้งปริมาณใกล้หมด" มาแล้ว ถือว่ายืนยันแล้ว ไม่ถามซ้ำอีกรอบ
+    const confirmedViaMinDialog = this.showMinConfirm;
     this.showMinConfirm = false;
+
+    if (!confirmedViaMinDialog) {
+      // ให้เจ้าของฟาร์มทวนข้อมูลอีกรอบก่อนบันทึกจริง (ป็อบอัพกลาง services/confirm.service.ts)
+      const ok = await this.confirm.ask({
+        message: 'ตรวจสอบข้อมูลการนำเข้าอาหารก่อนบันทึก',
+        details: [`ประเภทอาหาร: ${this.selectedFoodType}`, `ปริมาณ: ${Math.round(this.amount!)} กก.`, `วันที่นำเข้า: ${thDate(this.importDate)}`, `วันหมดอายุ: ${thDate(this.expiryDate)}`],
+      });
+      if (!ok) return;
+    }
 
     this.isSaving = true;
     const payload: Record<string, unknown> = {

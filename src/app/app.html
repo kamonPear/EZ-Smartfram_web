@@ -1,3 +1,5 @@
 <app-sidebar *ngIf="showChrome()"></app-sidebar>
 <app-global-search *ngIf="showGlobalSearch()"></app-global-search>
 <router-outlet></router-outlet>
+<!-- ป็อบอัพยืนยันก่อนบันทึก ใช้ร่วมกันทุกหน้า (services/confirm.service.ts) -->
+<app-confirm-dialog></app-confirm-dialog>
