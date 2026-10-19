@@ -70,6 +70,11 @@
           <span class="input-pill-suffix">กก.</span>
         </div>
 
+        <div class="input-pill">
+          <span class="input-pill-icon">📝</span>
+          <input type="text" [(ngModel)]="note" maxlength="255" placeholder="หมายเหตุ (ไม่บังคับ)">
+        </div>
+
         <div class="input-pill" [class.is-locked]="minLocked">
           <span class="input-pill-icon">{{ minLocked ? '🔒' : '🔔' }}</span>
           <input type="number" [(ngModel)]="minQuantity" [disabled]="minLocked" placeholder="กำหนดปริมาณอาหารใกล้หมด (ใช้ร่วมกันทุกประเภท)" min="0">
