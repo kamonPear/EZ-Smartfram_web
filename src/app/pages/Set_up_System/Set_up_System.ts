@@ -278,6 +278,21 @@ export class SetUpSystem implements OnInit {
     const x = Math.min(97, Math.max(3, ((event.clientX - rect.left) / rect.width) * 100));
     const y = Math.min(94, Math.max(6, ((event.clientY - rect.top) / rect.height) * 100));
 
+    // ห้ามวางทับเซนเซอร์ตัวอื่น - ถ้าตำแหน่งที่ปล่อยชนกับตัวที่วางอยู่แล้ว ไม่ย้าย/ไม่วางให้
+    // (ตัวที่ลากอยู่ยังอยู่ที่เดิม) แล้วแจ้งผู้ใช้ให้ปล่อยในที่ว่าง
+    const draggedName = this.draggedSlotId !== null
+      ? this.slots.find(s => s.id === this.draggedSlotId)?.device?.name
+      : this.draggedSensor?.name;
+    if (this.wouldOverlap(canvasEl, x, y, this.draggedSlotId, draggedName || '')) {
+      this.draggedSensor = null;
+      this.draggedSlotId = null;
+      this.toastMessage = 'ตำแหน่งนี้มีเซนเซอร์วางอยู่แล้ว กรุณาวางในที่ว่าง';
+      this.showToast = true;
+      this.cdr.detectChanges();
+      setTimeout(() => { this.showToast = false; this.cdr.detectChanges(); }, 2500);
+      return;
+    }
+
     if (this.draggedSlotId !== null) {
       const currentSlot = this.slots.find(s => s.id === this.draggedSlotId);
       if (currentSlot && currentSlot.device) {
@@ -313,6 +328,43 @@ export class SetUpSystem implements OnInit {
     this.draggedSensor = null;
     this.draggedSlotId = null;
     this.cdr.detectChanges();
+  }
+
+  // เช็กว่าชิปเซนเซอร์ที่จะวางตรงจุด (x%, y%) จะทับชิปตัวอื่นบนแคนวาสไหม - เทียบเป็นพิกเซล
+  // จากขนาดจริงบนหน้าจอ (ชิปกว้างตามความยาวชื่อ) ชิปทุกตัวใช้ translate(-50%,-50%) จุดที่เก็บ
+  // จึงเป็นจุดกึ่งกลางชิป ignoreSlotId = ช่องของชิปที่กำลังย้ายอยู่ (ไม่นับว่าชนกับตัวเอง)
+  private wouldOverlap(canvasEl: HTMLElement, x: number, y: number, ignoreSlotId: number | null, name: string): boolean {
+    const canvasRect = canvasEl.getBoundingClientRect();
+    const cx = (x / 100) * canvasRect.width;
+    const cy = (y / 100) * canvasRect.height;
+
+    let w: number;
+    let h: number;
+    const movingEl = ignoreSlotId !== null
+      ? canvasEl.querySelector<HTMLElement>(`.free-slot[data-slot-id="${ignoreSlotId}"]`)
+      : null;
+    if (movingEl) {
+      const r = movingEl.getBoundingClientRect();
+      w = r.width;
+      h = r.height;
+    } else {
+      // ลากใหม่จากถาด ยังไม่มีชิปบนแคนวาสให้วัด - ประมาณจากความยาวชื่อ (ไอคอน + ช่องไฟ + ตัวอักษร)
+      w = 50 + name.length * 8;
+      h = 34;
+    }
+
+    const gap = 6;
+    const others = canvasEl.querySelectorAll<HTMLElement>('.free-slot[data-slot-id]');
+    for (const el of Array.from(others)) {
+      if (Number(el.dataset['slotId']) === ignoreSlotId) continue;
+      const r = el.getBoundingClientRect();
+      const ox = r.left + r.width / 2 - canvasRect.left;
+      const oy = r.top + r.height / 2 - canvasRect.top;
+      if (Math.abs(cx - ox) < (w + r.width) / 2 + gap && Math.abs(cy - oy) < (h + r.height) / 2 + gap) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // หาช่องว่างที่ "ตำแหน่งเริ่มต้น" (คำนวณจาก slot_index) อยู่ใกล้จุดที่ปล่อยมากที่สุด

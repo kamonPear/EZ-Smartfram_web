@@ -58,6 +58,7 @@
         class="free-slot"
         *ngFor="let slot of placedSlots"
         [ngClass]="slot.status"
+        [attr.data-slot-id]="slot.id"
         [style.left.%]="slot.x"
         [style.top.%]="slot.y"
         draggable="true"
