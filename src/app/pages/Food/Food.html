@@ -44,7 +44,7 @@
             <span class="stock-tile-label">{{ FOOD_TYPE_SMALL }}</span>
             <span class="stock-tile-value">{{ formatAmount(smallStock?.quantity_current) }}<small> กก.</small></span>
             <ng-container *ngTemplateOutlet="minTpl; context: { type: FOOD_TYPE_SMALL, stock: smallStock }"></ng-container>
-            <span class="stock-tile-updated">{{ smallStock ? formatDateTime(smallStock.date_up) : 'ยังไม่มีข้อมูล' }}</span>
+            <span class="stock-tile-updated">{{ smallStock ? 'อัปเดตล่าสุด ' + formatDateSimple(smallStock.date_up) : 'ยังไม่มีข้อมูล' }}</span>
           </div>
 
           <div class="stock-tile" [class.is-empty]="isStockEmpty(largeStock)">
@@ -57,7 +57,7 @@
             <span class="stock-tile-label">{{ FOOD_TYPE_LARGE }}</span>
             <span class="stock-tile-value">{{ formatAmount(largeStock?.quantity_current) }}<small> กก.</small></span>
             <ng-container *ngTemplateOutlet="minTpl; context: { type: FOOD_TYPE_LARGE, stock: largeStock }"></ng-container>
-            <span class="stock-tile-updated">{{ largeStock ? formatDateTime(largeStock.date_up) : 'ยังไม่มีข้อมูล' }}</span>
+            <span class="stock-tile-updated">{{ largeStock ? 'อัปเดตล่าสุด ' + formatDateSimple(largeStock.date_up) : 'ยังไม่มีข้อมูล' }}</span>
           </div>
         </div>
 
@@ -192,7 +192,7 @@
           </div>
         </div>
 
-        <p class="deduct-hint">ระบบตัดสต็อกให้อัตโนมัติทุกวันตอน 6 โมงเช้าตามจำนวนไก่จริงอยู่แล้ว เลือกประเภทแล้วกดปุ่มนี้ถ้าต้องการตัดสต็อกวันนี้ก่อนเวลา</p>
+        <p class="deduct-hint">ระบบตัดสต็อกให้อัตโนมัติทุกวันตอน 18:00 น. ตามจำนวนไก่จริงอยู่แล้ว (ก่อน 18:00 น. จะไม่ตัดเอง) เลือกประเภทแล้วกดปุ่มนี้ถ้าต้องการตัดสต็อกวันนี้ก่อนเวลา</p>
         <div class="food-type-chips">
           <button
             type="button"
@@ -308,7 +308,7 @@
   <div class="custom-modal-overlay" *ngIf="showDeductConfirm" (click)="closeDeductConfirm()">
     <div class="custom-modal" (click)="$event.stopPropagation()">
       <h3>ยืนยันการตัดสต็อก</h3>
-      <p class="modal-hint">ต้องการตัดสต็อกอาหาร{{ selectedDeductType }}ของวันนี้ตอนนี้เลยใช่ไหม ระบบจะหักตามจำนวนไก่จริงในคอกที่กินอาหารประเภทนี้ และจะตัดอัตโนมัติอีกครั้งตอน 6 โมงเช้าตามปกติ</p>
+      <p class="modal-hint">ต้องการตัดสต็อกอาหาร{{ selectedDeductType }}ของวันนี้ตอนนี้เลยใช่ไหม ระบบจะหักตามจำนวนไก่จริงในคอกที่กินอาหารประเภทนี้ และวันนี้จะไม่ตัดอัตโนมัติซ้ำตอน 18:00 น.</p>
       <div class="modal-actions">
         <button type="button" class="modal-btn-cancel" (click)="closeDeductConfirm()">ยกเลิก</button>
         <button type="button" class="modal-btn-save" (click)="confirmDeductStock()">ยืนยันตัดสต็อก</button>
