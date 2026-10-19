@@ -66,6 +66,7 @@
           <p class="appointment-banner is-danger" *ngIf="hasNoAppointment && !isLoadingAppointment">
             คอกนี้ยังไม่มีนัดตรวจสุขภาพในตอนนี้ บันทึกไม่ได้จนกว่าจะมีนัด
           </p>
+          <app-arrival-vaccine-note *ngIf="hasNoAppointment && !isLoadingAppointment" [note]="arrivalNote" context="health"></app-arrival-vaccine-note>
 
           <p class="appointment-banner is-warning" *ngIf="!hasNoAppointment && isFutureCheckDate">
             นัดตรวจวันที่ {{ formatDate(collectDate) }}<ng-container *ngIf="appointmentVaccineName"> (เตรียมให้{{ appointmentVaccineName }} วันที่ {{ formatDate(appointmentVaccineDate) }})</ng-container> - ยังไม่ถึงวันนัด บันทึกผลตรวจตอนนี้ไม่ได้
@@ -134,7 +135,7 @@
     </div>
 
     <div class="action-row">
-      <button class="btn-cancel" routerLink="/">
+      <button type="button" class="btn-cancel" (click)="goBack()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="6" y1="6" x2="18" y2="18"/>
           <line x1="18" y1="6" x2="6" y2="18"/>
@@ -225,24 +226,47 @@
         <button type="button" [class.active]="chartMode === 'year'" (click)="setChartMode('year')">รายปี</button>
       </div>
 
-      <div class="egg-chart" [class.egg-chart-year]="chartMode === 'year'" *ngIf="!isLoadingHistory">
-        <div
-          class="egg-chart-bar"
-          *ngFor="let bar of chartBars; trackBy: trackByBarKey"
-          [class.is-today]="bar.isCurrent"
-          [class.is-selected]="selectedBarKey === bar.key"
-          (click)="selectBar(bar)"
-          (mouseenter)="onBarHoverStart(bar)"
-          (mouseleave)="onBarHoverEnd()"
-        >
-          <div class="egg-chart-bar-track">
+      <!-- กราฟเส้น 2 เส้น: เขียว = สุขภาพดี, แดง = ป่วย (สเกลเดียวกัน) - คลิกจุดเพื่อดูรายละเอียด
+           ของช่วงนั้น  เส้นวาดด้วย SVG ด้านหลัง จุดและช่องกดเป็น HTML วางทับ -->
+      <div class="egg-chart" *ngIf="!isLoadingHistory">
+        <div class="egg-chart-plot">
+          <svg class="egg-chart-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="healthLineFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" class="health-fill-top"/>
+                <stop offset="100%" class="health-fill-bottom"/>
+              </linearGradient>
+            </defs>
+            <line class="egg-chart-grid" x1="0" y1="33" x2="100" y2="33" vector-effect="non-scaling-stroke"/>
+            <line class="egg-chart-grid" x1="0" y1="66" x2="100" y2="66" vector-effect="non-scaling-stroke"/>
+            <path [attr.d]="healthyLinePaths.area" fill="url(#healthLineFill)"/>
+            <path class="egg-chart-line is-healthy" [attr.d]="healthyLinePaths.line" vector-effect="non-scaling-stroke"/>
+            <path class="egg-chart-line is-poor" [attr.d]="poorLinePaths.line" vector-effect="non-scaling-stroke"/>
+          </svg>
+          <div
+            class="egg-chart-point"
+            *ngFor="let bar of chartBars; trackBy: trackByBarKey"
+            [class.is-today]="bar.isCurrent"
+            [class.is-selected]="selectedBarKey === bar.key"
+            [class.is-hovered]="hoveredBarKey === bar.key"
+            (click)="selectBar(bar)"
+            (mouseenter)="onBarHoverStart(bar)"
+            (mouseleave)="onBarHoverEnd()"
+          >
+            <span class="egg-chart-guide"></span>
+            <span class="egg-chart-dot is-healthy" [style.bottom.%]="pointPercent(bar.healthyValue)"></span>
+            <span class="egg-chart-dot is-poor" [style.bottom.%]="pointPercent(bar.poorValue)"></span>
             <div class="egg-chart-tooltip" *ngIf="hoveredBarKey === bar.key">{{ barTooltip(bar) }}</div>
-            <div class="egg-chart-bar-stack" [style.height.%]="barTotalHeightPercent(bar)">
-              <div class="egg-chart-bar-fill is-poor" [style.height.%]="segmentHeightPercent(bar.poorValue, bar)"></div>
-              <div class="egg-chart-bar-fill is-healthy" [style.height.%]="segmentHeightPercent(bar.healthyValue, bar)"></div>
-            </div>
           </div>
-          <span class="egg-chart-bar-label">{{ bar.label }}</span>
+        </div>
+        <div class="egg-chart-labels">
+          <span
+            class="egg-chart-bar-label"
+            *ngFor="let bar of chartBars; trackBy: trackByBarKey"
+            [class.is-today]="bar.isCurrent"
+            [class.is-selected]="selectedBarKey === bar.key"
+            (click)="selectBar(bar)"
+          >{{ bar.label }}</span>
         </div>
       </div>
 

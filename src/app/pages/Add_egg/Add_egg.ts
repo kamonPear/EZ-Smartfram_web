@@ -7,6 +7,8 @@ import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picke
 import { DayMarker, loadCalendarMarkers, formatDateKey } from '../../shared/calendar-markers.util';
 import { EggRecord, formatThaiDate } from '../../shared/coop-summary.util';
 import { ConfirmService, thDate } from '../../services/confirm.service';
+import { linePointPercent, smoothLinePaths } from '../../shared/line-chart.util';
+import { backNavigator } from '../../shared/go-back.util';
 
 type ChartMode = 'day' | 'month' | 'year';
 
@@ -36,6 +38,8 @@ const THAI_MONTH_SHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 
 })
 export class AddEggComponent {
   private confirm = inject(ConfirmService);
+  // ปุ่มยกเลิก: กลับหน้าก่อนหน้า (ในป็อบอัพหน้าข้อมูลคอก = ปิดป็อบอัพ)
+  readonly goBack = backNavigator('/');
 
   // วันที่เก็บไข่เลือกได้ไม่เกินวันนี้ (ไข่ที่ลงวันอนาคตจะไม่ขึ้นในกราฟ/ยอดวันนี้)
   readonly today = new Date();
@@ -400,10 +404,13 @@ export class AddEggComponent {
     return Math.max(1, ...this.chartBars.map(b => b.value));
   }
 
-  barHeightPercent(value: number): number {
-    if (value <= 0) return 0;
-    // สูงอย่างน้อย 6% ให้เห็นแท่งจางๆแม้ค่าน้อยมากเทียบกับค่าสูงสุด
-    return Math.max(6, (value / this.chartMax) * 100);
+  // กราฟเส้น: ความสูงจุด / เส้นโค้ง / พื้นใต้เส้น คำนวณด้วยตัวช่วยกลาง (shared/line-chart.util.ts)
+  pointPercent(value: number): number {
+    return linePointPercent(value, this.chartMax);
+  }
+
+  get chartLinePaths(): { line: string; area: string } {
+    return smoothLinePaths(this.chartBars.map(b => b.value));
   }
 
   // แท่งที่กำลังถูกเลือกไว้ (คลิกดูรายละเอียด) - หาใหม่จาก key ทุกครั้งเพราะ

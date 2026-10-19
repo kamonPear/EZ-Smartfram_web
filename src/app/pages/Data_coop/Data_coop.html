@@ -71,14 +71,14 @@
           <div class="mini-egg-plot">
             <svg class="mini-egg-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
               <defs>
-                <linearGradient id="eggLineFill" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="coopEggLineFill" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" class="egg-fill-top"/>
                   <stop offset="100%" class="egg-fill-bottom"/>
                 </linearGradient>
               </defs>
               <line class="mini-egg-grid" x1="0" y1="50" x2="100" y2="50" vector-effect="non-scaling-stroke"/>
-              <path class="mini-egg-area" [attr.d]="eggAreaPath" fill="url(#eggLineFill)"/>
-              <path class="mini-egg-line" [attr.d]="eggLinePath" vector-effect="non-scaling-stroke"/>
+              <path class="mini-egg-area" [attr.d]="eggLinePaths.area" fill="url(#coopEggLineFill)"/>
+              <path class="mini-egg-line" [attr.d]="eggLinePaths.line" vector-effect="non-scaling-stroke"/>
             </svg>
             <div
               class="mini-egg-point"
@@ -180,7 +180,11 @@
           </ng-container>
         </p>
         <ng-template #noAppt>
-          <p class="health-appointment-hint is-none">ตอนนี้ยังไม่มีนัดตรวจสุขภาพ</p>
+          <!-- ไม่มีวัคซีนเหลือให้เพราะไก่เข้าฟาร์มตอนโตแล้ว - อธิบายเหตุผลแทนข้อความว่าง ๆ -->
+          <app-arrival-vaccine-note *ngIf="arrivalNote && pendingVaccines.length === 0; else plainNoAppt" [note]="arrivalNote" context="health"></app-arrival-vaccine-note>
+          <ng-template #plainNoAppt>
+            <p class="health-appointment-hint is-none">ตอนนี้ยังไม่มีนัดตรวจสุขภาพ</p>
+          </ng-template>
         </ng-template>
 
         <div class="record-list is-scrollable" *ngIf="healthHistorySorted.length > 0">
@@ -191,7 +195,9 @@
             </div>
           </div>
         </div>
-        <p class="record-empty" *ngIf="healthHistorySorted.length === 0">ยังไม่มีประวัติสุขภาพ</p>
+        <p class="record-empty" *ngIf="healthHistorySorted.length === 0">
+          ยังไม่มีประวัติสุขภาพ<ng-container *ngIf="receivedDate"><br><small>รับไก่เข้าฟาร์มเมื่อ {{ formatDateObj(receivedDate) }}</small></ng-container>
+        </p>
       </div>
 
       <!-- 5. วัคซีนที่ให้ - รายการวัคซีนทั้งหมดที่เข้าเกณฑ์คอกนี้ ไม่ใช่แค่ที่ยัง
@@ -202,13 +208,15 @@
           <button class="section-action-btn" (click)="openDevicePopup('vaccine')">ให้วัคซีน</button>
         </div>
 
+        <app-arrival-vaccine-note [note]="arrivalNote" context="vaccine"></app-arrival-vaccine-note>
+
         <div class="record-list is-scrollable" *ngIf="vaccineChecklist.length > 0">
           <div class="pending-vaccine-row" *ngFor="let v of vaccineChecklist">
             <span class="pending-vaccine-name">{{ v.vaccineName }}<ng-container *ngIf="v.method !== '-'"> · {{ v.method }}</ng-container></span>
             <span class="pending-vaccine-status" [class]="vaccineChecklistStatusClass(v)">{{ vaccineChecklistStatusLabel(v) }}</span>
           </div>
         </div>
-        <p class="record-empty" *ngIf="vaccineChecklist.length === 0">ไม่มีวัคซีนที่เข้าเกณฑ์คอกนี้ในตอนนี้</p>
+        <p class="record-empty" *ngIf="vaccineChecklist.length === 0 && !arrivalNote?.allMissed">ไม่มีวัคซีนที่เข้าเกณฑ์คอกนี้ในตอนนี้</p>
       </div>
 
       </div>

@@ -7,6 +7,7 @@ import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picke
 import { formatDateKey } from '../../shared/calendar-markers.util';
 import { FOOD_TYPE_SMALL, FOOD_TYPE_LARGE, FoodAgeRule } from '../Food/Food';
 import { ConfirmService, thDate } from '../../services/confirm.service';
+import { backNavigator } from '../../shared/go-back.util';
 
 type DateField = 'import' | 'expiry' | null;
 
@@ -35,6 +36,8 @@ export function foodTypeAgeHint(foodType: string | null, rules: FoodAgeRule[] = 
 })
 export class AddFoodComponent {
   private confirm = inject(ConfirmService);
+  // ปุ่มยกเลิก: กลับหน้าก่อนหน้าที่เปิดมา ไม่เด้งไปหน้าแรก (shared/go-back.util.ts)
+  readonly goBack = backNavigator('/food');
   readonly FOOD_TYPE_SMALL = FOOD_TYPE_SMALL;
   readonly FOOD_TYPE_LARGE = FOOD_TYPE_LARGE;
   ageRules: FoodAgeRule[] = [];

@@ -484,87 +484,114 @@
   &.is-poor { background: var(--danger-grad-end, #e53935); }
 }
 
+/* กราฟเส้นสุขภาพ: เขียว = สุขภาพดี, แดง = ป่วย */
 .egg-chart {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  height: 140px;
-  padding-top: 10px;
+  padding-top: 14px;
   border-top: 1px solid var(--border-subtle);
   margin-bottom: 26px;
+}
 
-  &.egg-chart-year {
-    gap: 18px;
-    justify-content: center;
+.egg-chart-plot {
+  position: relative;
+  display: flex;
+  height: 150px;
+}
 
-    .egg-chart-bar {
-      flex: 0 1 60px;
-    }
+.egg-chart-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.egg-chart-grid {
+  stroke: var(--border-subtle);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.egg-chart-line {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  &.is-healthy {
+    stroke: var(--accent-green-bright);
+    filter: drop-shadow(0 4px 6px rgba(114, 213, 114, 0.35));
+  }
+  &.is-poor {
+    stroke: var(--danger-grad-end, #e53935);
+    stroke-width: 2.5;
   }
 }
 
-.egg-chart-bar {
+.health-fill-top { stop-color: var(--accent-green-bright); stop-opacity: 0.28; }
+.health-fill-bottom { stop-color: var(--accent-green-bright); stop-opacity: 0; }
+
+/* ช่องของแต่ละช่วง (กว้างเท่ากัน) - รับการชี้/คลิก และวางจุดทั้ง 2 เส้นไว้ตรงกลางช่อง */
+.egg-chart-point {
+  position: relative;
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  height: 100%;
   cursor: pointer;
 
-  .egg-chart-bar-track {
-    position: relative;
-    flex: 1;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
+  .egg-chart-guide {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    border-left: 1px dashed transparent;
+    transition: border-color 0.15s ease;
   }
 
-  // แท่งเดียวแต่ซ้อน 2 สี (เขียว=สุขภาพดี ที่ฐาน, แดง=ป่วย ด้านบน) ความสูงรวม =
-  // จำนวนไก่ทั้งหมดที่ตรวจวันนั้นเทียบกับแท่งที่มากสุดในช่วง - overflow:hidden
-  // ตัดมุมโค้งให้ท่อนข้างในตามกรอบนอกโดยไม่ต้องไปปัดมุมทีละท่อนเอง
-  .egg-chart-bar-stack {
-    width: 60%;
-    min-width: 4px;
-    display: flex;
-    flex-direction: column-reverse;
-    border-radius: 6px 6px 2px 2px;
-    overflow: hidden;
-    transition: height 0.3s ease;
+  .egg-chart-dot {
+    position: absolute;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 2.5px solid var(--accent-green-bright);
+    transform: translate(-50%, 50%);
+    transition: bottom 0.3s ease, transform 0.15s ease, box-shadow 0.15s ease;
+
+    &.is-poor { border-color: var(--danger-grad-end, #e53935); }
   }
 
-  .egg-chart-bar-fill {
-    width: 100%;
-    transition: height 0.3s ease, background 0.2s ease;
+  &.is-hovered .egg-chart-guide,
+  &.is-selected .egg-chart-guide { border-left-color: rgba(114, 213, 114, 0.5); }
 
-    &.is-healthy { background: rgba(114, 213, 114, 0.45); }
-    // ไก่ป่วยใช้โทนแดง แทนโทนเขียวของหน้าไข่ - ท่อนนี้สูงคือปัญหาที่ต้องระวัง
-    &.is-poor { background: rgba(198, 40, 40, 0.45); }
+  &.is-hovered .egg-chart-dot { transform: translate(-50%, 50%) scale(1.3); }
+
+  // ช่วงปัจจุบัน / ช่วงที่คลิกเลือกไว้ - จุดทึบ
+  &.is-today .egg-chart-dot,
+  &.is-selected .egg-chart-dot {
+    background: var(--accent-green-bright);
+    &.is-poor { background: var(--danger-grad-end, #e53935); }
   }
+
+  &.is-selected .egg-chart-dot {
+    box-shadow: 0 0 0 3px var(--bg-card), 0 0 0 5px rgba(114, 213, 114, 0.7);
+  }
+}
+
+.egg-chart-labels {
+  display: flex;
+  margin-top: 8px;
 
   .egg-chart-bar-label {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
     font-size: 0.7rem;
     color: rgba(var(--fg-rgb), 0.45);
-  }
+    cursor: pointer;
 
-  &:hover {
-    .is-healthy { background: var(--accent-green-bright); }
-    .is-poor { background: var(--danger-grad-end, #e53935); }
-  }
-
-  &.is-today .egg-chart-bar-label {
-    color: var(--accent-green-bright);
-    font-weight: 700;
-  }
-
-  &.is-selected {
-    .egg-chart-bar-stack {
-      box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--accent-green-bright);
-    }
-    .egg-chart-bar-label {
+    &.is-today,
+    &.is-selected {
       color: var(--accent-green-bright);
       font-weight: 700;
     }
@@ -573,7 +600,7 @@
 
 .egg-chart-tooltip {
   position: absolute;
-  bottom: calc(100% + 10px);
+  bottom: calc(100% + 6px);
   left: 50%;
   transform: translateX(-50%);
   background: var(--bg-card);

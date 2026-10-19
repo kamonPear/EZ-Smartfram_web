@@ -9,6 +9,7 @@ import { DayMarker, loadCalendarMarkers } from '../../shared/calendar-markers.ut
 import { deviceIconSrc } from '../../shared/device-icon.util';
 import { SetUpSystem } from '../Set_up_System/Set_up_System';
 import { ConfirmService, changedLines, thDate } from '../../services/confirm.service';
+import { backNavigator } from '../../shared/go-back.util';
 
 type RecordKind = 'health' | 'vaccine' | 'egg';
 
@@ -23,6 +24,8 @@ const VACCINE_METHODS = ['พ่น', 'ฉีด', 'หยอดปาก', 'ผ
 })
 export class EditCoopComponent implements OnInit {
   private confirm = inject(ConfirmService);
+  // ปุ่มยกเลิก: กลับหน้าก่อนหน้าที่เปิดมา ไม่เด้งไปหน้าแรก (shared/go-back.util.ts)
+  readonly goBack = backNavigator('/home');
 
   deviceIconSrc = deviceIconSrc;
   vaccineMethods = VACCINE_METHODS;

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FarmThresholdService } from '../../services/farm-threshold.service';
 import { ConfirmService, thDate } from '../../services/confirm.service';
+import { backNavigator } from '../../shared/go-back.util';
 
 @Component({
   selector: 'app-farm-thresholds',
@@ -13,6 +14,8 @@ import { ConfirmService, thDate } from '../../services/confirm.service';
 })
 export class FarmThresholdsComponent {
   private confirm = inject(ConfirmService);
+  // ปุ่มยกเลิก: กลับหน้าก่อนหน้าที่เปิดมา ไม่เด้งไปหน้าแรก (shared/go-back.util.ts)
+  readonly goBack = backNavigator('/');
   readonly tempMin = 10;
   readonly tempMax = 45;
   readonly ammoniaMin = 0;

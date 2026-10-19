@@ -7,6 +7,7 @@ import { DatePickerCalendar } from '../../shared/date-picker-calendar/date-picke
 import { DayMarker, loadCalendarMarkers } from '../../shared/calendar-markers.util';
 import { toBackendDateOnly, formatChickenAge } from '../../shared/coop-summary.util';
 import { ConfirmService, thDate } from '../../services/confirm.service';
+import { backNavigator } from '../../shared/go-back.util';
 
 @Component({
   selector: 'app-add-coop',
@@ -17,6 +18,8 @@ import { ConfirmService, thDate } from '../../services/confirm.service';
 })
 export class AddCoopComponent {
   private confirm = inject(ConfirmService);
+  // ปุ่มยกเลิก: กลับหน้าก่อนหน้าที่เปิดมา ไม่เด้งไปหน้าแรก (shared/go-back.util.ts)
+  readonly goBack = backNavigator('/');
 
   coopName: string = '';
   chickenCount: number | null = null;

@@ -509,90 +509,116 @@
   margin: 0 0 26px;
 }
 
+/* กราฟเส้นสรุปไข่ (วัน/เดือน/ปี) */
 .egg-chart {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  height: 140px;
-  padding-top: 10px;
+  padding-top: 14px;
   border-top: 1px solid var(--border-subtle);
   margin-bottom: 26px;
+}
 
-  // โหมดรายปีมีแท่งน้อย (5 แท่ง) - เว้นระยะห่างกว่าและไม่ยืดเต็มเพื่อไม่ให้ดูโล่งเกินไป
-  &.egg-chart-year {
-    gap: 18px;
-    justify-content: center;
+.egg-chart-plot {
+  position: relative;
+  display: flex;
+  height: 150px;
+}
 
-    .egg-chart-bar {
-      flex: 0 1 60px;
-    }
+.egg-chart-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.egg-chart-grid {
+  stroke: var(--border-subtle);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.egg-chart-line {
+  fill: none;
+  stroke: var(--accent-green-bright);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 4px 6px rgba(114, 213, 114, 0.35));
+}
+
+.egg-fill-top { stop-color: var(--accent-green-bright); stop-opacity: 0.32; }
+.egg-fill-bottom { stop-color: var(--accent-green-bright); stop-opacity: 0; }
+
+/* ช่องของแต่ละช่วง (กว้างเท่ากัน) - รับการชี้/คลิก และวางจุดไว้ตรงกลางช่อง */
+.egg-chart-point {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+
+  .egg-chart-guide {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    border-left: 1px dashed transparent;
+    transition: border-color 0.15s ease;
+  }
+
+  .egg-chart-dot {
+    position: absolute;
+    left: 50%;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 2.5px solid var(--accent-green-bright);
+    transform: translate(-50%, 50%);
+    transition: bottom 0.3s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  &.is-hovered .egg-chart-guide,
+  &.is-selected .egg-chart-guide { border-left-color: rgba(114, 213, 114, 0.5); }
+
+  &.is-hovered .egg-chart-dot { transform: translate(-50%, 50%) scale(1.3); }
+
+  // ช่วงปัจจุบัน (วันนี้/เดือนนี้/ปีนี้) - จุดทึบมีวงเรือง
+  &.is-today .egg-chart-dot {
+    background: var(--accent-green-bright);
+    box-shadow: 0 0 0 5px rgba(114, 213, 114, 0.22);
+  }
+
+  // จุดที่คลิกเลือกไว้ (โชว์รายละเอียดด้านล่าง) - ห่วงกรอบสองชั้น
+  &.is-selected .egg-chart-dot {
+    background: var(--accent-green-bright);
+    box-shadow: 0 0 0 3px var(--bg-card), 0 0 0 5px var(--accent-green-bright);
   }
 }
 
-.egg-chart-bar {
-  flex: 1;
-  min-width: 0;
+.egg-chart-labels {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  height: 100%;
-  cursor: pointer;
-
-  .egg-chart-bar-track {
-    position: relative;
-    flex: 1;
-    width: 100%;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-  }
-
-  .egg-chart-bar-fill {
-    width: 60%;
-    min-width: 4px;
-    border-radius: 6px 6px 2px 2px;
-    background: rgba(114, 213, 114, 0.35);
-    transition: height 0.3s ease, background 0.2s ease;
-  }
+  margin-top: 8px;
 
   .egg-chart-bar-label {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
     font-size: 0.7rem;
     color: rgba(var(--fg-rgb), 0.45);
-  }
+    cursor: pointer;
 
-  &:hover .egg-chart-bar-fill {
-    background: var(--accent-green-bright);
-  }
-
-  &.is-today {
-    .egg-chart-bar-fill {
-      background: var(--accent-green-bright);
-    }
-    .egg-chart-bar-label {
+    &.is-today,
+    &.is-selected {
       color: var(--accent-green-bright);
       font-weight: 700;
     }
   }
-
-  // แท่งที่ถูกคลิกเลือกไว้ (โชว์รายละเอียดด้านล่าง) - ใส่ห่วงกรอบให้ต่างจาก
-  // แท่งวันนี้/เดือนนี้ (is-today) ที่แค่เข้มกว่าเฉยๆ
-  &.is-selected .egg-chart-bar-fill {
-    background: var(--accent-green-bright);
-    box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--accent-green-bright);
-  }
-
-  &.is-selected .egg-chart-bar-label {
-    color: var(--accent-green-bright);
-    font-weight: 700;
-  }
 }
 
-/* ป็อบอัพเล็กๆ ตอนเมาส์ชี้แท่งกราฟ - แสดงยอดรวม หรือแยกตามคอกถ้ากำลังดูโหมด
+/* ป็อบอัพเล็กๆ ตอนเมาส์ชี้จุดบนกราฟ - แสดงยอดรวม หรือแยกตามคอกถ้ากำลังดูโหมด
    "ทุกคอก" (แทน title ของเบราว์เซอร์เดิมที่โชว์ได้แค่บรรทัดเดียว) */
 .egg-chart-tooltip {
   position: absolute;
-  bottom: calc(100% + 10px);
   left: 50%;
   transform: translateX(-50%);
   background: var(--bg-card);
@@ -616,6 +642,13 @@
     border: 6px solid transparent;
     border-top-color: var(--border-strong);
   }
+}
+
+.egg-chart-tooltip.is-below::after {
+  top: auto;
+  bottom: 100%;
+  border-top-color: transparent;
+  border-bottom-color: var(--border-strong);
 }
 
 .egg-chart-tooltip-row {

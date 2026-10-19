@@ -43,7 +43,8 @@
         </button>
       </div>
 
-      <p class="empty-hint" *ngIf="alerts.length === 0">คอกนี้ไม่มีกำหนดให้วัคซีนในตอนนี้</p>
+      <app-arrival-vaccine-note [note]="arrivalNote" context="vaccine"></app-arrival-vaccine-note>
+      <p class="empty-hint" *ngIf="alerts.length === 0 && !arrivalNote?.allMissed">คอกนี้ไม่มีกำหนดให้วัคซีนในตอนนี้</p>
     </div>
   </main>
 
